@@ -58,6 +58,9 @@ is decided on the recorded corpus and live instruments only.
 
 ## Go/No-Go checklist (human tasks)
 
+**`GATE_RUNBOOK.md` walks through all of these step by step, with result
+tables to fill in — follow that.**
+
 - [ ] BO records the corpus on both team pianos: every course note C3–C6,
       2–3 mic distances, plus long speech/TV noise takes (Record tab).
 - [ ] QA scores the corpus with both detectors (Corpus tab) — gate numbers.
