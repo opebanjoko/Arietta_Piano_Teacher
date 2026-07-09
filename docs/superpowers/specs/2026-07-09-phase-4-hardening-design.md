@@ -45,11 +45,13 @@ the existing `onState` seam. `app.jsx` only renders states.
   keyboard silently carries the lesson (existing SR-AUD-12 fallback).
 - `app.jsx`: map `interrupted` to pill copy "Waking up my ears…" (string via
   `content/voice.js`, BO review applies); `lost` renders like mic-disabled.
-- The synth output AudioContext also gets a foreground `resume()` so demos and
-  encouragement sound after backgrounding.
-- Tests: unit-drive the state machine with fake stream/context objects
-  (track-ended, statechange, visibility sequences). Real-device drill goes on
-  the hardware runbook checklist.
+- The synth output AudioContext already self-resumes on every play call
+  (`ensureContext()` in `synth.js`); no extra foreground hook is needed.
+- Tests run under plain `node --test` on pure modules, and `mic.js` has a
+  Vite-only worklet import — so the retry/state logic is extracted into a pure
+  `app/src/audio/recovery.js` consumed by `mic.js`, and unit tests drive it
+  with fake restart/scheduler hooks (track-ended, statechange, visibility
+  sequences). Real-device drill goes on the hardware runbook checklist.
 
 ## 2. Accessibility pass
 
@@ -57,10 +59,11 @@ Audit first, then targeted fixes; no redesign.
 
 - Touch targets: every interactive element ≥ 44×44 CSS px (Apple HIG). Likely
   offenders: piano keys, small header/settings buttons.
-- Contrast: every ink-token/background pair used for meaningful text meets WCAG
-  AA (4.5:1 normal, 3:1 large). `--ink-faint` (#A79878 on cream) is expected to
-  fail — darken it or restrict it to decorative text. A unit test computes the
-  ratios for the token pairs so they cannot regress.
+- Contrast, tiered per WCAG AA: primary text tokens (`--ink`, `--ink-soft`)
+  ≥ 4.5:1 on every background they sit on; secondary/label tokens
+  (`--ink-mid`, `--ink-mono`, `--ink-faint`) ≥ 3:1. `--ink-faint` (#A79878,
+  ~2.4:1 on paper) fails today — darken it. A unit test computes the ratios
+  for the token pairs so they cannot regress.
 - Motion: `prefers-reduced-motion` disables the pulse/glow animations; visible
   focus states for external-keyboard users.
 
@@ -79,10 +82,12 @@ Audit first, then targeted fixes; no redesign.
 Constraint: SR-PLT-04 — no analytics, no network. Everything stays on-device
 until a parent explicitly copies/shares it.
 
-- New `diag` object store, added as schema **migration v2** in
-  `app/src/store/db.js` (append to `MIGRATIONS`, never edit v1).
-- New module `app/src/store/diag.js`: `log(kind, detail)`, `list()`, `clear()`.
-  Rolling log capped at ~200 entries (oldest dropped). Logged kinds only:
+- The log lives in the existing `app` object store as a single capped record
+  (key `diagLog`) — writes are rare (boot, errors, interruptions), so no
+  schema migration is needed.
+- New module `app/src/store/diag.js`: `logDiag(db, kind, detail)`,
+  `listDiag(db)`, `clearDiag(db)`.
+  Rolling log capped at 200 entries (oldest dropped). Logged kinds only:
   unhandled errors (`window.onerror`, `unhandledrejection`), mic
   interruption/recovery/loss, app boot. No usage or progress tracking.
 - Settings (parent's area) gains a **Diagnostics** block: app version (injected
