@@ -18,7 +18,7 @@
   --ink: #2B241C;
   --ink-soft: #6B5B41;
   --ink-mid: #8A7B60;
-  --ink-faint: #A79878;
+  --ink-faint: #8F7F58;
   --ink-mono: #7A6A48;
 
   --sage: #5E8C5A;
@@ -97,4 +97,31 @@ button { font-family: var(--sans); }
   font-size: 10.5px;
   letter-spacing: 2px;
   color: var(--ink-faint);
+}
+
+/* Accessibility (Phase 4): keyboard focus, calm motion, 44px touch targets. */
+
+:focus-visible {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Expands a small control's touch target to >=44x44 without changing its look. */
+.hit { position: relative; }
+.hit::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
 }
