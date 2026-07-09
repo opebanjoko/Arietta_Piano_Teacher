@@ -30,6 +30,10 @@ export async function resetProgress(db, profileId) {
   for (const r of rows) {
     if (r.profileId === profileId) await db.delete('progress', [r.profileId, r.lessonId])
   }
+  const practice = await db.getAll('practice')
+  for (const r of practice) {
+    if (r.profileId === profileId) await db.delete('practice', [r.profileId, r.packId])
+  }
 }
 
 /** Map of lessonId -> {completed, bestCount, stepIndex, lastPlayedAt}. */
@@ -59,6 +63,27 @@ export async function recordSongRun(db, profileId, lessonId, noteCount, now = Da
 /** Mid-drill position so leaving and returning resumes the lesson (SR-STO-01). */
 export function savePosition(db, profileId, lessonId, stepIndex, now = Date.now()) {
   return patchLesson(db, profileId, lessonId, { stepIndex, lastPlayedAt: now })
+}
+
+/** Map of practice pack id -> {lastPracticedAt, completedCount}. */
+export async function getPracticeProgress(db, profileId) {
+  const rows = await db.getAll('practice')
+  return new Map(rows.filter(r => r.profileId === profileId).map(r => [r.packId, r]))
+}
+
+async function patchPractice(db, profileId, packId, patch) {
+  const prev = (await db.get('practice', [profileId, packId])) ?? { profileId, packId, completedCount: 0 }
+  const next = { ...prev, ...patch }
+  await db.put('practice', next)
+  return next
+}
+
+export async function recordPracticeRun(db, profileId, packId, now = Date.now()) {
+  const prev = await db.get('practice', [profileId, packId])
+  return patchPractice(db, profileId, packId, {
+    completedCount: (prev?.completedCount ?? 0) + 1,
+    lastPracticedAt: now
+  })
 }
 
 export async function getSettings(db, profileId) {

@@ -6,7 +6,9 @@
  */
 import { useState, useEffect, useRef } from 'preact/hooks'
 import { findLesson, allLessons, READING_POOL } from './content/course.js'
+import { PRACTICE_PACKS } from './content/practice.js'
 import { resolveReading, readingWarmup } from './core/reading.js'
+import { planPracticeSession, practiceLesson } from './core/practice.js'
 import { VOICE } from './content/voice.js'
 import {
   startDrill, drillNote, drillContinue, drillChoice, drillClap, drillAdvance,
@@ -21,6 +23,7 @@ import { openDb } from './store/db.js'
 import { logDiag, listDiag, clearDiag } from './store/diag.js'
 import {
   listProfiles, createProfile, deleteProfile, resetProgress, getProgress,
+  getPracticeProgress, recordPracticeRun,
   markComplete, recordSongRun, savePosition, getActiveProfileId, setActiveProfileId,
   getMicSettings, saveMicSettings, getSettings, saveSettings
 } from './store/progress.js'
@@ -53,6 +56,7 @@ export function App() {
   const [profiles, setProfiles] = useState([])
   const [activeId, setActiveId] = useState(null)
   const [progress, setProgress] = useState(new Map())
+  const [practiceProgress, setPracticeProgress] = useState(new Map())
   const [micSettings, setMicSettings] = useState(null)
   const [screen, setScreen] = useState('boot')
   const [drill, setDrill] = useState(null)
@@ -67,6 +71,7 @@ export function App() {
   const [profileSettings, setProfileSettings] = useState({})
   const [recap, setRecap] = useState(null)
   const [warmupOffer, setWarmupOffer] = useState(null)
+  const [practiceOffer, setPracticeOffer] = useState(null)
   const [beat, setBeat] = useState(false)
   const [diagEntries, setDiagEntries] = useState([])
 
@@ -79,6 +84,7 @@ export function App() {
   const micRef = useRef(null)
   const screenRef = useRef(screen); screenRef.current = screen
   const warmupNextRef = useRef(null)
+  const practiceQueueRef = useRef([])
   const micReturnRef = useRef('home')
   const earPlayedStepRef = useRef(-1)
   const tos = useRef([])
@@ -110,8 +116,14 @@ export function App() {
       const aid = await getActiveProfileId(d)
       const active = ps.find(p => p.id === aid) ?? ps[0]
       setActiveId(active.id)
-      setProgress(await getProgress(d, active.id))
-      setProfileSettings(await getSettings(d, active.id))
+      const [prog, prac, settings] = await Promise.all([
+        getProgress(d, active.id),
+        getPracticeProgress(d, active.id),
+        getSettings(d, active.id)
+      ])
+      setProgress(prog)
+      setPracticeProgress(prac)
+      setProfileSettings(settings)
       setScreen('home')
     })()
   }, [])
@@ -220,6 +232,7 @@ export function App() {
   // ---- profiles ----
 
   const refreshProgress = async (pid = activeId) => setProgress(await getProgress(db, pid))
+  const refreshPracticeProgress = async (pid = activeId) => setPracticeProgress(await getPracticeProgress(db, pid))
 
   const onCreateProfile = async (name) => {
     const p = await createProfile(db, name)
@@ -227,6 +240,7 @@ export function App() {
     setProfiles(await listProfiles(db))
     setActiveId(p.id)
     setProgress(new Map())
+    setPracticeProgress(new Map())
     setProfileSettings({})
     setScreen('home')
   }
@@ -234,8 +248,11 @@ export function App() {
   const onSelectProfile = async (pid) => {
     await setActiveProfileId(db, pid)
     setActiveId(pid)
-    await refreshProgress(pid)
-    setProfileSettings(await getSettings(db, pid))
+    const [prog, prac, settings] = await Promise.all([getProgress(db, pid), getPracticeProgress(db, pid), getSettings(db, pid)])
+    setProgress(prog)
+    setPracticeProgress(prac)
+    setProfileSettings(settings)
+    setPracticeOffer(null)
   }
 
   const patchSettings = (patch) => {
@@ -256,18 +273,56 @@ export function App() {
 
   // ---- navigation ----
 
+  const openPracticeEntry = (pack, remaining = []) => {
+    practiceQueueRef.current = remaining
+    openLesson(practiceLesson(pack))
+  }
+
+  const openPracticeSession = (practiceSession) => {
+    session.set('practiceOffered')
+    setPracticeOffer(null)
+    const [first, ...rest] = practiceSession.entries
+    if (first) openPracticeEntry(first, rest)
+  }
+
+  const completePractice = async (lesson) => {
+    if (!lesson.practicePackId) return
+    await recordPracticeRun(db, activeId, lesson.practicePackId)
+    await refreshPracticeProgress()
+  }
+
+  useEffect(() => {
+    if (screen !== 'home' || !activeId || warmupOffer || practiceOffer || session.get('practiceOffered')) return
+    const practiceSession = planPracticeSession({
+      lessons: allLessons(),
+      packs: PRACTICE_PACKS,
+      progress,
+      practiceProgress
+    })
+    if (!practiceSession) return
+    setPracticeOffer({
+      session: practiceSession,
+      accept: () => openPracticeSession(practiceSession),
+      skip: () => {
+        session.set('practiceOffered')
+        setPracticeOffer(null)
+      }
+    })
+  }, [screen, activeId, progress, practiceProgress, warmupOffer, practiceOffer])
+
   const openLesson = (idOrLesson) => {
     clearTos()
     const raw = typeof idOrLesson === 'string' ? findLesson(idOrLesson) : idOrLesson
     const readingSeed = profileSettings.readingSeed ?? 0
     const lesson = resolveReading(raw, readingSeed)
-    if (lesson !== raw || raw.ephemeral) patchSettings({ readingSeed: readingSeed + 1 })
+    if (lesson !== raw) patchSettings({ readingSeed: readingSeed + 1 })
     lessonRef.current = lesson
     earPlayedStepRef.current = -1
     setRecap(null) // the recap is said once; moving on dismisses it
     setOverlay(false)
     setDemo({ on: false, pos: -1 })
     setWarmupOffer(null)
+    setPracticeOffer(null)
     setAccompany(false)
     if (lesson.kind === 'drill') {
       let s = startDrill(lesson)
@@ -317,6 +372,7 @@ export function App() {
     }
     lessonRef.current = null
     warmupNextRef.current = null
+    practiceQueueRef.current = []
     setDemo({ on: false, pos: -1 })
     earRef.current = false
     setEarPlaying(false)
@@ -385,8 +441,12 @@ export function App() {
         if (h) playHarmony(h.map(nameToMidi))
       }
       if (next.done && !prev.done) {
-        recordSongRun(db, activeId, lesson.id, next.cleanCount).then(() => refreshProgress())
-        noteRecap(lesson)
+        if (lesson.practicePackId) {
+          completePractice(lesson)
+        } else {
+          recordSongRun(db, activeId, lesson.id, next.cleanCount).then(() => refreshProgress())
+          noteRecap(lesson)
+        }
         to(() => setOverlay(true), SONG_DONE_PAUSE)
       }
     }
@@ -398,8 +458,12 @@ export function App() {
         const adv = drillAdvance(drillRef.current, lesson)
         commitDrill(adv)
         if (adv.phase === 'done') {
-          if (!lesson.ephemeral) markComplete(db, activeId, lesson.id).then(() => refreshProgress())
-          noteRecap(lesson)
+          if (lesson.practicePackId) {
+            completePractice(lesson)
+          } else {
+            if (!lesson.ephemeral) markComplete(db, activeId, lesson.id).then(() => refreshProgress())
+            noteRecap(lesson)
+          }
         } else if (!lesson.ephemeral) {
           savePosition(db, activeId, lesson.id, adv.stepIndex)
         }
@@ -460,7 +524,7 @@ export function App() {
     return (
       <div class="screen">
         <Home profileName={active.name} profiles={profiles} activeId={activeId} states={states}
-          micEnabled={!!micSettings?.enabled} recap={recap} warmup={warmupOffer}
+          micEnabled={!!micSettings?.enabled} recap={recap} warmup={warmupOffer} practice={practiceOffer}
           onOpen={openFromHome} onSelectProfile={onSelectProfile}
           onNewProfile={() => setScreen('newprofile')}
           onMicCheck={() => { micReturnRef.current = 'home'; setScreen('miccheck') }}
@@ -504,7 +568,7 @@ export function App() {
           onMicCheck={() => { micReturnRef.current = 'settings'; setScreen('miccheck') }}
           onAccent={(accent) => patchSettings({ accent })}
           onLabels={(labels) => patchSettings({ labels })}
-          onReset={async () => { await resetProgress(db, activeId); await refreshProgress() }}
+          onReset={async () => { await resetProgress(db, activeId); await refreshProgress(); await refreshPracticeProgress() }}
           onDelete={async () => {
             await deleteProfile(db, activeId)
             const ps = await listProfiles(db)
@@ -536,9 +600,19 @@ export function App() {
     : (!song.done && song.misses >= 2 ? nameToMidi(lesson.notes[songTargetIndex(song)].note) : null)
 
   const nextAfterWarmup = warmupNextRef.current && findLesson(warmupNextRef.current)
+  const nextPractice = lesson.practicePackId ? practiceQueueRef.current[0] : null
   const doneAction = nextAfterWarmup ? {
     label: fill(VOICE.warmup.onward, { title: nextAfterWarmup.title }),
     go: () => { warmupNextRef.current = null; openLesson(nextAfterWarmup.id) }
+  } : nextPractice ? {
+    label: fill(VOICE.practice.next, { title: nextPractice.title }),
+    go: () => {
+      const [next, ...rest] = practiceQueueRef.current
+      openPracticeEntry(next, rest)
+    }
+  } : lesson.practicePackId ? {
+    label: VOICE.practice.done,
+    go: goHome
   } : null
 
   return (
@@ -553,7 +627,8 @@ export function App() {
             accompanyAvailable={!!lesson.harmony && !!progress.get(lesson.id)?.completed}
             onToggleAccompany={() => setAccompany(a => !a)}
             onHome={goHome} onHearIt={onHearIt} onReplay={onReplay}
-            onAcceptLoop={onAcceptLoop} onDeclineLoop={onDeclineLoop} />}
+            onAcceptLoop={onAcceptLoop} onDeclineLoop={onDeclineLoop}
+            doneAction={doneAction} />}
       <Keyboard onNote={onNote} glowMidi={glowMidi} low={lessonLow} showLabels={profileSettings.labels !== false} />
     </div>
   )

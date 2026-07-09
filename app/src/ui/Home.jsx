@@ -53,7 +53,7 @@ function unitStatus(unit, states, prevUnit) {
   return { text: fill(v.unitLocked, { prev: prevUnit.title }), active: false, complete: false, locked: true }
 }
 
-export function Home({ profileName, profiles, activeId, states, micEnabled, recap, warmup, onOpen, onSelectProfile, onNewProfile, onMicCheck, onSettings, onFreePlay }) {
+export function Home({ profileName, profiles, activeId, states, micEnabled, recap, warmup, practice, onOpen, onSelectProfile, onNewProfile, onMicCheck, onSettings, onFreePlay }) {
   const v = VOICE.home
   const hero = Hero({ states, onOpen })
   const songs = COURSE.units.flatMap(u => u.lessons).filter(l => l.kind === 'song')
@@ -196,6 +196,20 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
             <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;">
               <button class="btn-primary" onClick={warmup.accept}>{VOICE.warmup.accept}</button>
               <button class="btn-quiet" onClick={warmup.skip} style="padding:12px 20px;font-size:14px;">{VOICE.warmup.skip}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {practice && !warmup && (
+        <div style="position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .4s ease;">
+          <div style="background:var(--card);border:1px solid var(--line);border-radius:22px;padding:38px 54px;box-shadow:0 24px 60px rgba(80,60,20,.16);text-align:center;max-width:560px;">
+            <div class="kicker">{VOICE.practice.kicker}</div>
+            <div style="font-family:var(--serif);font-weight:600;font-size:30px;margin-top:8px;">{VOICE.practice.title}</div>
+            <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{fill(VOICE.practice.line, { titles: practice.session.entries.map(e => e.title).join(', ') })}</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;">
+              <button class="btn-primary" onClick={practice.accept}>{VOICE.practice.accept}</button>
+              <button class="btn-quiet" onClick={practice.skip} style="padding:12px 20px;font-size:14px;">{VOICE.practice.skip}</button>
             </div>
           </div>
         </div>

@@ -92,6 +92,16 @@ export const VOICE = {
     onward: 'Onward — {title} →'
   },
 
+  practice: {
+    kicker: 'TODAY’S PRACTICE',
+    title: 'A few familiar things first?',
+    line: 'Three tiny visits: {titles}. Nothing new — just helping yesterday settle into your fingers.',
+    accept: 'Practice a little →',
+    skip: 'Skip practice',
+    next: 'Next — {title} →',
+    done: 'Back to my course'
+  },
+
   freePlay: {
     kicker: 'FREE PLAY · NO GOALS HERE',
     title: 'Just play.',

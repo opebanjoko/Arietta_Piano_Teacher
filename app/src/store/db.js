@@ -12,6 +12,10 @@ export const MIGRATIONS = [
     db.createObjectStore('profiles', { keyPath: 'id' })
     db.createObjectStore('progress', { keyPath: ['profileId', 'lessonId'] })
     db.createObjectStore('app', { keyPath: 'key' })
+  },
+  // v2 — optional practice pack recency, separate from lesson completion
+  (db) => {
+    db.createObjectStore('practice', { keyPath: ['profileId', 'packId'] })
   }
 ]
 

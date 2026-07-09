@@ -116,4 +116,7 @@ test('voice pools are populated and repeat-safe', () => {
   for (const k of ['blackKey', 'directional', 'directionalSong', 'octaveSlip', 'far']) {
     assert.ok(VOICE.hints[k], k)
   }
+  for (const k of ['kicker', 'title', 'line', 'accept', 'skip', 'next', 'done']) {
+    assert.ok(VOICE.practice[k], `practice.${k}`)
+  }
 })

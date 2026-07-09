@@ -16,7 +16,7 @@ const FLOATS = [
 ]
 
 export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accompanyAvailable,
-  onToggleAccompany, onHome, onHearIt, onReplay, onAcceptLoop, onDeclineLoop }) {
+  onToggleAccompany, onHome, onHearIt, onReplay, onAcceptLoop, onDeclineLoop, doneAction }) {
   const v = VOICE.song
   const total = lesson.notes.length
   const ti = songTargetIndex(song)
@@ -88,8 +88,10 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
             {song.timingMention && <div style="font-size:14px;color:var(--ink-mid);margin-top:10px;text-wrap:pretty;">{song.timingMention}</div>}
             {song.mention && <div style="font-size:14px;color:var(--ink-mid);margin-top:10px;text-wrap:pretty;">{song.mention}</div>}
             <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;">
-              <button class="btn-primary" onClick={onReplay}>Play it again</button>
-              <button class="btn-quiet" onClick={onHome} style="padding:12px 20px;font-size:14px;">Back to my course</button>
+              {doneAction
+                ? <button class="btn-primary" onClick={doneAction.go}>{doneAction.label}</button>
+                : <button class="btn-primary" onClick={onReplay}>Play it again</button>}
+              <button class="btn-quiet" onClick={doneAction ? onReplay : onHome} style="padding:12px 20px;font-size:14px;">{doneAction ? 'Play it again' : 'Back to my course'}</button>
             </div>
           </div>
         </div>
