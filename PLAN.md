@@ -36,6 +36,13 @@ more than two more units of content would.
 - **Exit gate (Go/No-Go)**: ≥95% detection, ≤1 false event/10 min on corpus playback
   and live piano; strike-to-pixel ≤300 ms measured (SR-VER-05). Algorithm choice
   recorded. **No-Go path**: MIDI-first pivot (SR-MID) — decided with BO, not assumed.
+- **Gate status (2026-07-09): PROVISIONAL GO — human validation deferred.** Both
+  detectors pass every synthetic suite; the recorded-corpus and live-piano runs
+  (`spike/GATE_RUNBOOK.md`) are deferred so the build can continue. The gate is a
+  hard **release blocker**: CI's release-gate workflow fails any `v*` tag until the
+  runbook's gate record is complete, and Phase 4's exit criteria (SR-VER-01..05)
+  already require it. If the deferred validation lands No-Go, Phase 2 mic work is
+  shelved and the MIDI-first pivot is re-planned with BO.
 
 ### Phase 1 — Foundation — ~3–4 wks
 **Goal**: production skeleton with the whole course playable by tap.
@@ -133,7 +140,7 @@ more than two more units of content would.
 |---|---|---|
 | Pitch detection algorithm | Dev (QA verifies) | Phase 0 exit |
 | Production framework / PWA stack (SR-PLT-05) | Dev + PM | ✅ Decided 2026-07-08: Vite + Preact (rationale in `app/README.md`) |
-| Go/No-Go on mic-first premise | All, BO has final say | Phase 0 gate |
+| Go/No-Go on mic-first premise | All, BO has final say | ⏳ Provisional Go 2026-07-09; human validation deferred — release blocker (see Phase 0 gate status) |
 | Native shell (Capacitor) for MIDI (SR-MID-02) | Dev + PM | Phase 6 planning |
 | Beta household recruitment | BO + PM | During Phase 3 |
 

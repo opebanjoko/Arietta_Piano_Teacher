@@ -1,0 +1,28 @@
+name: Release gate
+
+# Go-live guardrail: no v* release ships while the Phase 0 listening gate
+# (spike/GATE_RUNBOOK.md) is still deferred. The check passes only when the
+# runbook's Decision section records an explicit Go.
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  phase0-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require completed Phase 0 gate record
+        run: |
+          if grep -q 'STATUS: DEFERRED' spike/GATE_RUNBOOK.md; then
+            echo '::error::Phase 0 gate is still DEFERRED (spike/GATE_RUNBOOK.md).'
+            echo 'Complete the runbook (corpus, live session, latency), fill in the'
+            echo 'Decision section, and remove the DEFERRED status header.'
+            exit 1
+          fi
+          if ! grep -Eq 'Go / No-Go\*?\*?: *Go' spike/GATE_RUNBOOK.md; then
+            echo '::error::Gate record has no explicit Go decision.'
+            exit 1
+          fi
+          echo 'Phase 0 gate record complete: Go.'

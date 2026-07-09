@@ -1,5 +1,10 @@
 # Phase 0 gate runbook — closing the Go/No-Go
 
+> **STATUS: DEFERRED — provisional Go recorded 2026-07-09 (PLAN.md Phase 0).**
+> Build continues against the NoteEvent seam. This runbook MUST be completed
+> before v1 release: the `release-gate` CI workflow fails any `v*` tag until
+> the Decision section below is filled in.
+
 A step-by-step guide for one person to complete the listening-spike gate
 (PLAN.md Phase 0). Four sessions, roughly an afternoon in total. Fill in the
 result tables at the bottom as you go — they become the gate record.
