@@ -3,6 +3,14 @@
  * documents. Fully additive — with no linked family every call is inert,
  * and failures are silent ('fail' return, never a throw from syncNow).
  * Docs merge via merge.js on pull; the server merges again on push.
+ *
+ * Deletion: the server is the arbiter of tombstones. The client always
+ * pushes its local docs (including any it thinks are ghosts of a
+ * server-side tombstone — the server's updatedAt > deleted_at rule decides
+ * whether that revives the tombstone or is dropped). After the PUT, the
+ * client applies the server's response as ground truth: docs are upserted,
+ * and any profileId in the response's `deleted` list has its local profile,
+ * progress rows, and settings removed.
  */
 import { mergeDocs, emptyDoc } from './merge.js'
 
@@ -12,6 +20,7 @@ const BACKOFF_MS = [30_000, 120_000, 480_000]
 export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch(...a), onChange = () => {}, now = () => Date.now() }) {
   let timer = null
   let failStreak = 0
+  let inflight = null
 
   const getCfg = async () => (await db.get('app', 'sync'))?.value ?? null
   const putCfg = (value) => db.put('app', { key: 'sync', value })
@@ -60,7 +69,14 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
     }
   }
 
-  async function syncNow() {
+  async function removeLocal(profileId) {
+    await db.delete('profiles', profileId)
+    const rows = await db.getAll('progress')
+    for (const r of rows.filter(r => r.profileId === profileId)) await db.delete('progress', [r.profileId, r.lessonId])
+    await db.delete('app', `settings:${profileId}`)
+  }
+
+  async function run() {
     const cfg = await getCfg()
     if (!cfg?.token) return 'off'
     try {
@@ -75,6 +91,7 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
       for (const d of keep) await applyDoc(d)
       const pushed = await call('PUT', '/sync', { docs: keep, deleted }, cfg.token)
       for (const d of pushed.docs) await applyDoc(d)
+      for (const pid of pushed.deleted ?? []) await removeLocal(pid)
       failStreak = 0
       await putCfg({ ...cfg, deleted: [], lastSyncAt: now() })
       onChange()
@@ -87,6 +104,20 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
       onChange()
       return 'fail'
     }
+  }
+
+  // collapses concurrent callers (debounced schedule() racing a manual sync) into one round trip
+  function syncNow() {
+    if (inflight) return inflight
+    inflight = run().finally(() => { inflight = null })
+    return inflight
+  }
+
+  async function leave() {
+    clearTimeout(timer)
+    failStreak = 0
+    await db.delete('app', 'sync')
+    onChange()
   }
 
   return {
@@ -105,17 +136,12 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
       await putCfg({ token, code: code.toUpperCase(), deleted: [], lastSyncAt: null })
       await syncNow()
     },
-    async leave() {
-      clearTimeout(timer)
-      failStreak = 0
-      await db.delete('app', 'sync')
-      onChange()
-    },
+    leave,
     async deleteEverywhere(pin) {
       const cfg = await getCfg()
       if (!cfg?.token) return
       await call('DELETE', '/households', { pin }, cfg.token)
-      await this.leave()
+      await leave()
     },
     async noteProfileDeleted(profileId) {
       const cfg = await getCfg()

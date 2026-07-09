@@ -15,10 +15,19 @@ function fakeDb() {
   }
 }
 
-/** Fake server: real merge semantics not needed here — echo store keyed by profileId. */
+/**
+ * Fake server: real merge semantics not needed here — echo store keyed by
+ * profileId, plus a tombstones map (profileId -> deleted_at) modeling the
+ * real server's progress_docs.deleted_at column. PUT deletes add tombstones;
+ * a pushed doc revives one only if its updatedAt is newer than deleted_at
+ * (server/src/routes.js pushSync). GET and PUT both return the full
+ * { docs, deleted } state, matching householdState().
+ */
 function fakeServer() {
   const docs = new Map()
+  const tombstones = new Map()
   const calls = []
+  let clock = 1
   const fetchFn = async (url, opts = {}) => {
     calls.push({ url, method: opts.method ?? 'GET' })
     const path = new URL(url).pathname
@@ -27,15 +36,20 @@ function fakeServer() {
     if (path === '/households' && opts.method === 'POST') return json(201, { code: 'ABCDEF', token: 't0ken' })
     if (path === '/households/link') return body.pin === '4321' ? json(200, { token: 't0ken' }) : json(401, { error: 'wrong code or pin' })
     if (path === '/sync' && opts.method === 'PUT') {
-      for (const d of body.docs) docs.set(d.profileId, d)
-      for (const p of body.deleted) docs.delete(p)
-      return json(200, { docs: [...docs.values()], deleted: body.deleted })
+      for (const p of body.deleted ?? []) { docs.delete(p); tombstones.set(p, clock++) }
+      for (const d of body.docs ?? []) {
+        const deletedAt = tombstones.get(d.profileId)
+        if (deletedAt != null && !((d.updatedAt ?? 0) > deletedAt)) continue // tombstone holds
+        tombstones.delete(d.profileId)
+        docs.set(d.profileId, d)
+      }
+      return json(200, { docs: [...docs.values()], deleted: [...tombstones.keys()] })
     }
-    if (path === '/sync') return json(200, { docs: [...docs.values()], deleted: [] })
-    if (path === '/households' && opts.method === 'DELETE') { docs.clear(); return json(204, {}) }
+    if (path === '/sync') return json(200, { docs: [...docs.values()], deleted: [...tombstones.keys()] })
+    if (path === '/households' && opts.method === 'DELETE') { docs.clear(); tombstones.clear(); return json(204, {}) }
     return json(404, { error: 'not found' })
   }
-  return { docs, calls, fetchFn }
+  return { docs, tombstones, calls, fetchFn }
 }
 
 test('inert without a linked family: syncNow is off and fetch never called', async () => {
@@ -109,4 +123,46 @@ test('leave forgets the link but keeps data; deleted profiles queue tombstones',
   await c.leave()
   assert.equal((await c.getState()).linked, false)
   assert.deepEqual(await db.get('profiles', 'p1'), { id: 'p1', name: 'Maya', createdAt: 1 })
+})
+
+test('cross-device deletion: a server tombstone newer than the local doc wipes local p1 rows', async () => {
+  const db = fakeDb()
+  await db.put('profiles', { id: 'p1', name: 'Maya', createdAt: 1 })
+  await db.put('progress', { profileId: 'p1', lessonId: 'l1', completed: true, lastPlayedAt: 5 })
+  await db.put('app', { key: 'settings:p1', value: { accent: '#B7813A' } })
+  await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  const srv = fakeServer()
+  srv.tombstones.set('p1', 1000) // deleted_at is after p1's local lastPlayedAt of 5
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: srv.fetchFn })
+  assert.equal(await c.syncNow(), 'ok')
+  assert.equal(await db.get('profiles', 'p1'), undefined)
+  assert.equal(await db.get('progress', ['p1', 'l1']), undefined)
+  assert.equal(await db.get('app', 'settings:p1'), undefined)
+  assert.equal(srv.docs.has('p1'), false)
+  assert.equal(srv.tombstones.has('p1'), true)
+})
+
+test('legitimate revive: a local doc newer than the tombstone brings p1 back on the server and keeps it local', async () => {
+  const db = fakeDb()
+  await db.put('profiles', { id: 'p1', name: 'Maya', createdAt: 1 })
+  await db.put('progress', { profileId: 'p1', lessonId: 'l1', completed: true, lastPlayedAt: 2000 })
+  await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  const srv = fakeServer()
+  srv.tombstones.set('p1', 1000) // deleted_at is before p1's local lastPlayedAt of 2000
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: srv.fetchFn })
+  assert.equal(await c.syncNow(), 'ok')
+  assert.equal(srv.docs.has('p1'), true)
+  assert.equal(srv.tombstones.has('p1'), false)
+  assert.deepEqual(await db.get('profiles', 'p1'), { id: 'p1', name: 'Maya', createdAt: 1 })
+})
+
+test('reentrancy: two concurrent syncNow calls collapse into one round trip', async () => {
+  const db = fakeDb()
+  await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  const srv = fakeServer()
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: srv.fetchFn })
+  const [a, b] = await Promise.all([c.syncNow(), c.syncNow()])
+  assert.equal(a, 'ok')
+  assert.equal(b, 'ok')
+  assert.equal(srv.calls.length, 2) // one GET + one PUT, not two rounds
 })
