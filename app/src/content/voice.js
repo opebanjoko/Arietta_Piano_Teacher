@@ -181,6 +181,10 @@ export const VOICE = {
     aWhile: 'a little while ago'
   },
 
+  pill: {
+    waking: 'Waking up my ears…'
+  },
+
   settings: {
     kicker: 'SETTINGS',
     title: 'A few quiet knobs.',

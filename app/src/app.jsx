@@ -432,6 +432,7 @@ export function App() {
   const states = lessonStates(allLessons(), new Set([...progress.values()].filter(r => r.completed).map(r => r.lessonId)))
   const pill = {
     text: heard !== null ? `Heard ${letter(heard)}`
+      : micState === 'interrupted' ? VOICE.pill.waking
       : (demo.on || earPlaying || micState === 'suspended') ? 'Playing it…' : 'Listening…',
     active: heard !== null
   }

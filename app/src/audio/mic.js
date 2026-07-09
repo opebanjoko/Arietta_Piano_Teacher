@@ -3,19 +3,29 @@
  * Echo cancellation and auto-gain are disabled (they distort pitch content);
  * noise suppression is configurable from calibration. Audio buffers exist only
  * in memory inside the worklet/worker — nothing is persisted or transmitted.
+ *
+ * Interruption handling (SR-PLT-02): iPad Safari ends the mic track or
+ * suspends the AudioContext on backgrounding, Siri, or calls. The controller
+ * watches for that and rebuilds its own graph via recovery.js, reporting
+ * 'interrupted' while it works and 'lost' if it gives up — the tap keyboard
+ * carries the lesson either way (SR-AUD-12).
  */
 import workletUrl from './capture-worklet.js?worker&url'
 import { registerMic } from './gate.js'
+import { createRecovery } from './recovery.js'
 
-export function createMic({ onNote, onOnset, onState, detector = 'mpm', clarity = 0.9, noiseSuppression = false } = {}) {
+export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm', clarity = 0.9, noiseSuppression = false } = {}) {
   let ctx = null
   let worker = null
   let stream = null
   let ownsStream = false // injected streams belong to their injector
   let state = 'idle'
   let resumeTO = null
+  let recovery = null
+  let closing = false // our own teardown must not read as an interruption
 
   const setState = (s) => { if (s !== state) { state = s; onState?.(s) } }
+  const onVisibility = () => recovery?.visibility(!document.hidden)
 
   async function wire(mediaStream) {
     stream = mediaStream
@@ -36,8 +46,53 @@ export function createMic({ onNote, onOnset, onState, detector = 'mpm', clarity 
     worker.onmessage = (e) => {
       if (e.data.type === 'note') onNote?.(e.data.event)
       else if (e.data.type === 'onset') onOnset?.(e.data.event)
+      else if (e.data.type === 'stats') onStats?.(e.data.avgMs)
     }
+
+    ctx.onstatechange = () => { if (!closing && ctx) recovery?.ctxStateChanged(ctx.state) }
+    stream.getAudioTracks().forEach(t => { t.onended = () => { if (!closing) recovery?.trackEnded() } })
     setState('listening')
+  }
+
+  /** Tear down the graph but keep config and callbacks (recovery restart path). */
+  function unwire() {
+    closing = true
+    clearTimeout(resumeTO)
+    if (ctx) ctx.onstatechange = null
+    stream?.getAudioTracks().forEach(t => { t.onended = null })
+    worker?.terminate()
+    ctx?.close().catch(() => {})
+    ctx = null
+    worker = null
+    closing = false
+  }
+
+  async function acquire() {
+    const media = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        channelCount: 1,
+        echoCancellation: false,
+        autoGainControl: false,
+        noiseSuppression
+      }
+    })
+    ownsStream = true
+    return media
+  }
+
+  async function restart() {
+    unwire()
+    if (ownsStream) {
+      stream?.getTracks().forEach(t => t.stop())
+      stream = await acquire()
+    }
+    await wire(stream)
+  }
+
+  function armRecovery() {
+    if (recovery) return
+    recovery = createRecovery({ restart, onState: setState })
+    document.addEventListener('visibilitychange', onVisibility)
   }
 
   const mic = {
@@ -49,23 +104,17 @@ export function createMic({ onNote, onOnset, onState, detector = 'mpm', clarity 
       // MediaStream stands in for the mic so the full pipeline runs headless
       if (window.__ariettaMicStream) {
         await wire(window.__ariettaMicStream)
+        armRecovery()
         return
       }
-      const media = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          echoCancellation: false,
-          autoGainControl: false,
-          noiseSuppression
-        }
-      })
-      ownsStream = true
-      await wire(media)
+      await wire(await acquire())
+      armRecovery()
     },
 
     /** Start from a supplied MediaStream (dev/test simulator path). */
     async startFromStream(mediaStream) {
       await wire(mediaStream)
+      armRecovery()
     },
 
     /** SR-OUT-02: drop detection while app audio sounds, on the audio clock. */
@@ -94,11 +143,12 @@ export function createMic({ onNote, onOnset, onState, detector = 'mpm', clarity 
     },
 
     stop() {
-      clearTimeout(resumeTO)
+      recovery?.stop()
+      recovery = null
+      document.removeEventListener('visibilitychange', onVisibility)
+      unwire()
       if (ownsStream) stream?.getTracks().forEach(t => t.stop())
-      worker?.terminate()
-      ctx?.close()
-      ctx = null; worker = null; stream = null
+      stream = null
       setState('idle')
     }
   }
