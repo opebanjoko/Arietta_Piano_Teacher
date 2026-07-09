@@ -40,6 +40,17 @@ test('detail is coerced to string and truncated to 300 chars', async () => {
   assert.equal(entries[1].detail.length, 300)
 })
 
+test('concurrent un-awaited logDiag calls all land (no lost update)', async () => {
+  const db = memDb()
+  await Promise.all([
+    logDiag(db, 'error', 'first', 1),
+    logDiag(db, 'error', 'second', 2),
+    logDiag(db, 'error', 'third', 3)
+  ])
+  const entries = await listDiag(db)
+  assert.deepEqual(entries.map(e => e.detail), ['first', 'second', 'third'])
+})
+
 test('clearDiag empties the log; listDiag on a fresh db is []', async () => {
   const db = memDb()
   assert.deepEqual(await listDiag(db), [])
