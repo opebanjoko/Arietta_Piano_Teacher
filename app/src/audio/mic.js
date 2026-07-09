@@ -108,16 +108,21 @@ export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm',
       // MediaStream stands in for the mic so the full pipeline runs headless
       if (window.__ariettaMicStream) {
         await wire(window.__ariettaMicStream)
+        if (stopping) { unwire(); throw new Error('mic stopped') }
         armRecovery()
         return
       }
-      await wire(await acquire())
+      const media = await acquire()
+      if (stopping) { media.getTracks().forEach(t => t.stop()); throw new Error('mic stopped') }
+      await wire(media)
+      if (stopping) { unwire(); stream?.getTracks().forEach(t => t.stop()); throw new Error('mic stopped') }
       armRecovery()
     },
 
     /** Start from a supplied MediaStream (dev/test simulator path). */
     async startFromStream(mediaStream) {
       await wire(mediaStream)
+      if (stopping) { unwire(); throw new Error('mic stopped') }
       armRecovery()
     },
 

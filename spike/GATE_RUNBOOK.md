@@ -232,6 +232,9 @@ Run these alongside the deferred Phase 0 gate validation, same iPad:
   a few seconds, and the lesson position must be exactly where it was left.
   Check the Settings diagnostics log afterward: each drill should appear as
   mic-interrupted followed by mic-recovered, with zero mic-lost entries.
+  Also drill rapid enter/exit: open a lesson and immediately return home
+  before the mic finishes starting — the iPad's mic-in-use indicator must go
+  dark within a couple of seconds.
 - **Thermal run (SR-PLT-03)**: 10 minutes of continuous listening on the
   oldest target iPad; the device may get warm but the UI must stay at 60 fps
   and detection must not degrade. Record the Settings card's ms/frame reading

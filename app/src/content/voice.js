@@ -194,6 +194,7 @@ export const VOICE = {
     earsButton: 'Check my ears',
     lookTitle: 'Colour & keys',
     accentLine: 'Arietta’s colour, for this player.',
+    accentNames: ['Warm gold', 'Sage green', 'Slate blue', 'Plum'],
     labelsLine: 'Letter names on the tap keys.',
     labelsOn: 'Shown',
     labelsOff: 'Hidden',

@@ -56,8 +56,9 @@ export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
           <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;">
             <div style="font-size:14px;color:var(--ink-soft);">{v.accentLine}</div>
             <div style="display:flex;gap:15px;">
-              {ACCENTS.map(c => (
+              {ACCENTS.map((c, i) => (
                 <div key={c} {...pressable(() => onAccent(c))} class="hit"
+                  aria-label={v.accentNames[i]} aria-pressed={accent === c}
                   style={`width:30px;height:30px;border-radius:50%;background:${c};cursor:pointer;box-shadow:${accent === c ? '0 0 0 3px var(--card), 0 0 0 5.5px ' + c : 'inset 0 0 0 1px rgba(0,0,0,.12)'};transition:box-shadow .15s ease;`}></div>
               ))}
             </div>

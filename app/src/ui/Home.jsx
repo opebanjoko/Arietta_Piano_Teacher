@@ -82,14 +82,14 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
               {profiles.map(p => {
                 const active = p.id === activeId
                 return (
-                  <div key={p.id} {...pressable(() => onSelectProfile(p.id))} class="hit" title={p.name}
+                  <div key={p.id} {...pressable(() => onSelectProfile(p.id))} class="hit" title={p.name} aria-pressed={active}
                     style={`width:37px;height:37px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14.5px;cursor:pointer;background:${active ? 'var(--accent-ink)' : '#F1E8D5'};color:${active ? '#FFF9EC' : 'var(--ink-mono)'};box-shadow:${active ? '0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent)' : 'inset 0 0 0 1px var(--line-soft)'};transition:all .2s ease;`}>
                     {p.name[0].toUpperCase()}
                   </div>
                 )
               })}
               {profiles.length < 5 && (
-                <div {...pressable(onNewProfile)} class="hit" title="New player"
+                <div {...pressable(onNewProfile)} class="hit" title="New player" aria-label="New player"
                   style="width:37px;height:37px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;cursor:pointer;background:transparent;color:var(--ink-faint);box-shadow:inset 0 0 0 1.5px var(--line-soft);transition:all .2s ease;">+</div>
               )}
             </div>
