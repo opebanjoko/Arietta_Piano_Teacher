@@ -1,7 +1,7 @@
 /** Arietta sync API (SR-BCK-01..03). Plain node:http, JSON in and out. */
 import { createServer } from 'node:http'
 import { openDb } from './db.js'
-import { createHousehold, linkHousehold } from './routes.js'
+import { createHousehold, linkHousehold, pullSync, pushSync, deleteHousehold } from './routes.js'
 
 const MAX_BODY = 512 * 1024
 
@@ -40,6 +40,9 @@ export function createApp({ db, now = () => Date.now(), allowOrigin = process.en
       const key = `${req.method} ${req.url.split('?')[0]}`
       if (key === 'POST /households') out = createHousehold(deps, r)
       else if (key === 'POST /households/link') out = linkHousehold(deps, r)
+      else if (key === 'GET /sync') out = pullSync(deps, r)
+      else if (key === 'PUT /sync') out = pushSync(deps, r)
+      else if (key === 'DELETE /households') out = deleteHousehold(deps, r)
       else out = { status: 404, body: { error: 'not found' } }
     } catch {
       out = { status: 400, body: { error: 'bad request' } }

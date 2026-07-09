@@ -4,6 +4,7 @@
  */
 import { randomUUID } from 'node:crypto'
 import { hashPin, verifyPin, newCode, newToken, hashToken } from './auth.js'
+import { mergeDocs } from '../merge.js'
 
 const PIN_RE = /^\d{4,8}$/
 const CODE_RE = /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/
@@ -88,4 +89,49 @@ export function linkHousehold({ db, now }, { body }) {
   }
   attempts.delete(code)
   return { status: 200, body: { token: issueToken(db, row.id, now) } }
+}
+
+function householdState(db, householdId) {
+  const rows = db.prepare(`SELECT profile_id, doc, deleted_at FROM progress_docs WHERE household_id = ? ORDER BY profile_id`).all(householdId)
+  return {
+    docs: rows.filter(r => r.doc != null).map(r => JSON.parse(r.doc)),
+    deleted: rows.filter(r => r.doc == null).map(r => r.profile_id)
+  }
+}
+
+export function pullSync({ db, now }, { token }) {
+  const hid = household(db, token, now)
+  if (!hid) return { status: 401, body: { error: 'unknown token' } }
+  return { status: 200, body: householdState(db, hid) }
+}
+
+export function pushSync({ db, now }, { token, body }) {
+  const hid = household(db, token, now)
+  if (!hid) return { status: 401, body: { error: 'unknown token' } }
+  const upsert = db.prepare(`
+    INSERT INTO progress_docs (household_id, profile_id, doc, deleted_at, updated_at)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT (household_id, profile_id) DO UPDATE SET doc = excluded.doc, deleted_at = excluded.deleted_at, updated_at = excluded.updated_at`)
+  const get = db.prepare(`SELECT doc, deleted_at FROM progress_docs WHERE household_id = ? AND profile_id = ?`)
+
+  for (const pid of Array.isArray(body?.deleted) ? body.deleted : []) {
+    upsert.run(hid, String(pid), null, now, now)
+  }
+  for (const incoming of Array.isArray(body?.docs) ? body.docs : []) {
+    if (!incoming?.profileId) continue
+    const row = get.get(hid, incoming.profileId)
+    if (row?.deleted_at != null && !((incoming.updatedAt ?? 0) > row.deleted_at)) continue // tombstone holds
+    const merged = mergeDocs(row?.doc ? JSON.parse(row.doc) : null, incoming)
+    upsert.run(hid, incoming.profileId, JSON.stringify(merged), null, now)
+  }
+  return { status: 200, body: householdState(db, hid) }
+}
+
+export function deleteHousehold({ db, now }, { token, body }) {
+  const hid = household(db, token, now)
+  if (!hid) return { status: 401, body: { error: 'unknown token' } }
+  const row = db.prepare(`SELECT pin_hash FROM households WHERE id = ?`).get(hid)
+  if (!verifyPin(String(body?.pin ?? ''), row.pin_hash)) return { status: 401, body: { error: 'wrong code or pin' } }
+  db.prepare(`DELETE FROM households WHERE id = ?`).run(hid)
+  return { status: 204, body: undefined }
 }

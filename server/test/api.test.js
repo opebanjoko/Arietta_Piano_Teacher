@@ -111,3 +111,53 @@ test('oversized body does not crash the server; next request still works', async
   assert.equal(res.status, 201)
   await s.close()
 })
+
+test('push merges with stored docs; pull returns household state', async () => {
+  const s = await start()
+  const { token } = await (await s.call('POST', '/households', { pin: '4321' })).json()
+  const d1 = { profileId: 'p1', name: 'Maya', createdAt: 1, lessons: { l1: { completed: true, lastPlayedAt: 10 } }, settings: {}, updatedAt: 10 }
+  const push1 = await s.call('PUT', '/sync', { docs: [d1], deleted: [] }, token)
+  assert.equal(push1.status, 200)
+
+  // second device pushes less progress on l1, more on l2
+  const d2 = { profileId: 'p1', name: 'Maya', createdAt: 1, lessons: { l1: { stepIndex: 2 }, l2: { stepIndex: 3, lastPlayedAt: 20 } }, settings: {}, updatedAt: 20 }
+  const push2 = await (await s.call('PUT', '/sync', { docs: [d2], deleted: [] }, token)).json()
+  const merged = push2.docs.find(d => d.profileId === 'p1')
+  assert.equal(merged.lessons.l1.completed, true)
+  assert.equal(merged.lessons.l2.stepIndex, 3)
+
+  const pull = await (await s.call('GET', '/sync', undefined, token)).json()
+  assert.deepEqual(pull.docs, push2.docs)
+  await s.close()
+})
+
+test('sync requires a valid token', async () => {
+  const s = await start()
+  assert.equal((await s.call('GET', '/sync')).status, 401)
+  assert.equal((await s.call('GET', '/sync', undefined, 'deadbeef')).status, 401)
+  await s.close()
+})
+
+test('deleted profile becomes a tombstone; newer doc revives it', async () => {
+  const s = await start()
+  const { token } = await (await s.call('POST', '/households', { pin: '4321' })).json()
+  const d = { profileId: 'p1', name: 'Maya', createdAt: 1, lessons: {}, settings: {}, updatedAt: 10 }
+  await s.call('PUT', '/sync', { docs: [d], deleted: [] }, token)
+  const afterDel = await (await s.call('PUT', '/sync', { docs: [], deleted: ['p1'] }, token)).json()
+  assert.deepEqual(afterDel.docs, [])
+  assert.deepEqual(afterDel.deleted, ['p1'])
+  const revived = await (await s.call('PUT', '/sync', { docs: [{ ...d, updatedAt: Date.now() + 60000 }], deleted: [] }, token)).json()
+  assert.equal(revived.docs.length, 1)
+  assert.deepEqual(revived.deleted, [])
+  await s.close()
+})
+
+test('household deletion removes everything and needs the pin', async () => {
+  const s = await start()
+  const { token } = await (await s.call('POST', '/households', { pin: '4321' })).json()
+  assert.equal((await s.call('DELETE', '/households', { pin: '0000' }, token)).status, 401)
+  assert.equal((await s.call('DELETE', '/households', { pin: '4321' }, token)).status, 204)
+  assert.equal((await s.call('GET', '/sync', undefined, token)).status, 401)
+  assert.equal(s.db.prepare('SELECT COUNT(*) n FROM households').get().n, 0)
+  await s.close()
+})
