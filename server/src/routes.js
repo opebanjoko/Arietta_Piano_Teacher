@@ -6,9 +6,13 @@ import { randomUUID } from 'node:crypto'
 import { hashPin, verifyPin, newCode, newToken, hashToken } from './auth.js'
 
 const PIN_RE = /^\d{4,8}$/
+const CODE_RE = /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/
 const LOCK_AFTER = 5
 const LOCK_MS = 15 * 60 * 1000
+const MAX_ATTEMPT_ENTRIES = 10000
 const attempts = new Map() // code -> { fails, until }
+// fixed scrypt target for unknown codes, so a lookup miss costs the same as a real check
+const DUMMY_PIN_HASH = hashPin('000000')
 
 export function resetRateLimit() { attempts.clear() }
 
@@ -17,7 +21,18 @@ function limited(code, now) {
   return a && a.fails >= LOCK_AFTER && now < a.until
 }
 
+// drop lockouts that have expired so the map can't grow without bound, then cap size as a backstop
+function pruneAttempts(now) {
+  for (const [key, a] of attempts) {
+    if (a.until <= now) attempts.delete(key)
+  }
+  while (attempts.size > MAX_ATTEMPT_ENTRIES) {
+    attempts.delete(attempts.keys().next().value)
+  }
+}
+
 function recordFail(code, now) {
+  pruneAttempts(now)
   const a = attempts.get(code) ?? { fails: 0, until: 0 }
   a.fails += 1
   a.until = now + LOCK_MS
@@ -52,9 +67,13 @@ export function createHousehold({ db, now }, { body }) {
 
 export function linkHousehold({ db, now }, { body }) {
   const code = String(body?.code ?? '').toUpperCase()
+  // a code outside newCode's alphabet/length can never match a household; reject without touching rate-limit state
+  if (!CODE_RE.test(code)) return { status: 401, body: { error: 'wrong code or pin' } }
   if (limited(code, now)) return { status: 429, body: { error: 'too many tries' } }
   const row = db.prepare(`SELECT id, pin_hash FROM households WHERE code = ?`).get(code)
-  if (!row || !PIN_RE.test(String(body?.pin ?? '')) || !verifyPin(body.pin, row.pin_hash)) {
+  // always hash the pin, even for an unknown code, so lookup misses aren't distinguishable by timing
+  const pinOk = PIN_RE.test(String(body?.pin ?? '')) && verifyPin(body.pin, row ? row.pin_hash : DUMMY_PIN_HASH)
+  if (!row || !pinOk) {
     recordFail(code, now)
     return { status: 401, body: { error: 'wrong code or pin' } }
   }

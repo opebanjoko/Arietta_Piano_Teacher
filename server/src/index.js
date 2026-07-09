@@ -8,12 +8,18 @@ const MAX_BODY = 512 * 1024
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let data = ''
+    let settled = false
     req.on('data', c => {
+      if (settled) return
       data += c
-      if (data.length > MAX_BODY) reject(new Error('too large'))
+      if (data.length > MAX_BODY) {
+        settled = true
+        req.destroy() // stop the stream so an oversized body can't keep buffering
+        reject(new Error('too large'))
+      }
     })
-    req.on('end', () => resolve(data))
-    req.on('error', reject)
+    req.on('end', () => { if (!settled) { settled = true; resolve(data) } })
+    req.on('error', e => { if (!settled) { settled = true; reject(e) } })
   })
 }
 

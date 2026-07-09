@@ -56,3 +56,39 @@ test('unknown route 404s with json', async () => {
   assert.equal(res.status, 404)
   await s.close()
 })
+
+test('malformed code 401s and never locks out (proves no rate-limit state recorded)', async () => {
+  const s = await start()
+  for (let i = 0; i < 10; i++) {
+    const res = await s.call('POST', '/households/link', { code: 'zzz', pin: '0000' })
+    assert.equal(res.status, 401)
+  }
+  // a 40-char junk code also stays 401, never 429 (a real code would lock after 5 fails)
+  const long = await s.call('POST', '/households/link', { code: 'a'.repeat(40), pin: '0000' })
+  assert.equal(long.status, 401)
+  await s.close()
+})
+
+test('many junk-code attempts do not affect a real code afterwards', async () => {
+  const s = await start()
+  const { code } = await (await s.call('POST', '/households', { pin: '4321' })).json()
+  for (let i = 0; i < 20; i++) {
+    assert.equal((await s.call('POST', '/households/link', { code: 'nope', pin: '0000' })).status, 401)
+  }
+  const ok = await s.call('POST', '/households/link', { code, pin: '4321' })
+  assert.equal(ok.status, 200)
+  await s.close()
+})
+
+test('oversized body does not crash the server; next request still works', async () => {
+  const s = await start()
+  const big = 'x'.repeat(600 * 1024)
+  try {
+    await s.call('POST', '/households', { pin: '4321', junk: big })
+  } catch {
+    // a reset connection instead of a 400 is acceptable; the server must keep running
+  }
+  const res = await s.call('POST', '/households', { pin: '4321' })
+  assert.equal(res.status, 201)
+  await s.close()
+})
