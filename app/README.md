@@ -19,6 +19,15 @@ ES modules testable with `node --test` (SR-VER-02/03).
     npm run preview    # serve the production build
     npm test           # engine/content/store unit tests + full-course E2E harness
 
+## Deploy (beta hosting)
+
+Hosted on Railway (project `arietta`, service `web`) at
+https://web-production-415a7.up.railway.app — HTTPS is required for microphone
+access. Railpack builds with `npm run build` and serves `dist/` statically
+(`RAILPACK_STATIC_FILE_ROOT=dist`). To ship the current working tree:
+
+    cd app && railway up --service web --ci -m "<release summary>"
+
 ## Layout
 
     src/core/      NoteEvent model, note math, course engine (pure logic)
