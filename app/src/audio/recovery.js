@@ -17,6 +17,7 @@ export function createRecovery({
   let attempt = 0
   let timer = null
   let stopped = false
+  let lost = false
 
   async function tryRestart() {
     attempting = true
@@ -26,12 +27,14 @@ export function createRecovery({
       broken = false
       attempting = false
       attempt = 0
+      lost = false
     } catch {
       if (stopped) return
       attempting = false
       if (attempt < delays.length) {
         timer = schedule(() => { timer = null; if (!stopped && broken && visible) tryRestart() }, delays[attempt++])
       } else {
+        lost = true
         onState('lost')
       }
     }
@@ -39,13 +42,15 @@ export function createRecovery({
 
   function begin() {
     if (stopped || attempting || timer !== null || !broken || !visible) return
+    lost = false
     attempt = 0
     onState('interrupted')
     tryRestart()
   }
 
   function broke() {
-    if (stopped || broken) return
+    if (stopped || (broken && !lost)) return
+    lost = false
     broken = true
     begin()
   }

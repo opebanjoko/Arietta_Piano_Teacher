@@ -101,6 +101,19 @@ test('break events during an in-flight restart do not double-restart', async () 
   assert.equal(calls.restarts, 1)
 })
 
+test('after lost, a later break event starts a fresh cycle without a visibility change', async () => {
+  const { rec, calls, sch } = harness({ results: ['fail', 'fail', 'fail'] })
+  rec.trackEnded()
+  await tick()
+  sch.fire(); await tick()
+  sch.fire(); await tick()
+  assert.deepEqual(calls.states, ['interrupted', 'lost'])
+  rec.trackEnded()
+  await tick()
+  assert.equal(calls.restarts, 4)
+  assert.deepEqual(calls.states, ['interrupted', 'lost', 'interrupted'])
+})
+
 test('stop() cancels scheduled retries and ignores further events', async () => {
   const { rec, calls, sch } = harness({ results: ['fail'] })
   rec.trackEnded()
