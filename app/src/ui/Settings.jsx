@@ -2,7 +2,7 @@
  * Settings (SR-UI-01): small and calm — mic check, accent colour, key labels,
  * parent's glimpse (SR-UI-03), and per-player reset / removal (SR-STO-03).
  */
-import { useState } from 'preact/hooks'
+import { useState, useRef, useEffect } from 'preact/hooks'
 import { VOICE } from '../content/voice.js'
 
 const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
@@ -23,6 +23,8 @@ export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
   const v = VOICE.settings
   const [confirming, setConfirming] = useState(null)
   const [copied, setCopied] = useState(false)
+  const copiedTO = useRef(null)
+  useEffect(() => () => clearTimeout(copiedTO.current), [])
   const accent = settings.accent ?? ACCENTS[0]
   const labels = settings.labels !== false
 
@@ -111,7 +113,7 @@ export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
                 ))}
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn-quiet" onClick={async () => { if (await onCopyDiag()) { setCopied(true); setTimeout(() => setCopied(false), 2500) } }}>
+            <button class="btn-quiet" onClick={async () => { if (await onCopyDiag()) { setCopied(true); clearTimeout(copiedTO.current); copiedTO.current = setTimeout(() => setCopied(false), 2500) } }}>
               {copied ? v.diagCopied : v.diagCopy}
             </button>
             {diagInfo.entries.length > 0 && <button class="btn-quiet" onClick={onClearDiag}>{v.diagClear}</button>}
