@@ -7,7 +7,7 @@
 import workletUrl from './capture-worklet.js?worker&url'
 import { registerMic } from './gate.js'
 
-export function createMic({ onNote, onState, detector = 'mpm', clarity = 0.9, noiseSuppression = false } = {}) {
+export function createMic({ onNote, onOnset, onState, detector = 'mpm', clarity = 0.9, noiseSuppression = false } = {}) {
   let ctx = null
   let worker = null
   let stream = null
@@ -33,7 +33,10 @@ export function createMic({ onNote, onState, detector = 'mpm', clarity = 0.9, no
     node.port.postMessage({ type: 'port' }, [mc.port1])
     worker.postMessage({ type: 'port', sampleRate: ctx.sampleRate }, [mc.port2])
     worker.postMessage({ type: 'config', detector, clarity })
-    worker.onmessage = (e) => { if (e.data.type === 'note') onNote?.(e.data.event) }
+    worker.onmessage = (e) => {
+      if (e.data.type === 'note') onNote?.(e.data.event)
+      else if (e.data.type === 'onset') onOnset?.(e.data.event)
+    }
     setState('listening')
   }
 
@@ -72,6 +75,12 @@ export function createMic({ onNote, onState, detector = 'mpm', clarity = 0.9, no
       setState('suspended')
       clearTimeout(resumeTO)
       resumeTO = setTimeout(() => { if (state === 'suspended') setState('listening') }, ms)
+    },
+
+    /** SR-OUT-02 for accompaniment: deafen only the sounded pitch classes. */
+    ignorePitches(pitches, ms) {
+      if (!ctx || !worker) return
+      worker.postMessage({ type: 'ignore', pitches, untilMs: ctx.currentTime * 1000 + ms })
     },
 
     setClarity(c) {

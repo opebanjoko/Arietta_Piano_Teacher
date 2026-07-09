@@ -6,13 +6,22 @@ import { useState, useRef, useEffect } from 'preact/hooks'
 import { nameToMidi, letter } from '../core/notes.js'
 import { noteEvent } from '../core/events.js'
 
-const WHITE = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5']
-const BLACKS = [
-  { note: 'C#4', after: 0 }, { note: 'D#4', after: 1 },
-  { note: 'F#4', after: 3 }, { note: 'G#4', after: 4 }, { note: 'A#4', after: 5 }
+const OCTAVE_BLACKS = [
+  { l: 'C#', after: 0 }, { l: 'D#', after: 1 },
+  { l: 'F#', after: 3 }, { l: 'G#', after: 4 }, { l: 'A#', after: 5 }
 ]
 
-export function Keyboard({ onNote, glowMidi = null, showLabels = true }) {
+/** One octave from C4 by default; `low` adds the left hand's C3 octave (Unit 6). */
+function layout(low) {
+  const octaves = low ? [3, 4] : [4]
+  const whites = octaves.flatMap(o => ['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(w => `${w}${o}`))
+  whites.push(`C${octaves.at(-1) + 1}`)
+  const blacks = octaves.flatMap((o, oi) =>
+    OCTAVE_BLACKS.map(b => ({ note: `${b.l}${o}`, after: b.after + oi * 7 })))
+  return { whites, blacks }
+}
+
+export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = false }) {
   const [pressed, setPressed] = useState(null)
   const pressTO = useRef(null)
   useEffect(() => () => clearTimeout(pressTO.current), [])
@@ -24,6 +33,9 @@ export function Keyboard({ onNote, glowMidi = null, showLabels = true }) {
     onNote(noteEvent({ pitch: nameToMidi(name), source: 'tap', timestamp: performance.now() }))
   }
 
+  const { whites, blacks } = layout(low)
+  const w = 100 / whites.length
+
   return (
     <section style="flex:none;padding:2px 28px 18px;">
       <div style="border:1px solid var(--line-soft);border-radius:16px;overflow:hidden;background:var(--card-warm);box-shadow:0 10px 30px rgba(80,60,20,.09);">
@@ -34,7 +46,7 @@ export function Keyboard({ onNote, glowMidi = null, showLabels = true }) {
         <div style="height:6px;background:linear-gradient(180deg,#A4453C,#8C362E);"></div>
         <div style="position:relative;height:168px;background:#241B12;">
           <div style="display:flex;height:100%;">
-            {WHITE.map(name => {
+            {whites.map(name => {
               const isPressed = pressed === name
               const glow = glowMidi === nameToMidi(name)
               const bg = isPressed ? 'linear-gradient(180deg,#F1E3BE,#EAD9AC)'
@@ -49,9 +61,9 @@ export function Keyboard({ onNote, glowMidi = null, showLabels = true }) {
               )
             })}
           </div>
-          {BLACKS.map(b => (
+          {blacks.map(b => (
             <div key={b.note} onPointerDown={() => tap(b.note)}
-              style={`position:absolute;top:0;left:${(b.after + 1) * 12.5 - 3.7}%;width:7.4%;height:104px;background:${pressed === b.note ? 'linear-gradient(180deg,#6B5840,#4A3A28)' : 'linear-gradient(180deg,#423526,#241B12)'};border-radius:0 0 7px 7px;box-shadow:0 4px 8px rgba(20,12,4,.4);cursor:pointer;z-index:2;transition:background .12s ease;touch-action:none;`}></div>
+              style={`position:absolute;top:0;left:${(b.after + 1) * w - 0.296 * w}%;width:${0.592 * w}%;height:104px;background:${pressed === b.note ? 'linear-gradient(180deg,#6B5840,#4A3A28)' : 'linear-gradient(180deg,#423526,#241B12)'};border-radius:0 0 7px 7px;box-shadow:0 4px 8px rgba(20,12,4,.4);cursor:pointer;z-index:2;transition:background .12s ease;touch-action:none;`}></div>
           ))}
         </div>
       </div>

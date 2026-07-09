@@ -38,9 +38,14 @@ export function Staff({ notes, width = 620, height = 166 }) {
           const y = noteY(midi)
           const x = ((start + i * step) / width * 100).toFixed(2)
           const fill = FILL[n.status], label = LABEL[n.status]
+          // ledger lines from middle C down as far as the note reaches (C3 gets four)
+          const ledgers = []
+          for (let ly = Y_C4; ly <= y; ly += 14) ledgers.push(ly)
           return (
             <div style={`position:absolute;left:${x}%;top:${y}px;width:0;height:0;`}>
-              <div style={`position:absolute;left:-20px;top:-1px;width:40px;height:1.8px;background:rgba(43,36,28,.55);opacity:${n.note === 'C4' ? 1 : 0};`}></div>
+              {ledgers.map(ly => (
+                <div style={`position:absolute;left:-20px;top:${ly - y - 1}px;width:40px;height:1.8px;background:rgba(43,36,28,.55);`}></div>
+              ))}
               <div style={`position:absolute;left:10px;top:-58px;width:2.4px;height:58px;border-radius:2px;background:${fill};transition:background .25s;`}></div>
               <div style={`position:absolute;left:-13px;top:-9px;width:26px;height:18px;border-radius:50%;background:${fill};transform:rotate(-16deg)${n.status === 'demo' ? ' scale(1.22)' : ''};animation:${n.status === 'current' ? 'glowPulse 1.8s ease-in-out infinite' : 'none'};transition:background .25s, transform .2s;`}></div>
               <div style={`position:absolute;left:0;top:${-58 - 16 + (y - 46 < 16 ? 46 - y - 2 : 0)}px;transform:translateX(-50%);font-family:var(--mono);font-size:10px;font-weight:700;color:${label};background:${n.status === 'current' ? 'var(--accent-soft)' : 'transparent'};border-radius:8px;padding:1px 5px;`}>{n.finger}</div>

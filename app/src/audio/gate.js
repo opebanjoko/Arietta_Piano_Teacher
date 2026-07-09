@@ -17,3 +17,12 @@ export function unregisterMic() {
 export function holdFor(ms) {
   activeMic?.suspendFor(ms)
 }
+
+/**
+ * Softer gate for accompaniment (SR-OUT-03): while a harmony voicing rings,
+ * only its own pitch classes are deaf — the student's next melody note is
+ * still heard, and the app still never grades its own output.
+ */
+export function holdPitches(pitches, ms) {
+  activeMic?.ignorePitches(pitches, ms)
+}

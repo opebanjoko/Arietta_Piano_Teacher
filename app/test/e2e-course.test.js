@@ -1,31 +1,45 @@
 /**
  * E2E harness (SR-VER-03): a scripted run of every lesson via source:'tap'
  * NoteEvents must complete the full course through the real engine,
- * respecting linear unlocking at every step.
+ * respecting linear unlocking at every step. Timed material is played on
+ * the metronome grid; clap steps are clapped; reading snippets are resolved
+ * the same way the app resolves them.
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { allLessons } from '../src/content/course.js'
-import { startDrill, drillNote, drillContinue, drillChoice, drillAdvance, startSong, songNote, lessonStates } from '../src/core/engine.js'
+import {
+  startDrill, drillNote, drillContinue, drillChoice, drillClap, drillAdvance,
+  startSong, songNote, lessonStates
+} from '../src/core/engine.js'
+import { resolveReading } from '../src/core/reading.js'
+import { beatMs } from '../src/core/timing.js'
 import { nameToMidi, midiToName } from '../src/core/notes.js'
 import { noteEvent } from '../src/core/events.js'
 
-const tap = name => noteEvent({ pitch: nameToMidi(name), source: 'tap', timestamp: 0 })
+const tap = (name, timestamp = 0) => noteEvent({ pitch: nameToMidi(name), source: 'tap', timestamp })
 
 function playDrill(lesson, playTarget) {
   let s = startDrill(lesson)
   let guard = 0
+  let clock = 0
   while (s.phase !== 'done') {
     assert.ok(++guard < 500, `${lesson.id}: drill did not converge`)
     const step = lesson.steps[s.stepIndex]
     if (s.phase === 'stepdone') {
       s = drillAdvance(s, lesson)
+      clock += 10000 // a breath between steps
     } else if (step.kind === 'info' || step.kind === 'watch-me') {
       s = drillContinue(s, lesson)
     } else if (step.kind === 'ear-choice') {
       s = drillChoice(s, lesson, step.choices.findIndex(c => c.correct))
+    } else if (step.kind === 'rhythm-clap') {
+      s = drillClap(s, lesson, { kind: 'onset', source: 'tap', timestamp: clock })
+      const gap = step.pattern[s.seqPos - 1]
+      clock += (gap ?? 1) * beatMs(lesson.tempo)
     } else {
-      s = playTarget(s, lesson, step.targets[s.seqPos])
+      clock += (step.targets[s.seqPos - 1]?.beats ?? 1) * beatMs(lesson.tempo ?? 60)
+      s = playTarget(s, lesson, step.targets[s.seqPos], clock)
     }
   }
   return s
@@ -34,9 +48,11 @@ function playDrill(lesson, playTarget) {
 function playSong(lesson, playTarget) {
   let s = startSong(lesson)
   let guard = 0
+  let clock = 0
   while (!s.done) {
     assert.ok(++guard < 500, `${lesson.id}: song did not converge`)
-    s = playTarget(s, lesson, lesson.notes[s.pos])
+    clock += (lesson.notes[s.pos - 1]?.beats ?? 1) * beatMs(lesson.tempo ?? 60)
+    s = playTarget(s, lesson, lesson.notes[s.pos], clock)
   }
   return s
 }
@@ -46,46 +62,65 @@ function runCourse(playDrillTarget, playSongTarget) {
   const completed = new Set()
   for (const lesson of lessons) {
     const states = lessonStates(lessons, completed)
+    if (lesson.comingSoon) {
+      assert.equal(states.get(lesson.id), 'coming-soon', `${lesson.id} must stay gated`)
+      continue
+    }
     assert.equal(states.get(lesson.id), 'next', `${lesson.id} should be unlocked in course order`)
-    if (lesson.kind === 'drill') playDrill(lesson, playDrillTarget)
-    else playSong(lesson, playSongTarget)
+    const resolved = resolveReading(lesson, completed.size) // as the app does at open
+    if (resolved.kind === 'drill') playDrill(resolved, playDrillTarget)
+    else playSong(resolved, playSongTarget)
     completed.add(lesson.id)
   }
   const final = lessonStates(lessons, completed)
-  for (const l of lessons) assert.equal(final.get(l.id), 'complete')
+  for (const l of lessons) {
+    assert.equal(final.get(l.id), l.comingSoon ? 'coming-soon' : 'complete')
+  }
 }
 
-test('a perfect student completes all ten lessons of Units 1-3 by tap', () => {
+test('a perfect student completes all twenty v1 lessons by tap, on the grid', () => {
   runCourse(
-    (s, lesson, t) => drillNote(s, lesson, tap(t.note)),
-    (s, lesson, t) => songNote(s, lesson, tap(t.note))
+    (s, lesson, t, clock) => drillNote(s, lesson, tap(t.note, clock)),
+    (s, lesson, t, clock) => songNote(s, lesson, tap(t.note, clock))
   )
 })
 
 test('a wobbly student (wrong note first, every time) still completes the course', () => {
   const wrong = t => {
     const midi = nameToMidi(t.note)
-    return midiToName(midi === 60 ? 67 : 60) // G4 when the target is C4, else C4
+    return midiToName(midi % 12 === 0 ? 67 : 60) // G4 when the target is any C, else C4
   }
   runCourse(
-    (s, lesson, t) => {
-      const afterMiss = drillNote(s, lesson, tap(wrong(t)))
+    (s, lesson, t, clock) => {
+      const afterMiss = drillNote(s, lesson, tap(wrong(t), clock - 200))
       assert.equal(afterMiss.feedback.kind, 'hint', `${lesson.id}: expected a hint`)
-      return drillNote(afterMiss, lesson, tap(t.note))
+      return drillNote(afterMiss, lesson, tap(t.note, clock))
     },
-    (s, lesson, t) => {
-      const afterMiss = songNote(s, lesson, tap(wrong(t)))
+    (s, lesson, t, clock) => {
+      const afterMiss = songNote(s, lesson, tap(wrong(t), clock - 200))
       assert.ok(afterMiss.hint, `${lesson.id}: expected a song hint`)
-      return songNote(afterMiss, lesson, tap(t.note))
+      return songNote(afterMiss, lesson, tap(t.note, clock))
     }
   )
 })
 
-test('an octave-up student completes every song, and each earns the kind mention', () => {
-  const lessons = allLessons().filter(l => l.kind === 'song')
+test('an octave-up student completes every C4-octave song, and each earns the kind mention', () => {
+  const lessons = allLessons().filter(l =>
+    l.kind === 'song' && l.notes.every(t => /4$/.test(t.note)))
+  assert.ok(lessons.length >= 3)
   for (const lesson of lessons) {
-    const s = playSong(lesson, (st, l, t) =>
-      songNote(st, l, tap(t.note.replace('4', '5'))))
+    const s = playSong(lesson, (st, l, t, clock) =>
+      songNote(st, l, tap(t.note.replace('4', '5'), clock)))
     assert.ok(s.mention, `${lesson.id}: 3+ octave slips deserve the gentle mention`)
+  }
+})
+
+test('a steady tap student earns kind words about the pulse, never numbers', () => {
+  const timed = allLessons().filter(l => l.kind === 'song' && l.tempo)
+  assert.ok(timed.length >= 2)
+  for (const lesson of timed) {
+    const s = playSong(lesson, (st, l, t, clock) => songNote(st, l, tap(t.note, clock)))
+    assert.ok(s.timingMention, `${lesson.id}: a timed piece deserves a timing word`)
+    assert.ok(!/\d/.test(s.timingMention), `${lesson.id}: no numbers in feedback`)
   }
 })

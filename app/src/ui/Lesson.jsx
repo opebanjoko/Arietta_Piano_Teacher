@@ -1,11 +1,16 @@
 /** Drill lesson screen (SR-UI-01): steps, staff with fingering, hints, completion. */
 import { PlayHeader } from './PlayHeader.jsx'
 import { Staff } from './Staff.jsx'
+import { WatchMe } from './WatchMe.jsx'
+import { Pulse } from './Pulse.jsx'
+import { nameToMidi } from '../core/notes.js'
 import { VOICE } from '../content/voice.js'
 
-export function Lesson({ lesson, drill, pill, earPlaying, onHome, onContinue, onChoice, onReplayEar, onNextSong, doneAction }) {
+export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContinue, onChoice,
+  onReplayEar, onReplayPattern, onNextSong, doneAction }) {
   const step = lesson.steps[Math.min(drill.stepIndex, lesson.steps.length - 1)]
   const working = drill.phase !== 'done'
+  const pulsing = lesson.tempo && (step.timed || step.kind === 'rhythm-clap')
 
   const staffNotes = step.kind === 'play'
     ? step.targets.map((t, i) => ({
@@ -16,7 +21,9 @@ export function Lesson({ lesson, drill, pill, earPlaying, onHome, onContinue, on
     : []
 
   const feedback = drill.feedback
-  const feedbackColor = feedback?.kind === 'good' ? 'var(--sage-ink)' : feedback?.kind === 'hint' ? 'var(--hint)' : 'transparent'
+  const feedbackColor = feedback?.kind === 'good' ? 'var(--sage-ink)'
+    : feedback?.kind === 'hint' ? 'var(--hint)'
+    : feedback?.kind === 'pulse' ? 'var(--sage-ink)' : 'transparent'
 
   return (
     <section style="flex:1;min-height:0;display:flex;flex-direction:column;animation:fadeUp .4s ease;">
@@ -37,9 +44,22 @@ export function Lesson({ lesson, drill, pill, earPlaying, onHome, onContinue, on
           <div style="font-size:15px;color:var(--ink-soft);text-align:center;max-width:600px;">{step.sub}</div>
           {step.kind === 'play' && (
             <div style="margin-top:8px;">
-              <Staff notes={staffNotes} />
+              <Staff notes={staffNotes}
+                height={staffNotes.some(t => nameToMidi(t.note) < 60) ? 196 : 166} />
             </div>
           )}
+          {pulsing && <Pulse beat={beat} />}
+          {step.kind === 'rhythm-clap' && (
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:14px;">
+              <div style="display:flex;gap:9px;">
+                {Array.from({ length: step.pattern.length + 1 }, (_, i) => (
+                  <div style={`width:11px;height:11px;border-radius:50%;background:${i < drill.seqPos ? 'var(--sage)' : 'var(--todo)'};transition:background .25s;`}></div>
+                ))}
+              </div>
+              <button class="btn-quiet" onClick={onReplayPattern} disabled={earPlaying}>{earPlaying ? VOICE.rhythm.listen : VOICE.rhythm.again}</button>
+            </div>
+          )}
+          {step.kind === 'watch-me' && step.anim && <WatchMe anim={step.anim} />}
           {(step.kind === 'info' || step.kind === 'watch-me') && (
             <button class="btn-primary" onClick={onContinue} style="margin-top:18px;">Ready — next →</button>
           )}

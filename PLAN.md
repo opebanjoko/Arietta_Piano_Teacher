@@ -91,6 +91,16 @@ more than two more units of content would.
 - QA: timing-grid unit tests; extends E2E to full course.
 - **Exit**: all 20 v1 lessons complete via mic on a real piano; qualitative timing
   feedback verified against deliberately rushed/dragged playing.
+- **Build status (2026-07-09): complete; live-piano exit deferred.** All Phase 3
+  scope is built and browser-verified by tap: metronome + timing grid (words only,
+  rushed/dragged covered by tests), clap onset detection, trouble-spot mini-loops,
+  follow-mode accompaniment (harmony pitch-classes gated instead of full mic
+  suspend), reading-snippet generator, animated watch-me hand demos (code-drawn,
+  no video assets), settings + parent's glimpse, Units 4–6 content with lesson 21
+  visible and gated "coming soon". Full 20-lesson tap E2E green. The
+  "via mic on a real piano" exit joins the deferred hardware validation
+  (`spike/GATE_RUNBOOK.md`); flag for that session: onset-detector thresholds vs.
+  metronome click bleed through the iPad speaker/mic loop.
 
 ### Phase 4 — Hardening, beta, v1 release — ~2–3 wks
 **Goal**: ship something a family actually keeps using.

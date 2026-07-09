@@ -7,19 +7,30 @@
  */
 import { yin, mpm, rms } from './detect/pitch.js'
 import { NoteTracker } from './detect/tracker.js'
+import { OnsetTracker } from './detect/onset.js'
 
 const DETECTORS = { yin, mpm }
 
 let detect = mpm
 let tracker = new NoteTracker()
+let onsets = new OnsetTracker()
 let clarity = 0.9
 let sampleRate = 48000
 let suspendedUntil = 0
+let ignores = [] // [{pcs:Set<pitch class>, untilMs}] — ringing accompaniment voicings
+
+function ignored(pitch, timeMs) {
+  ignores = ignores.filter(i => timeMs < i.untilMs)
+  return ignores.some(i => i.pcs.has(pitch % 12))
+}
 
 function onFrame({ frame, timeMs }) {
   if (timeMs < suspendedUntil) return
-  const ev = tracker.feed(detect(frame, sampleRate), rms(frame), timeMs)
-  if (ev) postMessage({ type: 'note', event: ev })
+  const level = rms(frame)
+  const ev = tracker.feed(detect(frame, sampleRate), level, timeMs)
+  if (ev && !ignored(ev.pitch, timeMs)) postMessage({ type: 'note', event: ev })
+  const onset = onsets.feed(level, timeMs)
+  if (onset) postMessage({ type: 'onset', event: onset })
 }
 
 onmessage = (e) => {
@@ -31,9 +42,12 @@ onmessage = (e) => {
     if (m.detector) detect = DETECTORS[m.detector] ?? detect
     if (m.clarity !== undefined) clarity = m.clarity
     tracker = new NoteTracker({ minClarity: clarity })
+  } else if (m.type === 'ignore') {
+    ignores.push({ pcs: new Set(m.pitches.map(p => p % 12)), untilMs: m.untilMs })
   } else if (m.type === 'suspend') {
     // audio-clock horizon: frames stamped before this are app playback ringing out
     suspendedUntil = m.untilMs
     tracker = new NoteTracker({ minClarity: clarity })
+    onsets = new OnsetTracker()
   }
 }

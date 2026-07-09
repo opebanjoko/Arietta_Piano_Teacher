@@ -23,28 +23,47 @@ test('lesson ids are unique and lessons are complete', () => {
   }
 })
 
-test('Units 1-3 cover the ten v1 lessons in course order', () => {
+test('Units 1-6 cover the 21-lesson v1 map in course order (§3.2)', () => {
   assert.deepEqual(lessons.map(l => l.id), [
     'meet-the-keyboard', 'finding-middle-c', 'hands-say-hello',
     'middle-c-again', 'meet-d', 'meet-e', 'meet-f-and-g',
-    'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune'
+    'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune',
+    'long-and-short', 'playing-with-the-pulse', 'ode-in-time', 'hot-cross-buns',
+    'meet-a-and-b', 'up-to-high-c', 'when-the-saints', 'twinkle',
+    'left-hand-home', 'taking-turns', 'your-first-chord'
   ])
+  // lesson 21 is on the map but gated until polyphony (§3.2, SR-AUD-10)
+  assert.ok(findLesson('your-first-chord').comingSoon)
+  assert.equal(lessons.filter(l => l.comingSoon).length, 1)
 })
 
 test('every drill step is well-formed and every target carries a finger', () => {
   for (const l of lessons.filter(l => l.kind === 'drill')) {
     assert.ok(l.steps.length >= 1, l.id)
     for (const [i, s] of l.steps.entries()) {
-      assert.ok(s.prompt, `${l.id} step ${i}`)
-      assert.ok(['info', 'play', 'ear-choice', 'ear-echo', 'watch-me'].includes(s.kind), `${l.id} step ${i}`)
+      assert.ok(['info', 'play', 'ear-choice', 'ear-echo', 'watch-me', 'rhythm-clap', 'reading-snippet'].includes(s.kind), `${l.id} step ${i}`)
+      if (s.kind !== 'reading-snippet') assert.ok(s.prompt, `${l.id} step ${i}`)
       if (s.kind === 'play' || s.kind === 'ear-echo') {
         assert.ok(s.targets.length >= 1, `${l.id} step ${i}`)
         s.targets.forEach(t => checkTarget(t, `${l.id} step ${i}`))
+        if (s.timed) assert.ok(l.tempo, `${l.id} step ${i}: timed steps need a lesson tempo`)
       }
       if (s.kind === 'ear-choice') {
         assert.ok(s.play.length >= 2, `${l.id} step ${i}: needs notes to play`)
         s.play.forEach(t => checkTarget(t, `${l.id} step ${i}`))
         assert.equal(s.choices.filter(c => c.correct).length, 1, `${l.id} step ${i}: exactly one correct choice`)
+      }
+      if (s.kind === 'rhythm-clap') {
+        assert.ok(l.tempo, `${l.id} step ${i}: clap steps need a lesson tempo`)
+        assert.ok(s.pattern.length >= 1 && s.pattern.every(b => b > 0), `${l.id} step ${i}`)
+      }
+      if (s.kind === 'reading-snippet') {
+        assert.ok(s.pool.length >= 3, `${l.id} step ${i}: pool too small to move by steps and skips`)
+        s.pool.forEach(t => checkTarget(t, `${l.id} step ${i}`))
+      }
+      if (s.kind === 'watch-me' && s.anim) {
+        assert.equal(s.anim.keys.length, s.anim.fingers.length, `${l.id} step ${i}`)
+        assert.ok(['right', 'left'].includes(s.anim.hand), `${l.id} step ${i}`)
       }
     }
   }
@@ -63,6 +82,20 @@ test('every song note carries a finger and stays in C position', () => {
     assert.ok(l.notes.length >= 8, l.id)
     l.notes.forEach(t => checkTarget(t, l.id))
   }
+})
+
+test('timed songs have positive beats; harmony voicings point at real notes (SR-OUT-03)', () => {
+  for (const l of lessons.filter(l => l.kind === 'song')) {
+    if (l.tempo) l.notes.forEach((t, i) => assert.ok((t.beats ?? 1) > 0, `${l.id} note ${i}`))
+    for (const [idx, notes] of Object.entries(l.harmony ?? {})) {
+      assert.ok(Number(idx) < l.notes.length, `${l.id}: harmony at ${idx} has no melody note`)
+      notes.forEach(name => {
+        const midi = nameToMidi(name)
+        assert.ok(midi >= 48 && midi <= 96, `${l.id}: harmony note ${name}`)
+      })
+    }
+  }
+  assert.ok(lessons.some(l => l.kind === 'song' && l.tempo), 'Unit 4 promises in-time pieces')
 })
 
 test('exactly one sneak-peek song exists (Ode to Joy)', () => {

@@ -1,6 +1,8 @@
 /** Song play-along screen (SR-UI-01): hear-it-first, wait-mode staff, completion. */
 import { PlayHeader } from './PlayHeader.jsx'
 import { Staff } from './Staff.jsx'
+import { Pulse } from './Pulse.jsx'
+import { songTargetIndex } from '../core/engine.js'
 import { VOICE } from '../content/voice.js'
 
 const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
@@ -13,21 +15,25 @@ const FLOATS = [
   { glyph: '♫', left: '50%', top: '78%', size: 22, dur: 3.2, delay: 1.2 }
 ]
 
-export function Song({ lesson, song, demo, overlay, pill, onHome, onHearIt, onReplay }) {
+export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accompanyAvailable,
+  onToggleAccompany, onHome, onHearIt, onReplay, onAcceptLoop, onDeclineLoop }) {
   const v = VOICE.song
   const total = lesson.notes.length
+  const ti = songTargetIndex(song)
 
   const staffNotes = lesson.notes.map((t, i) => {
     let status = 'up'
     if (demo.on && i === demo.pos) status = 'demo'
+    else if (song.loop) status = i === ti ? 'current' : (i >= song.loop.from && i < ti ? 'played' : 'up')
     else if (i < song.pos) status = 'played'
     else if (i === song.pos && !song.done && !demo.on) status = 'current'
     return { ...t, status }
   })
 
-  const target = lesson.notes[Math.min(song.pos, total - 1)]
-  const lead = song.hint ?? (song.done ? v.leadDone : fill(v.lead, { target: target.note.replace(/\d/, '') }))
-  const cheer = [...v.cheers].reverse().find(c => song.pos / total >= c.at)?.line ?? ''
+  const target = lesson.notes[Math.min(ti, total - 1)]
+  const lead = song.hint ?? song.say
+    ?? (song.done ? v.leadDone : fill(v.lead, { target: target.note.replace(/\d/, '') }))
+  const cheer = song.pulse ?? ([...v.cheers].reverse().find(c => song.pos / total >= c.at)?.line ?? '')
 
   return (
     <section style="flex:1;min-height:0;display:flex;flex-direction:column;position:relative;animation:fadeUp .4s ease;">
@@ -37,10 +43,17 @@ export function Song({ lesson, song, demo, overlay, pill, onHome, onHearIt, onRe
       <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:0 30px;">
         <div style="display:flex;align-items:center;gap:16px;">
           <button class="btn-quiet" onClick={onHearIt}>{demo.on ? 'Playing…' : '♪ Hear it first'}</button>
+          {accompanyAvailable && (
+            <button class="btn-quiet" onClick={onToggleAccompany}
+              style={accompany ? 'background:var(--accent-soft);border-color:var(--line-strong);' : ''}>
+              {accompany ? v.withMeOn : v.withMe}
+            </button>
+          )}
           <div style="width:230px;height:7px;border-radius:99px;background:var(--line);overflow:hidden;">
             <div style={`height:100%;border-radius:99px;background:var(--accent-ink);width:${Math.round(Math.min(song.pos / total, 1) * 100)}%;transition:width .3s ease;`}></div>
           </div>
           <div style="font-size:12.5px;font-weight:700;color:var(--ink-mid);">{Math.min(song.pos, total)} of {total} notes</div>
+          {lesson.tempo && !song.done && <Pulse beat={beat} />}
         </div>
         <Staff notes={staffNotes} width={1060} height={170} />
         <div style="display:flex;align-items:center;justify-content:center;gap:26px;height:26px;">
@@ -48,6 +61,20 @@ export function Song({ lesson, song, demo, overlay, pill, onHome, onHearIt, onRe
           <div style="font-family:var(--serif);font-style:italic;font-size:14.5px;color:#7A9070;">{cheer}</div>
         </div>
       </div>
+
+      {song.trouble && !overlay && (
+        <div style="position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .4s ease;">
+          <div style="background:var(--card);border:1px solid var(--line);border-radius:22px;padding:38px 54px;box-shadow:0 24px 60px rgba(80,60,20,.16);text-align:center;max-width:520px;">
+            <div class="kicker">{VOICE.trouble.kicker}</div>
+            <div style="font-family:var(--serif);font-weight:600;font-size:30px;margin-top:8px;">{VOICE.trouble.title}</div>
+            <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{VOICE.trouble.line}</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;">
+              <button class="btn-primary" onClick={onAcceptLoop}>{VOICE.trouble.accept}</button>
+              <button class="btn-quiet" onClick={onDeclineLoop} style="padding:12px 20px;font-size:14px;">{VOICE.trouble.skip}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {overlay && (
         <div style="position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .5s ease;">
@@ -58,6 +85,7 @@ export function Song({ lesson, song, demo, overlay, pill, onHome, onHearIt, onRe
             <div style="font-size:30px;color:var(--accent-ink);line-height:1;">♫</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:33px;margin-top:8px;">{lesson.done.title}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{lesson.done.line}</div>
+            {song.timingMention && <div style="font-size:14px;color:var(--ink-mid);margin-top:10px;text-wrap:pretty;">{song.timingMention}</div>}
             {song.mention && <div style="font-size:14px;color:var(--ink-mid);margin-top:10px;text-wrap:pretty;">{song.mention}</div>}
             <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;">
               <button class="btn-primary" onClick={onReplay}>Play it again</button>

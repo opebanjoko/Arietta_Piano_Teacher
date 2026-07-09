@@ -156,5 +156,16 @@ test('linear unlocking: next after last complete; sneak peek playable early (SR-
   assert.equal(some.get('middle-c-again'), 'locked')
 
   const all = lessonStates(lessons, new Set(lessons.map(l => l.id)))
-  for (const l of lessons) assert.equal(all.get(l.id), 'complete')
+  for (const l of lessons) {
+    assert.equal(all.get(l.id), l.comingSoon ? 'coming-soon' : 'complete')
+  }
+})
+
+test('a coming-soon lesson never unlocks and never blocks the path', () => {
+  const lessons = allLessons()
+  const allButLast = lessonStates(lessons, new Set(['meet-the-keyboard']))
+  assert.equal(allButLast.get('your-first-chord'), 'coming-soon')
+  const v1Done = lessonStates(lessons, new Set(lessons.filter(l => !l.comingSoon).map(l => l.id)))
+  assert.equal(v1Done.get('your-first-chord'), 'coming-soon')
+  assert.ok(![...v1Done.values()].includes('next'), 'nothing left to unlock in v1')
 })

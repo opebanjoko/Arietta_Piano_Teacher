@@ -28,10 +28,38 @@ export const VOICE = {
     'Warm and clear ♪'
   ],
 
+  timing: {
+    live: { on: 'with the pulse ♪', early: 'a little early', late: 'a little late' },
+    steady: 'Right with the pulse, the whole way through.',
+    oneOff: 'Just one wobble — {word} on the {ordinal} note. The rest sat right in the pulse.',
+    early: 'A little eager here and there — next time, let the pulse carry you.',
+    late: 'Some notes came a touch late — trust the pulse; it always waits the same amount.',
+    mixed: 'Mostly with the pulse — a wobble or two, and that’s just fine.',
+    words: { early: 'a little early', late: 'a little late' },
+    ordinals: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth',
+      'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth',
+      'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'last']
+  },
+
   ear: {
     retry: 'No rush — have another listen. I’ll play them again.',
     playing: 'Listen…',
     again: '♪ Play them again'
+  },
+
+  reading: {
+    prompt: 'Here’s a little tune nobody has ever played before.',
+    sub: 'Read it slowly from the staff — it’s yours to discover.',
+    warmupTitle: 'A brand-new little tune',
+    doneTitle: 'You just read brand-new music.',
+    doneLine: 'Nobody taught you that tune — you read it yourself, cold. That’s real musicianship.'
+  },
+
+  rhythm: {
+    retry: 'Nearly — the {ordinal} clap came {word}. Listen to the pulse, and we’ll clap it again.',
+    done: 'Claps right in the pulse ♪',
+    listen: 'Listen…',
+    again: '♪ Clap it for me again'
   },
 
   micCheck: {
@@ -78,9 +106,21 @@ export const VOICE = {
     ]
   },
 
+  trouble: {
+    kicker: 'THE TRICKY CORNER',
+    title: 'That corner is the tricky part for everyone.',
+    line: 'Shall we do just these three notes, twice? Then we’ll drop back into the song.',
+    accept: 'Practice the corner →',
+    skip: 'Keep playing',
+    again: 'Lovely — once more, same three notes.',
+    rejoin: 'That’s the corner learned. Back into the song — from just before it.'
+  },
+
   song: {
     lead: 'Next up: {target}',
     leadDone: 'Every note — well done.',
+    withMe: '♫ Play it with me',
+    withMeOn: 'Playing with you ♫',
     cheers: [
       { at: 0.2, line: 'a lovely start' },
       { at: 0.4, line: 'you’re really doing it' },
@@ -101,12 +141,13 @@ export const VOICE = {
     micOffLine: 'Tap-key mode — tap “check my ears” to let me listen',
     micCheckLink: 'check my ears',
     freePlay: 'Just play →',
+    settings: 'Settings',
     recapKicker: 'TODAY AT THE PIANO',
     kickerNext: 'NEXT UP · {unit} — {lesson}',
     lineNext: 'Ten gentle minutes is plenty. {lesson} is waiting for you.',
     btnNext: 'Continue — {lesson} →',
     kickerDone: 'EVERY LESSON PLAYED',
-    lineDone: 'Units 1 to 3, start to finish. Replay anything you like — the songs only get warmer.',
+    lineDone: 'The whole course, start to finish. Replay anything you like — the songs only get warmer.',
     btnDone: 'Play Ode to Joy again →',
     altPeek: 'or peek at {song}',
     altReplay: 'or replay {lesson}',
@@ -123,7 +164,45 @@ export const VOICE = {
     songPlay: 'Play along →',
     songReplay: 'Play it again →',
     songLocked: 'Locked for now',
-    songLockedLine: 'Comes along with First Songs.'
+    songLockedLine: 'Unlocks a little further along the path.'
+  },
+
+  glimpse: {
+    fresh: '{name} is just getting started — the first hello to the keyboard is still ahead.',
+    notes: '{name} has met {notes} at the piano.',
+    songs: 'Songs played start to finish: {songs}.',
+    last: 'Last at the piano {when}.',
+    next: 'Next on the path: {lesson}.',
+    courseDone: 'Every lesson in the course is complete — from here it’s all music.',
+    and: 'and',
+    today: 'today',
+    yesterday: 'yesterday',
+    thisWeek: 'earlier this week',
+    aWhile: 'a little while ago'
+  },
+
+  settings: {
+    kicker: 'SETTINGS',
+    title: 'A few quiet knobs.',
+    earsTitle: 'My ears',
+    earsOn: 'The microphone is on — I listen whenever a lesson starts.',
+    earsOff: 'Tap-key mode — I’m not listening yet.',
+    earsButton: 'Check my ears',
+    lookTitle: 'Colour & keys',
+    accentLine: 'Arietta’s colour, for this player.',
+    labelsLine: 'Letter names on the tap keys.',
+    labelsOn: 'Shown',
+    labelsOff: 'Hidden',
+    glimpseTitle: 'Parent’s glimpse',
+    glimpseLine: 'How it’s going, in plain words. Just for grown-ups — no scores, no charts.',
+    playerTitle: 'This player',
+    resetLine: 'Start {name} over from the very first lesson. Other players keep their progress.',
+    resetButton: 'Reset progress',
+    resetConfirm: 'Yes — start over',
+    deleteLine: 'Remove {name} and everything they’ve played.',
+    deleteButton: 'Remove this player',
+    deleteConfirm: 'Yes — remove {name}',
+    cancel: 'Never mind'
   },
 
   firstRun: {

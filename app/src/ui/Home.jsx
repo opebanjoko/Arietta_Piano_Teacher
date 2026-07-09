@@ -35,16 +35,18 @@ function Hero({ states, onOpen }) {
 
 function unitStatus(unit, states, prevUnit) {
   const v = VOICE.home
-  const ss = unit.lessons.map(l => states.get(l.id))
+  // coming-soon lessons are visible but never block a unit's completion
+  const real = unit.lessons.filter(l => states.get(l.id) !== 'coming-soon')
+  const ss = real.map(l => states.get(l.id))
   const done = ss.filter(s => s === 'complete').length
-  if (done === unit.lessons.length) return { text: v.unitComplete, active: false, complete: true }
+  if (done === real.length) return { text: v.unitComplete, active: false, complete: true }
   if (ss.some(s => s === 'next')) {
-    return { text: done ? fill(v.unitContinue, { done, total: unit.lessons.length }) : v.unitStart, active: true, complete: false }
+    return { text: done ? fill(v.unitContinue, { done, total: real.length }) : v.unitStart, active: true, complete: false }
   }
   return { text: fill(v.unitLocked, { prev: prevUnit.title }), active: false, complete: false, locked: true }
 }
 
-export function Home({ profileName, profiles, activeId, states, micEnabled, recap, warmup, onOpen, onSelectProfile, onNewProfile, onMicCheck, onFreePlay }) {
+export function Home({ profileName, profiles, activeId, states, micEnabled, recap, warmup, onOpen, onSelectProfile, onNewProfile, onMicCheck, onSettings, onFreePlay }) {
   const v = VOICE.home
   const hero = Hero({ states, onOpen })
   const songs = COURSE.units.flatMap(u => u.lessons).filter(l => l.kind === 'song')
@@ -58,6 +60,7 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
         </div>
         <div style="display:flex;align-items:center;gap:22px;">
           <button class="btn-quiet" onClick={onFreePlay} style="padding:8px 16px;">{v.freePlay}</button>
+          <button class="btn-quiet" onClick={onSettings} style="padding:8px 16px;">{v.settings}</button>
           <div style="display:flex;align-items:center;gap:8px;">
             <div style="position:relative;width:9px;height:9px;">
               <div style={`position:absolute;inset:0;border-radius:50%;background:${micEnabled ? 'var(--sage)' : 'var(--todo)'};animation:breath 2.4s ease-out infinite;`}></div>
@@ -133,7 +136,8 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
                   return (
                     <div style="display:flex;align-items:center;gap:8px;">
                       <div style={`width:7px;height:7px;border-radius:50%;background:${dot};`}></div>
-                      <div style="font-size:13px;color:var(--ink-soft);">{l.title}</div>
+                      <div style={`font-size:13px;color:var(--ink-soft);${s === 'coming-soon' ? 'opacity:.6;' : ''}`}>{l.title}</div>
+                      {s === 'coming-soon' && <div style="font-family:var(--mono);font-size:8.5px;letter-spacing:1px;color:var(--ink-faint);border:1px dashed var(--line-soft);border-radius:5px;padding:1px 5px;">SOON</div>}
                     </div>
                   )
                 })}
