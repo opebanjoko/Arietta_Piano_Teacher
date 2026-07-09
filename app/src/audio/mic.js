@@ -23,8 +23,9 @@ export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm',
   let resumeTO = null
   let recovery = null
   let closing = false // our own teardown must not read as an interruption
+  let stopping = false // stop() wins over any in-flight recovery restart
 
-  const setState = (s) => { if (s !== state) { state = s; onState?.(s) } }
+  const setState = (s) => { if (stopping || s === state) return; state = s; onState?.(s) }
   const onVisibility = () => recovery?.visibility(!document.hidden)
 
   async function wire(mediaStream) {
@@ -84,9 +85,12 @@ export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm',
     unwire()
     if (ownsStream) {
       stream?.getTracks().forEach(t => t.stop())
-      stream = await acquire()
+      const media = await acquire()
+      if (stopping) { media.getTracks().forEach(t => t.stop()); throw new Error('mic stopped') }
+      stream = media
     }
     await wire(stream)
+    if (stopping) { unwire(); throw new Error('mic stopped') }
   }
 
   function armRecovery() {
@@ -143,6 +147,7 @@ export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm',
     },
 
     stop() {
+      if (stopping) return
       recovery?.stop()
       recovery = null
       document.removeEventListener('visibilitychange', onVisibility)
@@ -150,6 +155,7 @@ export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm',
       if (ownsStream) stream?.getTracks().forEach(t => t.stop())
       stream = null
       setState('idle')
+      stopping = true // after the final 'idle' — suppresses any later emission
     }
   }
 
