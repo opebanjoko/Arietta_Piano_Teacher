@@ -206,7 +206,13 @@ export const VOICE = {
     deleteLine: 'Remove {name} and everything they’ve played.',
     deleteButton: 'Remove this player',
     deleteConfirm: 'Yes — remove {name}',
-    cancel: 'Never mind'
+    cancel: 'Never mind',
+    diagTitle: 'For the beta helpers',
+    diagLine: 'If something odd happened, copy this and send it to us — it never leaves the iPad on its own.',
+    diagCopy: 'Copy report',
+    diagCopied: 'Copied — thank you',
+    diagClear: 'Clear the notes',
+    diagEmpty: 'Nothing to report — all quiet.'
   },
 
   firstRun: {

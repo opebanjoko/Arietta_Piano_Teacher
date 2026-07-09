@@ -18,10 +18,11 @@ function Card({ title, children }) {
   )
 }
 
-export function Settings({ profile, micEnabled, settings, glimpse,
-  onHome, onMicCheck, onAccent, onLabels, onReset, onDelete, canDelete }) {
+export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
+  onHome, onMicCheck, onAccent, onLabels, onReset, onDelete, onCopyDiag, onClearDiag, canDelete }) {
   const v = VOICE.settings
   const [confirming, setConfirming] = useState(null)
+  const [copied, setCopied] = useState(false)
   const accent = settings.accent ?? ACCENTS[0]
   const labels = settings.labels !== false
 
@@ -94,6 +95,27 @@ export function Settings({ profile, micEnabled, settings, glimpse,
               </div>
             </>
           )}
+        </Card>
+
+        <Card title={v.diagTitle}>
+          <div style="font-size:14px;color:var(--ink-soft);text-wrap:pretty;">{v.diagLine}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mono);line-height:1.7;">
+            <div>Arietta {diagInfo.version} — screen {diagInfo.screen}</div>
+            <div>Ears: {diagInfo.mic?.enabled ? `on (${diagInfo.mic.detector ?? 'mpm'})` : 'off'}{diagInfo.detectorAvgMs != null ? ` — ${diagInfo.detectorAvgMs.toFixed(1)}ms/frame` : ''}</div>
+          </div>
+          <div style="max-height:120px;overflow:auto;background:var(--card-warm);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-family:var(--mono);font-size:11px;color:var(--ink-soft);line-height:1.8;">
+            {diagInfo.entries.length === 0
+              ? <div>{v.diagEmpty}</div>
+              : diagInfo.entries.slice(-12).reverse().map(e => (
+                  <div key={e.t}>{new Date(e.t).toLocaleString()} — {e.kind}{e.detail ? `: ${e.detail}` : ''}</div>
+                ))}
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn-quiet" onClick={async () => { if (await onCopyDiag()) { setCopied(true); setTimeout(() => setCopied(false), 2500) } }}>
+              {copied ? v.diagCopied : v.diagCopy}
+            </button>
+            {diagInfo.entries.length > 0 && <button class="btn-quiet" onClick={onClearDiag}>{v.diagClear}</button>}
+          </div>
         </Card>
       </div>
     </section>
