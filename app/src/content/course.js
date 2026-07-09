@@ -46,6 +46,10 @@ export const COURSE = {
           done: {
             title: 'That’s Meet the keyboard — done.',
             line: 'Groups of two, groups of three, and a C beside every pair. The map makes sense now.'
+          },
+          recap: {
+            summary: 'Today the keyboard became a map — groups of two and three, and a C beside every pair.',
+            seed: 'Next time we find the C that lives in the very middle.'
           }
         },
         {
@@ -79,6 +83,10 @@ export const COURSE = {
           done: {
             title: 'That’s Finding middle C — done.',
             line: 'Middle C is home now. You can find it from anywhere.'
+          },
+          recap: {
+            summary: 'Today you found middle C — the home note — and gave it three steady knocks.',
+            seed: 'Next time your fingers get their numbers.'
           }
         },
         {
@@ -113,6 +121,10 @@ export const COURSE = {
           done: {
             title: 'That’s Hands say hello — done.',
             line: 'Three fingers said hello to C, and C said hello right back.'
+          },
+          recap: {
+            summary: 'Today three fingers said hello to middle C — thumb, pointer, and tall finger.',
+            seed: 'Next time C starts to sing — soft and loud.'
           }
         }
       ]
@@ -149,6 +161,10 @@ export const COURSE = {
           done: {
             title: 'That’s Middle C, again — done.',
             line: 'C has a singing tone now — soft, brave, and steady.'
+          },
+          recap: {
+            summary: 'Today middle C sang — soft as a secret, brave as a hello.',
+            seed: 'Next time C meets its neighbour, D.'
           }
         },
         {
@@ -161,6 +177,13 @@ export const COURSE = {
               prompt: 'This is D — it lives snug between the two black keys, just right of middle C. Finger 2. Play it.',
               sub: 'Middle C is marked below if you need the landmark.',
               targets: [n('D4', 2)]
+            },
+            {
+              kind: 'ear-choice',
+              prompt: 'Close your eyes. I’ll play two notes — was the second one higher or lower?',
+              sub: 'Ears first. No looking needed.',
+              play: [n('C4', 1), n('D4', 2)],
+              choices: [{ label: 'Higher', correct: true }, { label: 'Lower', correct: false }]
             },
             {
               kind: 'play',
@@ -184,6 +207,10 @@ export const COURSE = {
           done: {
             title: 'That’s Meet D — done.',
             line: 'C has a neighbour now, and your fingers know the way between them.'
+          },
+          recap: {
+            summary: 'Today you met D and walked the first little stairs — C to D and back.',
+            seed: 'Next time the hill grows a step taller. E is waiting.'
           }
         },
         {
@@ -214,12 +241,22 @@ export const COURSE = {
               prompt: 'And back down again: E, D, C.',
               sub: 'Gently does it — like stepping downstairs.',
               targets: [n('E4', 3), n('D4', 2), n('C4', 1)]
+            },
+            {
+              kind: 'ear-echo',
+              prompt: 'Copy me: I’ll play three notes, and you play them back.',
+              sub: 'Close your eyes if you like — your ears know these now.',
+              targets: [n('C4', 1), n('D4', 2), n('E4', 3)]
             }
           ],
           done: {
             title: 'That’s Meet E — done.',
             line: 'C, D and E — up the little hill and back down. You played every step, and it sounded lovely.',
             nextSongId: 'ode-to-joy'
+          },
+          recap: {
+            summary: 'Today you met E — up the little hill and back down, every step true.',
+            seed: 'Next time, a song is waiting for those notes.'
           }
         },
         {
@@ -240,6 +277,13 @@ export const COURSE = {
               targets: [n('G4', 5)]
             },
             {
+              kind: 'ear-choice',
+              prompt: 'Ears again: two notes — was the second one higher or lower?',
+              sub: 'Trust the first feeling.',
+              play: [n('G4', 5), n('F4', 4)],
+              choices: [{ label: 'Higher', correct: false }, { label: 'Lower', correct: true }]
+            },
+            {
               kind: 'play',
               prompt: 'The whole five-finger walk, thumb to pinky: C, D, E, F, G.',
               sub: 'One finger per key — the hand barely has to move.',
@@ -255,6 +299,10 @@ export const COURSE = {
           done: {
             title: 'That’s Meet F and G — done.',
             line: 'Five notes, five fingers — the whole neighbourhood, and you know everyone’s name.'
+          },
+          recap: {
+            summary: 'Today you met F and G — five fingers, five notes, the whole neighbourhood.',
+            seed: 'Next time those five notes turn into Ode to Joy.'
           }
         }
       ]
@@ -278,6 +326,10 @@ export const COURSE = {
           done: {
             title: 'You played Ode to Joy.',
             line: 'The whole first phrase, start to finish. That deserves a small bow.'
+          },
+          recap: {
+            summary: 'Today you played Ode to Joy — a real piece of music, start to finish.',
+            seed: 'Next time a boat sets off from G: Lightly Row.'
           }
         },
         {
@@ -292,6 +344,10 @@ export const COURSE = {
           done: {
             title: 'You played Lightly Row.',
             line: 'Starting away from home and finding your way back — that’s real sailing.'
+          },
+          recap: {
+            summary: 'Today you sailed Lightly Row — starting away from home and finding your way back.',
+            seed: 'Next time: moonlight, and long patient notes.'
           }
         },
         {
@@ -306,6 +362,10 @@ export const COURSE = {
           done: {
             title: 'You played Au clair de la lune.',
             line: 'Patient, moonlit playing — the long notes got their full breath.'
+          },
+          recap: {
+            summary: 'Today you played Au clair de la lune, calm as moonlight.',
+            seed: 'Rhythm joins in a little later — until then, replay your favourites.'
           }
         }
       ]

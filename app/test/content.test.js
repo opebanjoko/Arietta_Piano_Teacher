@@ -36,12 +36,25 @@ test('every drill step is well-formed and every target carries a finger', () => 
     assert.ok(l.steps.length >= 1, l.id)
     for (const [i, s] of l.steps.entries()) {
       assert.ok(s.prompt, `${l.id} step ${i}`)
-      assert.ok(['info', 'play'].includes(s.kind), `${l.id} step ${i}`)
-      if (s.kind === 'play') {
+      assert.ok(['info', 'play', 'ear-choice', 'ear-echo', 'watch-me'].includes(s.kind), `${l.id} step ${i}`)
+      if (s.kind === 'play' || s.kind === 'ear-echo') {
         assert.ok(s.targets.length >= 1, `${l.id} step ${i}`)
         s.targets.forEach(t => checkTarget(t, `${l.id} step ${i}`))
       }
+      if (s.kind === 'ear-choice') {
+        assert.ok(s.play.length >= 2, `${l.id} step ${i}: needs notes to play`)
+        s.play.forEach(t => checkTarget(t, `${l.id} step ${i}`))
+        assert.equal(s.choices.filter(c => c.correct).length, 1, `${l.id} step ${i}: exactly one correct choice`)
+      }
     }
+  }
+})
+
+test('ear moments exist in Units 1-3 and every lesson carries a recap (SR-CRS-10/12)', () => {
+  const earSteps = lessons.flatMap(l => (l.steps ?? []).filter(s => s.kind.startsWith('ear-')))
+  assert.ok(earSteps.length >= 2, 'the teacher trains ears from day one')
+  for (const l of lessons) {
+    assert.ok(l.recap?.summary && l.recap?.seed, `${l.id}: recap summary + next-time seed required`)
   }
 })
 

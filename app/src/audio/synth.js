@@ -3,6 +3,10 @@
  * through a lowpass, frequency computed from MIDI so it covers C3-C6.
  */
 import { freq } from '../core/notes.js'
+import { holdFor } from './gate.js'
+
+// how long a played tone rings; detection is suspended for this long (SR-OUT-02)
+const RING_MS = 1900
 
 let ctx = null
 
@@ -19,6 +23,7 @@ function ensureContext() {
 export function playTone(midi) {
   const ac = ensureContext()
   if (!ac) return
+  holdFor(RING_MS)
   const f = freq(midi), t = ac.currentTime
 
   const g = ac.createGain()

@@ -69,6 +69,15 @@ export async function saveSettings(db, profileId, value) {
   await db.put('app', { key: `settings:${profileId}`, value })
 }
 
+/** Device-level mic settings (SR-AUD-11): {enabled, clarity, detector} or null before first run. */
+export async function getMicSettings(db) {
+  return (await db.get('app', 'mic'))?.value ?? null
+}
+
+export async function saveMicSettings(db, value) {
+  await db.put('app', { key: 'mic', value })
+}
+
 export async function getActiveProfileId(db) {
   return (await db.get('app', 'activeProfile'))?.value ?? null
 }

@@ -72,6 +72,10 @@ more than two more units of content would.
 - QA: corpus tests automated in CI; live-piano acceptance of Units 1–3 (SR-VER-04).
 - **Exit**: a beginner completes Unit 2 on a real piano with no keyboard taps; false
   positives within bound during a 10-minute family-noise session.
+- **Build status (2026-07-09): complete; live-piano exit deferred.** All Phase 2
+  scope is built and verified with a synthesized-stream mic (full pipeline, no
+  hardware). The real-piano exit runs alongside the Phase 0 gate validation
+  (`spike/GATE_RUNBOOK.md`) — same pre-release blocker.
 
 ### Phase 3 — Full v1 course + family features — ~3–4 wks
 **Goal**: everything REQUIREMENTS.md §3–§7 promises for v1.

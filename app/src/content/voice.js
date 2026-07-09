@@ -28,6 +28,56 @@ export const VOICE = {
     'Warm and clear ♪'
   ],
 
+  ear: {
+    retry: 'No rush — have another listen. I’ll play them again.',
+    playing: 'Listen…',
+    again: '♪ Play them again'
+  },
+
+  micCheck: {
+    kicker: 'CAN YOU HEAR ME?',
+    title: 'May I use the microphone?',
+    line: 'I listen to your piano so I can tell you which notes I hear. The sound never leaves this iPad — nothing is recorded, nothing is sent anywhere.',
+    allow: 'Yes — have a listen',
+    later: 'Not now — I’ll tap the keys instead',
+    listenTitle: 'Lovely. Now play any note on your piano.',
+    listenLine: 'Any key at all — I’m listening.',
+    heardTitle: 'I heard {note}!',
+    heardLine: 'Did I get that right?',
+    confirm: 'That’s right →',
+    retry: 'Try another note',
+    sensitivity: 'If I miss quiet notes, slide toward Eager. If I imagine notes, slide toward Careful.',
+    sensLow: 'Careful',
+    sensHigh: 'Eager',
+    deniedTitle: 'That’s alright.',
+    deniedLine: 'We’ll use the tap keys under each lesson instead — everything works just the same. You can let me listen any time from the home screen.',
+    deniedButton: 'Onward →'
+  },
+
+  warmup: {
+    kicker: 'A LITTLE HELLO FIRST',
+    title: 'Shall we say hello to the keys first?',
+    line: 'A one-minute visit to {title} — something your fingers already know. Then, on to new things.',
+    accept: 'Warm up →',
+    skip: 'Skip today',
+    bridge: 'Warm and ready. Now — something new.',
+    onward: 'Onward — {title} →'
+  },
+
+  freePlay: {
+    kicker: 'FREE PLAY · NO GOALS HERE',
+    title: 'Just play.',
+    idle: 'Play anything — I’ll listen and tell you what I hear.',
+    heard: 'That was {note}!',
+    sparks: [
+      'Play it again, but one key higher?',
+      'What does it sound like very softly?',
+      'Try the same note far down low.',
+      'Two notes at once is allowed here — no one is checking.',
+      'Can you make it sound like rain?'
+    ]
+  },
+
   song: {
     lead: 'Next up: {target}',
     leadDone: 'Every note — well done.',
@@ -47,7 +97,11 @@ export const VOICE = {
   },
 
   home: {
-    micLine: 'Tap-key mode — my listening ears arrive soon',
+    micLine: 'Mic ready — I listen when a lesson starts',
+    micOffLine: 'Tap-key mode — tap “check my ears” to let me listen',
+    micCheckLink: 'check my ears',
+    freePlay: 'Just play →',
+    recapKicker: 'TODAY AT THE PIANO',
     kickerNext: 'NEXT UP · {unit} — {lesson}',
     lineNext: 'Ten gentle minutes is plenty. {lesson} is waiting for you.',
     btnNext: 'Continue — {lesson} →',

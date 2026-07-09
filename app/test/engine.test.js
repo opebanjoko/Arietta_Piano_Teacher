@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { startDrill, drillNote, drillContinue, drillAdvance, startSong, songNote, lessonStates } from '../src/core/engine.js'
+import { startDrill, drillNote, drillContinue, drillChoice, drillAdvance, startSong, songNote, lessonStates } from '../src/core/engine.js'
 import { findLesson, allLessons } from '../src/content/course.js'
 import { nameToMidi } from '../src/core/notes.js'
 import { noteEvent } from '../src/core/events.js'
@@ -86,7 +86,11 @@ test('encouragements do not repeat within a lesson', () => {
   let s = startDrill(lesson)
   const seen = []
   for (const step of lesson.steps) {
-    for (const t of step.targets) s = drillNote(s, lesson, tap(t.note))
+    if (step.kind === 'ear-choice') {
+      s = drillChoice(s, lesson, step.choices.findIndex(c => c.correct))
+    } else {
+      for (const t of step.targets) s = drillNote(s, lesson, tap(t.note))
+    }
     seen.push(s.feedback.text)
     s = drillAdvance(s, lesson)
   }

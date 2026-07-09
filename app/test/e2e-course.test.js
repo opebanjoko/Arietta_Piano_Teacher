@@ -6,7 +6,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { allLessons } from '../src/content/course.js'
-import { startDrill, drillNote, drillContinue, drillAdvance, startSong, songNote, lessonStates } from '../src/core/engine.js'
+import { startDrill, drillNote, drillContinue, drillChoice, drillAdvance, startSong, songNote, lessonStates } from '../src/core/engine.js'
 import { nameToMidi, midiToName } from '../src/core/notes.js'
 import { noteEvent } from '../src/core/events.js'
 
@@ -18,12 +18,14 @@ function playDrill(lesson, playTarget) {
   while (s.phase !== 'done') {
     assert.ok(++guard < 500, `${lesson.id}: drill did not converge`)
     const step = lesson.steps[s.stepIndex]
-    if (step.kind === 'info') {
-      s = drillContinue(s, lesson)
-    } else if (s.phase === 'working') {
-      s = playTarget(s, lesson, step.targets[s.seqPos])
-    } else if (s.phase === 'stepdone') {
+    if (s.phase === 'stepdone') {
       s = drillAdvance(s, lesson)
+    } else if (step.kind === 'info' || step.kind === 'watch-me') {
+      s = drillContinue(s, lesson)
+    } else if (step.kind === 'ear-choice') {
+      s = drillChoice(s, lesson, step.choices.findIndex(c => c.correct))
+    } else {
+      s = playTarget(s, lesson, step.targets[s.seqPos])
     }
   }
   return s

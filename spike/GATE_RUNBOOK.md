@@ -119,6 +119,11 @@ speakers as the second instrument, and note it in the gate record.
 5. Fill in the Results table below. The scorer applies the gate rule itself:
    pass = detection ≥ 95% AND false events ≤ 1 per 10 min.
 
+Alternative (automated): copy all the WAVs into `spike/corpus/` (gitignored —
+home audio never leaves this machine) and run `cd app && npm test`. The
+`recorded corpus meets the gate` test scores both detectors through the
+production pipeline and prints the same numbers.
+
 If one detector passes and the other doesn't, the passing one wins. If both
 pass, prefer the one with fewer false events (G2 beats G1 on a tie).
 

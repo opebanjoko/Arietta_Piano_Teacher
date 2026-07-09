@@ -1,8 +1,9 @@
 /** Drill lesson screen (SR-UI-01): steps, staff with fingering, hints, completion. */
 import { PlayHeader } from './PlayHeader.jsx'
 import { Staff } from './Staff.jsx'
+import { VOICE } from '../content/voice.js'
 
-export function Lesson({ lesson, drill, pill, onHome, onContinue, onNextSong }) {
+export function Lesson({ lesson, drill, pill, earPlaying, onHome, onContinue, onChoice, onReplayEar, onNextSong, doneAction }) {
   const step = lesson.steps[Math.min(drill.stepIndex, lesson.steps.length - 1)]
   const working = drill.phase !== 'done'
 
@@ -34,12 +35,34 @@ export function Lesson({ lesson, drill, pill, onHome, onContinue, onNextSong }) 
           </div>
           <div style="font-family:var(--serif);font-weight:600;font-size:28px;text-align:center;max-width:720px;text-wrap:pretty;line-height:1.2;">{step.prompt}</div>
           <div style="font-size:15px;color:var(--ink-soft);text-align:center;max-width:600px;">{step.sub}</div>
-          {step.kind === 'play' ? (
+          {step.kind === 'play' && (
             <div style="margin-top:8px;">
               <Staff notes={staffNotes} />
             </div>
-          ) : (
+          )}
+          {(step.kind === 'info' || step.kind === 'watch-me') && (
             <button class="btn-primary" onClick={onContinue} style="margin-top:18px;">Ready — next →</button>
+          )}
+          {step.kind === 'ear-choice' && (
+            <div style="display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:14px;">
+              <div style="display:flex;gap:14px;">
+                {step.choices.map((c, i) => (
+                  <button class="btn-primary" onClick={() => onChoice(i)} disabled={earPlaying}
+                    style={`padding:15px 34px;font-size:17px;${earPlaying ? 'opacity:.5;cursor:default;' : ''}`}>{c.label}</button>
+                ))}
+              </div>
+              <button class="btn-quiet" onClick={onReplayEar} disabled={earPlaying}>{earPlaying ? VOICE.ear.playing : VOICE.ear.again}</button>
+            </div>
+          )}
+          {step.kind === 'ear-echo' && (
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:14px;">
+              <div style="display:flex;gap:9px;">
+                {step.targets.map((_, i) => (
+                  <div style={`width:11px;height:11px;border-radius:50%;background:${i < drill.seqPos ? 'var(--sage)' : 'var(--todo)'};transition:background .25s;`}></div>
+                ))}
+              </div>
+              <button class="btn-quiet" onClick={onReplayEar} disabled={earPlaying}>{earPlaying ? VOICE.ear.playing : VOICE.ear.again}</button>
+            </div>
           )}
           <div style={`height:26px;font-size:16px;font-weight:700;text-align:center;color:${feedbackColor};transition:color .2s;`}>{feedback?.text || ' '}</div>
         </div>
@@ -51,10 +74,12 @@ export function Lesson({ lesson, drill, pill, onHome, onContinue, onNextSong }) 
           <div style="font-family:var(--serif);font-weight:600;font-size:34px;">{lesson.done.title}</div>
           <div style="font-size:15.5px;color:var(--ink-soft);max-width:520px;text-wrap:pretty;">{lesson.done.line}</div>
           <div style="display:flex;align-items:center;gap:14px;margin-top:12px;">
-            {lesson.done.nextSongId
-              ? <button class="btn-primary" onClick={() => onNextSong(lesson.done.nextSongId)}>Try it in a song →</button>
-              : <button class="btn-primary" onClick={onHome}>Back to my course</button>}
-            {lesson.done.nextSongId && <button class="btn-quiet" onClick={onHome} style="padding:12px 20px;font-size:14px;">Back to my course</button>}
+            {doneAction
+              ? <button class="btn-primary" onClick={doneAction.go}>{doneAction.label}</button>
+              : lesson.done.nextSongId
+                ? <button class="btn-primary" onClick={() => onNextSong(lesson.done.nextSongId)}>Try it in a song →</button>
+                : <button class="btn-primary" onClick={onHome}>Back to my course</button>}
+            {(doneAction || lesson.done.nextSongId) && <button class="btn-quiet" onClick={onHome} style="padding:12px 20px;font-size:14px;">Back to my course</button>}
           </div>
         </div>
       )}

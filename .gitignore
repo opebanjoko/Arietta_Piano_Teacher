@@ -6,3 +6,4 @@ app/dist/
 app/dev-dist/
 /*.jpeg
 *.pem
+spike/corpus/

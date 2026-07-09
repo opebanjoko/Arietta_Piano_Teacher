@@ -44,25 +44,27 @@ function unitStatus(unit, states, prevUnit) {
   return { text: fill(v.unitLocked, { prev: prevUnit.title }), active: false, complete: false, locked: true }
 }
 
-export function Home({ profileName, profiles, activeId, states, onOpen, onSelectProfile, onNewProfile }) {
+export function Home({ profileName, profiles, activeId, states, micEnabled, recap, warmup, onOpen, onSelectProfile, onNewProfile, onMicCheck, onFreePlay }) {
   const v = VOICE.home
   const hero = Hero({ states, onOpen })
   const songs = COURSE.units.flatMap(u => u.lessons).filter(l => l.kind === 'song')
 
   return (
-    <section style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;animation:fadeUp .4s ease;">
+    <section style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;animation:fadeUp .4s ease;position:relative;">
       <header style="display:flex;align-items:center;justify-content:space-between;padding:20px 36px 6px;">
         <div style="display:flex;align-items:baseline;gap:12px;">
           <div style="font-family:var(--serif);font-weight:700;font-size:25px;letter-spacing:.2px;">Arietta</div>
           <div style="font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--ink-mid);">a gentle piano teacher</div>
         </div>
         <div style="display:flex;align-items:center;gap:22px;">
+          <button class="btn-quiet" onClick={onFreePlay} style="padding:8px 16px;">{v.freePlay}</button>
           <div style="display:flex;align-items:center;gap:8px;">
             <div style="position:relative;width:9px;height:9px;">
-              <div style="position:absolute;inset:0;border-radius:50%;background:var(--sage);animation:breath 2.4s ease-out infinite;"></div>
-              <div style="position:absolute;inset:0;border-radius:50%;background:var(--sage-ink);"></div>
+              <div style={`position:absolute;inset:0;border-radius:50%;background:${micEnabled ? 'var(--sage)' : 'var(--todo)'};animation:breath 2.4s ease-out infinite;`}></div>
+              <div style={`position:absolute;inset:0;border-radius:50%;background:${micEnabled ? 'var(--sage-ink)' : 'var(--ink-faint)'};`}></div>
             </div>
-            <div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);">{v.micLine}</div>
+            <div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);">{micEnabled ? v.micLine : v.micOffLine}</div>
+            <button class="btn-quiet" onClick={onMicCheck} style="padding:5px 12px;font-size:11.5px;">{v.micCheckLink}</button>
           </div>
           <div style="display:flex;align-items:center;gap:10px;">
             <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:1.6px;color:var(--ink-faint);">PLAYING&nbsp;AS</div>
@@ -84,6 +86,16 @@ export function Home({ profileName, profiles, activeId, states, onOpen, onSelect
           </div>
         </div>
       </header>
+
+      {recap && (
+        <div style="padding:14px 36px 0;animation:fadeUp .5s ease;">
+          <div style="background:var(--accent-soft);border:1px solid var(--line-strong);border-radius:16px;padding:14px 22px;display:flex;flex-direction:column;gap:2px;">
+            <div class="kicker">{v.recapKicker}</div>
+            <div style="font-family:var(--serif);font-size:16.5px;color:var(--ink);">{recap.summary}</div>
+            <div style="font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink-soft);">{recap.seed}</div>
+          </div>
+        </div>
+      )}
 
       <div style="padding:18px 36px 4px;">
         <div style="position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:30px 38px 32px;box-shadow:0 10px 30px rgba(80,60,20,.07);">
@@ -163,6 +175,20 @@ export function Home({ profileName, profiles, activeId, states, onOpen, onSelect
           )
         })}
       </div>
+
+      {warmup && (
+        <div style="position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .4s ease;">
+          <div style="background:var(--card);border:1px solid var(--line);border-radius:22px;padding:38px 54px;box-shadow:0 24px 60px rgba(80,60,20,.16);text-align:center;max-width:520px;">
+            <div class="kicker">{VOICE.warmup.kicker}</div>
+            <div style="font-family:var(--serif);font-weight:600;font-size:30px;margin-top:8px;">{VOICE.warmup.title}</div>
+            <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{fill(VOICE.warmup.line, { title: warmup.lesson.title })}</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;">
+              <button class="btn-primary" onClick={warmup.accept}>{VOICE.warmup.accept}</button>
+              <button class="btn-quiet" onClick={warmup.skip} style="padding:12px 20px;font-size:14px;">{VOICE.warmup.skip}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
