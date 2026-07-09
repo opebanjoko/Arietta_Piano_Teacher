@@ -23,7 +23,7 @@ export function FirstRun({ onCreate, onCancel = null }) {
             onInput={e => setName(e.currentTarget.value)}
             placeholder={v.placeholder}
             autofocus
-            style="font-family:var(--sans);font-size:17px;font-weight:700;color:var(--ink);background:var(--card-warm);border:1.5px solid var(--btn-border);border-radius:999px;padding:12px 22px;width:200px;outline:none;text-align:center;"
+            style="font-family:var(--sans);font-size:17px;font-weight:700;color:var(--ink);background:var(--card-warm);border:1.5px solid var(--btn-border);border-radius:999px;padding:12px 22px;width:200px;text-align:center;"
           />
           <button type="submit" class="btn-primary" disabled={!name.trim()} style={name.trim() ? '' : 'opacity:.5;cursor:default;'}>
             {isNew ? v.newProfileButton : v.button}
