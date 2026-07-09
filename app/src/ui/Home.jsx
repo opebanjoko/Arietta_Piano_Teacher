@@ -33,6 +33,13 @@ function Hero({ states, onOpen }) {
   }
 }
 
+const pressable = (fn) => ({
+  role: 'button',
+  tabIndex: 0,
+  onClick: fn,
+  onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn() } }
+})
+
 function unitStatus(unit, states, prevUnit) {
   const v = VOICE.home
   // coming-soon lessons are visible but never block a unit's completion
@@ -59,15 +66,15 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
           <div style="font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--ink-mid);">a gentle piano teacher</div>
         </div>
         <div style="display:flex;align-items:center;gap:22px;">
-          <button class="btn-quiet" onClick={onFreePlay} style="padding:8px 16px;">{v.freePlay}</button>
-          <button class="btn-quiet" onClick={onSettings} style="padding:8px 16px;">{v.settings}</button>
+          <button class="btn-quiet hit" onClick={onFreePlay} style="padding:8px 16px;">{v.freePlay}</button>
+          <button class="btn-quiet hit" onClick={onSettings} style="padding:8px 16px;">{v.settings}</button>
           <div style="display:flex;align-items:center;gap:8px;">
             <div style="position:relative;width:9px;height:9px;">
               <div style={`position:absolute;inset:0;border-radius:50%;background:${micEnabled ? 'var(--sage)' : 'var(--todo)'};animation:breath 2.4s ease-out infinite;`}></div>
               <div style={`position:absolute;inset:0;border-radius:50%;background:${micEnabled ? 'var(--sage-ink)' : 'var(--ink-faint)'};`}></div>
             </div>
             <div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);">{micEnabled ? v.micLine : v.micOffLine}</div>
-            <button class="btn-quiet" onClick={onMicCheck} style="padding:5px 12px;font-size:11.5px;">{v.micCheckLink}</button>
+            <button class="btn-quiet hit" onClick={onMicCheck} style="padding:5px 12px;font-size:11.5px;">{v.micCheckLink}</button>
           </div>
           <div style="display:flex;align-items:center;gap:10px;">
             <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:1.6px;color:var(--ink-faint);">PLAYING&nbsp;AS</div>
@@ -75,14 +82,14 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
               {profiles.map(p => {
                 const active = p.id === activeId
                 return (
-                  <div key={p.id} onClick={() => onSelectProfile(p.id)} title={p.name}
+                  <div key={p.id} {...pressable(() => onSelectProfile(p.id))} class="hit" title={p.name}
                     style={`width:37px;height:37px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14.5px;cursor:pointer;background:${active ? 'var(--accent-ink)' : '#F1E8D5'};color:${active ? '#FFF9EC' : 'var(--ink-mono)'};box-shadow:${active ? '0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent)' : 'inset 0 0 0 1px var(--line-soft)'};transition:all .2s ease;`}>
                     {p.name[0].toUpperCase()}
                   </div>
                 )
               })}
               {profiles.length < 5 && (
-                <div onClick={onNewProfile} title="New player"
+                <div {...pressable(onNewProfile)} class="hit" title="New player"
                   style="width:37px;height:37px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;cursor:pointer;background:transparent;color:var(--ink-faint);box-shadow:inset 0 0 0 1.5px var(--line-soft);transition:all .2s ease;">+</div>
               )}
             </div>
@@ -125,7 +132,7 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
           const openable = st.active || st.complete
           const firstOpen = u.lessons.find(l => ['next', 'peek'].includes(states.get(l.id))) ?? u.lessons[0]
           return (
-            <div key={u.id} onClick={openable ? () => onOpen(firstOpen.id) : null}
+            <div key={u.id} {...(openable ? pressable(() => onOpen(firstOpen.id)) : {})}
               style={`background:${st.active ? 'var(--card)' : 'var(--card-warm)'};border:1px solid ${st.active ? 'var(--line-strong)' : 'var(--line)'};border-radius:16px;padding:16px 18px;opacity:${st.locked ? .55 : 1};cursor:${openable ? 'pointer' : 'default'};box-shadow:${st.active ? '0 6px 18px rgba(140,100,40,.10)' : 'none'};transition:all .2s ease;`}>
               <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.6px;color:var(--ink-faint);">{u.tag}</div>
               <div style="font-family:var(--serif);font-weight:600;font-size:19px;margin:6px 0 10px;">{u.title}</div>
@@ -169,7 +176,7 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
           const tag = s === 'complete' ? v.songDone : s === 'peek' ? v.songPeek : s === 'next' ? v.songNext : v.songNext
           const action = s === 'complete' ? v.songReplay : playable ? v.songPlay : v.songLocked
           return (
-            <div key={song.id} onClick={playable ? () => onOpen(song.id) : null}
+            <div key={song.id} {...(playable ? pressable(() => onOpen(song.id)) : {})}
               style={`background:${playable ? 'var(--card)' : 'var(--card-warm)'};border:1px solid ${playable ? 'var(--line-strong)' : 'var(--line)'};border-radius:16px;padding:16px 18px;opacity:${playable ? 1 : .55};cursor:${playable ? 'pointer' : 'default'};box-shadow:${playable ? '0 6px 18px rgba(140,100,40,.10)' : 'none'};transition:all .2s ease;`}>
               <div style={`font-family:var(--mono);font-size:10px;letter-spacing:1.6px;color:${playable ? 'var(--accent-ink)' : 'var(--ink-faint)'};`}>{tag}</div>
               <div style="font-family:var(--serif);font-weight:600;font-size:19px;margin:6px 0 6px;">{song.title}</div>

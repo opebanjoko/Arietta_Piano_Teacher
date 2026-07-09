@@ -9,6 +9,13 @@ const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
 
 export const ACCENTS = ['#B7813A', '#6F8C5A', '#5E7E9E', '#96608A']
 
+const pressable = (fn) => ({
+  role: 'button',
+  tabIndex: 0,
+  onClick: fn,
+  onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn() } }
+})
+
 function Card({ title, children }) {
   return (
     <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 24px;display:flex;flex-direction:column;gap:10px;">
@@ -48,9 +55,9 @@ export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
         <Card title={v.lookTitle}>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;">
             <div style="font-size:14px;color:var(--ink-soft);">{v.accentLine}</div>
-            <div style="display:flex;gap:9px;">
+            <div style="display:flex;gap:15px;">
               {ACCENTS.map(c => (
-                <div key={c} onClick={() => onAccent(c)}
+                <div key={c} {...pressable(() => onAccent(c))} class="hit"
                   style={`width:30px;height:30px;border-radius:50%;background:${c};cursor:pointer;box-shadow:${accent === c ? '0 0 0 3px var(--card), 0 0 0 5.5px ' + c : 'inset 0 0 0 1px rgba(0,0,0,.12)'};transition:box-shadow .15s ease;`}></div>
               ))}
             </div>
