@@ -3,8 +3,9 @@
  * existing 'app' store — on-device only, shared only when a parent copies
  * the export from Settings. Logged kinds are limited to app boots, unhandled
  * errors, and mic interruption/recovery/loss; never usage or progress.
- * Writes are serialized through a promise chain so concurrent callers
- * cannot drop entries.
+ * Writes are serialized through a promise chain and never reject — a
+ * failing write is dropped so diagnostics can never take the app down
+ * or feed back into the error hooks.
  */
 export const DIAG_CAP = 200
 const KEY = 'diagLog'
@@ -19,9 +20,8 @@ async function append(db, kind, detail, now) {
 let queue = Promise.resolve()
 
 export function logDiag(db, kind, detail = '', now = Date.now()) {
-  const run = queue.then(() => append(db, kind, detail, now))
-  queue = run.catch(() => {}) // one failed write must not jam the chain
-  return run
+  queue = queue.then(() => append(db, kind, detail, now)).catch(() => {})
+  return queue
 }
 
 export async function listDiag(db) {

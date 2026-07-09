@@ -51,6 +51,16 @@ test('concurrent un-awaited logDiag calls all land (no lost update)', async () =
   assert.deepEqual(entries.map(e => e.detail), ['first', 'second', 'third'])
 })
 
+test('a failing write neither rejects nor jams the chain', async () => {
+  const db = memDb()
+  const goodPut = db.put
+  db.put = async () => { db.put = goodPut; throw new Error('quota') }
+  await logDiag(db, 'error', 'dropped', 1) // must not reject
+  await logDiag(db, 'error', 'kept', 2)
+  const entries = await listDiag(db)
+  assert.deepEqual(entries.map(e => e.detail), ['kept'])
+})
+
 test('clearDiag empties the log; listDiag on a fresh db is []', async () => {
   const db = memDb()
   assert.deepEqual(await listDiag(db), [])
