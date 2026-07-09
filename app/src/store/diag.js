@@ -28,6 +28,7 @@ export async function listDiag(db) {
   return (await db.get('app', KEY))?.entries ?? []
 }
 
-export async function clearDiag(db) {
-  await db.put('app', { key: KEY, entries: [] })
+export function clearDiag(db) {
+  queue = queue.then(() => db.put('app', { key: KEY, entries: [] })).catch(() => {})
+  return queue
 }

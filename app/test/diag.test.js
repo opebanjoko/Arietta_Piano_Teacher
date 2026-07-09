@@ -68,3 +68,9 @@ test('clearDiag empties the log; listDiag on a fresh db is []', async () => {
   await clearDiag(db)
   assert.deepEqual(await listDiag(db), [])
 })
+
+test('clearDiag racing an un-awaited logDiag never resurrects the entry', async () => {
+  const db = memDb()
+  await Promise.all([logDiag(db, 'boot', 'x', 1), clearDiag(db)])
+  assert.deepEqual(await listDiag(db), [])
+})

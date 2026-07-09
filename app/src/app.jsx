@@ -249,6 +249,7 @@ export function App() {
     setMicSettings(settings)
     const back = micReturnRef.current === 'firstrun' && !profiles.length ? 'firstrun'
       : micReturnRef.current === 'settings' ? 'settings' : 'home'
+    if (back === 'settings') setDiagEntries(await listDiag(db))
     setScreen(back)
     micReturnRef.current = 'home'
   }
