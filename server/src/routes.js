@@ -9,25 +9,34 @@ const PIN_RE = /^\d{4,8}$/
 const CODE_RE = /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/
 const LOCK_AFTER = 5
 const LOCK_MS = 15 * 60 * 1000
-const MAX_ATTEMPT_ENTRIES = 10000
+const DEFAULT_MAX_ATTEMPT_ENTRIES = 10000
+let maxAttemptEntries = DEFAULT_MAX_ATTEMPT_ENTRIES
 const attempts = new Map() // code -> { fails, until }
 // fixed scrypt target for unknown codes, so a lookup miss costs the same as a real check
 const DUMMY_PIN_HASH = hashPin('000000')
 
-export function resetRateLimit() { attempts.clear() }
+/** Clears rate-limit state; tests may pass a small max to exercise cap eviction. */
+export function resetRateLimit(max = DEFAULT_MAX_ATTEMPT_ENTRIES) {
+  attempts.clear()
+  maxAttemptEntries = max
+}
 
 function limited(code, now) {
   const a = attempts.get(code)
   return a && a.fails >= LOCK_AFTER && now < a.until
 }
 
-// drop lockouts that have expired so the map can't grow without bound, then cap size as a backstop
+// only scans when at the cap: drop expired entries, then evict oldest not-yet-locked
+// entries. Never evicts an active lockout — the map may exceed the cap rather than
+// let an attacker flood a victim's 429 away.
 function pruneAttempts(now) {
+  if (attempts.size < maxAttemptEntries) return
   for (const [key, a] of attempts) {
     if (a.until <= now) attempts.delete(key)
   }
-  while (attempts.size > MAX_ATTEMPT_ENTRIES) {
-    attempts.delete(attempts.keys().next().value)
+  for (const [key, a] of attempts) {
+    if (attempts.size < maxAttemptEntries) break
+    if (a.fails < LOCK_AFTER) attempts.delete(key)
   }
 }
 

@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { openDb } from '../src/db.js'
 import { createApp } from '../src/index.js'
+import { resetRateLimit } from '../src/routes.js'
 
 async function start() {
   const db = openDb(':memory:')
@@ -77,6 +78,24 @@ test('many junk-code attempts do not affect a real code afterwards', async () =>
   }
   const ok = await s.call('POST', '/households/link', { code, pin: '4321' })
   assert.equal(ok.status, 200)
+  await s.close()
+})
+
+test('flooding valid-shaped codes past the cap does not evict an active lockout', async () => {
+  resetRateLimit(5) // small cap so the test can overflow it quickly
+  const s = await start()
+  const { code } = await (await s.call('POST', '/households', { pin: '4321' })).json()
+  for (let i = 0; i < 5; i++) {
+    assert.equal((await s.call('POST', '/households/link', { code, pin: '9999' })).status, 401)
+  }
+  // 20 distinct CODE_RE-valid nonexistent codes, each recorded in the attempts map
+  const alphabet = '23456789ABCDEFGHJKMN'
+  for (const ch of alphabet) {
+    assert.equal((await s.call('POST', '/households/link', { code: `QQQQQ${ch}`, pin: '0000' })).status, 401)
+  }
+  const locked = await s.call('POST', '/households/link', { code, pin: '4321' })
+  assert.equal(locked.status, 429)
+  resetRateLimit()
   await s.close()
 })
 
