@@ -26,9 +26,12 @@ localhost tunnel). Two easy options:
 **Option A — self-signed HTTPS on your Mac:**
 
     cd spike
-    npx http-server -S -p 8321
+    # once: create a self-signed certificate (http-server does not make one for you)
+    openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 \
+      -nodes -subj "/CN=arietta-spike"
+    npx http-server -S -C cert.pem -K key.pem -p 8321
 
-Find your Mac's LAN address (System Settings → Wi-Fi → Details, e.g.
+Find your Mac's LAN address (`ipconfig getifaddr en0`, e.g.
 `192.168.1.20`), then on the iPad open `https://192.168.1.20:8321/`.
 Safari will warn about the certificate — tap "Show Details" → "visit this
 website". You only need to accept it once.
