@@ -18,6 +18,8 @@ let clarity = 0.9
 let sampleRate = 48000
 let suspendedUntil = 0
 let ignores = [] // [{pcs:Set<pitch class>, untilMs}] — ringing accompaniment voicings
+let statSum = 0
+let statN = 0
 
 function ignored(pitch, timeMs) {
   ignores = ignores.filter(i => timeMs < i.untilMs)
@@ -26,11 +28,18 @@ function ignored(pitch, timeMs) {
 
 function onFrame({ frame, timeMs }) {
   if (timeMs < suspendedUntil) return
+  const t0 = performance.now()
   const level = rms(frame)
   const ev = tracker.feed(detect(frame, sampleRate), level, timeMs)
   if (ev && !ignored(ev.pitch, timeMs)) postMessage({ type: 'note', event: ev })
   const onset = onsets.feed(level, timeMs)
   if (onset) postMessage({ type: 'onset', event: onset })
+  statSum += performance.now() - t0
+  if (++statN >= 200) {
+    postMessage({ type: 'stats', avgMs: statSum / statN })
+    statSum = 0
+    statN = 0
+  }
 }
 
 onmessage = (e) => {
