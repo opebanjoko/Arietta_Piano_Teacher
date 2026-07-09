@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Music&family=Nunito+Sans:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,500&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin:0; padding:0; background:#F1E9D8; }
+    :root { --accent:#B7813A; --accent-ink: color-mix(in oklab, var(--accent) 58%, #241B10); --accent-soft: color-mix(in oklab, var(--accent) 14%, #FFFDF6); }
+    a { color: var(--accent-ink); text-decoration:none; }
+    a:hover { color:#241B10; text-decoration:underline; }
+    @keyframes eq { 0%,100% { transform:scaleY(.3); } 50% { transform:scaleY(1); } }
+    @keyframes breath { 0% { transform:scale(1); opacity:.8; } 100% { transform:scale(2.4); opacity:0; } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+    @keyframes floatNote { 0% { transform:translateY(18px); opacity:0; } 25% { opacity:.9; } 100% { transform:translateY(-95px); opacity:0; } }
+    @keyframes glowPulse { 0%,100% { box-shadow:0 0 0 4px color-mix(in oklab, var(--accent) 30%, transparent); } 50% { box-shadow:0 0 0 12px color-mix(in oklab, var(--accent) 6%, transparent); } }
+  </style>
+</helmet>
+
+<div style="width:100%;height:100vh;min-height:620px;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,#FAF5EA 0%,#F1E9D8 100%);color:#2B241C;font-family:'Nunito Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;">
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <section data-screen-label="Home — course map" style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;animation:fadeUp .4s ease;">
+
+      <header style="display:flex;align-items:center;justify-content:space-between;padding:20px 36px 6px;">
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:25px;letter-spacing:.2px;">Arietta</div>
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-style:italic;font-size:13.5px;color:#8A7B60;">a gentle piano teacher</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:22px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="position:relative;width:9px;height:9px;">
+              <div style="position:absolute;inset:0;border-radius:50%;background:#5E8C5A;animation:breath 2.4s ease-out infinite;"></div>
+              <div style="position:absolute;inset:0;border-radius:50%;background:#4E7D4E;"></div>
+            </div>
+            <div style="font-size:12.5px;font-weight:700;color:#6B5B41;">Mic ready — I listen when a lesson starts</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:9.5px;letter-spacing:1.6px;color:#A79878;">PLAYING&nbsp;AS</div>
+            <div style="display:flex;gap:7px;">
+              <sc-for list="{{ profiles }}" as="p" hint-placeholder-count="3">
+                <div onClick="{{ p.onSelect }}" title="{{ p.name }}" style="width:37px;height:37px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14.5px;cursor:pointer;background: {{ p.bg }};color: {{ p.color }};box-shadow: {{ p.ring }};transition:all .2s ease;">{{ p.initial }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div style="padding:18px 36px 4px;">
+        <div style="position:relative;overflow:hidden;background:#FFFDF6;border:1px solid #E7DCC4;border-radius:22px;padding:30px 38px 32px;box-shadow:0 10px 30px rgba(80,60,20,.07);">
+          <div style="position:absolute;left:0;right:0;bottom:26px;height:1.4px;background:rgba(43,36,28,.1);"></div>
+          <div style="position:absolute;left:0;right:0;bottom:39px;height:1.4px;background:rgba(43,36,28,.1);"></div>
+          <div style="position:absolute;left:0;right:0;bottom:52px;height:1.4px;background:rgba(43,36,28,.1);"></div>
+          <div style="position:absolute;left:0;right:0;bottom:65px;height:1.4px;background:rgba(43,36,28,.1);"></div>
+          <div style="position:absolute;left:0;right:0;bottom:78px;height:1.4px;background:rgba(43,36,28,.1);"></div>
+          <div style="position:absolute;right:46px;top:-38px;font-family:'Noto Music';font-size:200px;line-height:1;color:#2B241C;opacity:.06;pointer-events:none;">𝄞</div>
+          <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;">
+            <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:1.8px;color:#A79878;">{{ heroKicker }}</div>
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:38px;line-height:1.12;">{{ greeting }}</div>
+            <div style="font-size:15.5px;color:#6B5B41;max-width:560px;text-wrap:pretty;">{{ heroLine2 }}</div>
+            <div style="display:flex;align-items:center;gap:18px;margin-top:16px;">
+              <button onClick="{{ heroBtnClick }}" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-ink);color:#FFF9EC;border:none;border-radius:999px;padding:13px 26px;font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:15.5px;cursor:pointer;transition:filter .15s ease;" style-hover="filter:brightness(.92)">{{ heroBtnText }}</button>
+              <a href="#" onClick="{{ heroAltClick }}" style="font-size:14px;font-weight:700;">{{ heroAltText }}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:2px;color:#A79878;padding:22px 40px 10px;">YOUR PATH</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:0 36px;">
+        <sc-for list="{{ units }}" as="u" hint-placeholder-count="4">
+          <div onClick="{{ u.onClick }}" style="background: {{ u.bg }};border:1px solid {{ u.border }};border-radius:16px;padding:16px 18px;opacity: {{ u.opacity }};cursor: {{ u.cursor }};box-shadow: {{ u.shadow }};transition:all .2s ease;">
+            <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10px;letter-spacing:1.6px;color:#A79878;">{{ u.tag }}</div>
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:19px;margin:6px 0 10px;">{{ u.title }}</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <sc-for list="{{ u.lessons }}" as="l" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:7px;height:7px;border-radius:50%;background: {{ l.dot }};"></div>
+                  <div style="font-size:13px;color:#6B5B41;">{{ l.name }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:12px;font-size:12.5px;font-weight:800;color: {{ u.statusColor }};">{{ u.status }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:2px;color:#A79878;padding:24px 40px 10px;">SONGS YOU CAN PLAY</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:0 36px 30px;">
+        <div onClick="{{ goSong }}" style="background:#FFFDF6;border:1px solid #E0CFA8;border-radius:16px;padding:16px 18px;cursor:pointer;box-shadow:0 6px 18px rgba(140,100,40,.10);transition:all .2s ease;" style-hover="transform:translateY(-2px)">
+          <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10px;letter-spacing:1.6px;color:var(--accent-ink);">SNEAK PEEK</div>
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:19px;margin:6px 0 6px;">Ode to Joy</div>
+          <div style="font-size:13px;color:#6B5B41;text-wrap:pretty;">The famous first phrase — five notes you already know, C up to G.</div>
+          <div style="margin-top:12px;font-size:12.5px;font-weight:800;color:var(--accent-ink);">Play along →</div>
+        </div>
+        <div style="background:#FBF6EA;border:1px solid #E7DCC4;border-radius:16px;padding:16px 18px;opacity:.55;">
+          <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10px;letter-spacing:1.6px;color:#A79878;">UP NEXT</div>
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:19px;margin:6px 0 6px;">Lightly Row</div>
+          <div style="font-size:13px;color:#6B5B41;">Comes along with First Songs.</div>
+          <div style="margin-top:12px;font-size:12.5px;font-weight:800;color:#A79878;">Locked for now</div>
+        </div>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ isLesson }}" hint-placeholder-val="{{ false }}">
+    <section data-screen-label="Lesson — Meet E" style="flex:1;min-height:0;display:flex;flex-direction:column;animation:fadeUp .4s ease;">
+      <header style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:16px 30px 6px;">
+        <div>
+          <button onClick="{{ goHome }}" style="background:transparent;border:1.5px solid #D9CBB0;color:#6B5B41;border-radius:999px;padding:9px 16px;font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:background .15s ease;" style-hover="background:#F6EFDD">← My course</button>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10px;letter-spacing:1.8px;color:#A79878;">UNIT 2 · FIRST NOTES</div>
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:23px;">Meet E</div>
+        </div>
+        <div style="justify-self:end;">
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFDF6;border:1px solid #E4D9C2;border-radius:999px;padding:8px 16px 8px 13px;box-shadow:0 2px 10px rgba(80,60,20,.06);">
+            <div style="position:relative;width:10px;height:10px;">
+              <div style="position:absolute;inset:0;border-radius:50%;background:var(--accent);animation:breath 2.2s ease-out infinite;"></div>
+              <div style="position:absolute;inset:0;border-radius:50%;background:var(--accent-ink);"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:2.5px;height:16px;">
+              <sc-for list="{{ eqBars }}" as="bar" hint-placeholder-count="5">
+                <div style="width:3px;height: {{ bar.h }};border-radius:2px;background:var(--accent);transform-origin:center;animation:eq {{ bar.dur }} ease-in-out {{ bar.delay }} infinite;"></div>
+              </sc-for>
+            </div>
+            <div style="font-size:13px;font-weight:800;min-width:92px;color: {{ listenColor }};transition:color .2s;">{{ listenText }}</div>
+          </div>
+        </div>
+      </header>
+
+      <sc-if value="{{ lessonWorking }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:0 30px;">
+          <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:2px;color:#A79878;">{{ stepCounter }}</div>
+          <div style="display:flex;gap:7px;">
+            <sc-for list="{{ stepDots }}" as="d" hint-placeholder-count="4">
+              <div style="width:8px;height:8px;border-radius:50%;background: {{ d.bg }};transition:background .3s;"></div>
+            </sc-for>
+          </div>
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:28px;text-align:center;max-width:720px;text-wrap:pretty;line-height:1.2;">{{ stepPrompt }}</div>
+          <div style="font-size:15px;color:#6B5B41;text-align:center;max-width:600px;">{{ stepSub }}</div>
+          <div style="margin-top:8px;background:#FFFDF6;border:1px solid #E7DCC4;border-radius:18px;padding:8px 26px 0;box-shadow:0 8px 24px rgba(80,60,20,.06);">
+            <div style="position:relative;width:620px;max-width:80vw;height:166px;">
+              <sc-for list="{{ staffLines }}" as="line" hint-placeholder-count="5">
+                <div style="position:absolute;left:0;right:0;height:1.6px;background:rgba(43,36,28,.5);top: {{ line.top }}px;"></div>
+              </sc-for>
+              <div style="position:absolute;left:14px;top:20px;font-family:'Noto Music';font-size:78px;line-height:1;color:#2B241C;">𝄞</div>
+              <sc-for list="{{ lessonNotes }}" as="n" hint-placeholder-count="1">
+                <div style="position:absolute;left: {{ n.x }};top: {{ n.y }}px;width:0;height:0;">
+                  <div style="position:absolute;left:-20px;top:-1px;width:40px;height:1.8px;background:rgba(43,36,28,.55);opacity: {{ n.ledgerOp }};"></div>
+                  <div style="position:absolute;left:10px;top:-58px;width:2.4px;height:58px;border-radius:2px;background: {{ n.fill }};transition:background .25s;"></div>
+                  <div style="position:absolute;left:-13px;top:-9px;width:26px;height:18px;border-radius:50%;background: {{ n.fill }};transform:rotate(-16deg);animation: {{ n.anim }};transition:background .25s;"></div>
+                  <div style="position:absolute;left:0;top: {{ n.labelTop }};transform:translateX(-50%);font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;font-weight:700;letter-spacing:.5px;color: {{ n.labelColor }};">{{ n.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="height:26px;font-size:16px;font-weight:700;text-align:center;color: {{ feedbackColor }};transition:color .2s;">{{ feedbackText }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ lessonDoneV }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:0 30px;text-align:center;animation:fadeUp .45s ease;">
+          <div style="font-size:34px;color:var(--accent-ink);line-height:1;">♪</div>
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:34px;">That’s Meet E — done.</div>
+          <div style="font-size:15.5px;color:#6B5B41;max-width:520px;text-wrap:pretty;">C, D and E — up the little hill and back down. You played every step, and it sounded lovely.</div>
+          <div style="display:flex;align-items:center;gap:14px;margin-top:12px;">
+            <button onClick="{{ goSong }}" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-ink);color:#FFF9EC;border:none;border-radius:999px;padding:13px 26px;font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:15.5px;cursor:pointer;transition:filter .15s ease;" style-hover="filter:brightness(.92)">Try it in a song →</button>
+            <button onClick="{{ goHome }}" style="background:transparent;border:1.5px solid #D9CBB0;color:#6B5B41;border-radius:999px;padding:12px 20px;font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:14px;cursor:pointer;transition:background .15s ease;" style-hover="background:#F6EFDD">Back to my course</button>
+          </div>
+        </div>
+      </sc-if>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ isSong }}" hint-placeholder-val="{{ false }}">
+    <section data-screen-label="Song — Ode to Joy" style="flex:1;min-height:0;display:flex;flex-direction:column;position:relative;animation:fadeUp .4s ease;">
+      <header style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:16px 30px 6px;">
+        <div>
+          <button onClick="{{ goHome }}" style="background:transparent;border:1.5px solid #D9CBB0;color:#6B5B41;border-radius:999px;padding:9px 16px;font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:background .15s ease;" style-hover="background:#F6EFDD">← My course</button>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10px;letter-spacing:1.8px;color:#A79878;">PLAY-ALONG · IT WAITS FOR YOU</div>
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:23px;">Ode to Joy — first phrase</div>
+        </div>
+        <div style="justify-self:end;">
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFDF6;border:1px solid #E4D9C2;border-radius:999px;padding:8px 16px 8px 13px;box-shadow:0 2px 10px rgba(80,60,20,.06);">
+            <div style="position:relative;width:10px;height:10px;">
+              <div style="position:absolute;inset:0;border-radius:50%;background:var(--accent);animation:breath 2.2s ease-out infinite;"></div>
+              <div style="position:absolute;inset:0;border-radius:50%;background:var(--accent-ink);"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:2.5px;height:16px;">
+              <sc-for list="{{ eqBars }}" as="bar" hint-placeholder-count="5">
+                <div style="width:3px;height: {{ bar.h }};border-radius:2px;background:var(--accent);transform-origin:center;animation:eq {{ bar.dur }} ease-in-out {{ bar.delay }} infinite;"></div>
+              </sc-for>
+            </div>
+            <div style="font-size:13px;font-weight:800;min-width:92px;color: {{ listenColor }};transition:color .2s;">{{ listenText }}</div>
+          </div>
+        </div>
+      </header>
+
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:0 30px;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <button onClick="{{ hearIt }}" style="background:transparent;border:1.5px solid #D9CBB0;color:#6B5B41;border-radius:999px;padding:9px 18px;font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:background .15s ease;" style-hover="background:#F6EFDD">{{ hearLabel }}</button>
+          <div style="width:230px;height:7px;border-radius:99px;background:#E7DCC4;overflow:hidden;">
+            <div style="height:100%;border-radius:99px;background:var(--accent-ink);width: {{ progressW }};transition:width .3s ease;"></div>
+          </div>
+          <div style="font-size:12.5px;font-weight:700;color:#8A7B60;">{{ songCount }}</div>
+        </div>
+        <div style="background:#FFFDF6;border:1px solid #E7DCC4;border-radius:18px;padding:8px 30px 0;box-shadow:0 8px 24px rgba(80,60,20,.06);">
+          <div style="position:relative;width:1060px;max-width:88vw;height:170px;">
+            <sc-for list="{{ staffLines }}" as="line" hint-placeholder-count="5">
+              <div style="position:absolute;left:0;right:0;height:1.6px;background:rgba(43,36,28,.5);top: {{ line.top }}px;"></div>
+            </sc-for>
+            <div style="position:absolute;left:10px;top:20px;font-family:'Noto Music';font-size:78px;line-height:1;color:#2B241C;">𝄞</div>
+            <sc-for list="{{ songNotes }}" as="n" hint-placeholder-count="15">
+              <div style="position:absolute;left: {{ n.x }};top: {{ n.y }}px;width:0;height:0;">
+                <div style="position:absolute;left:-20px;top:-1px;width:40px;height:1.8px;background:rgba(43,36,28,.55);opacity: {{ n.ledgerOp }};"></div>
+                <div style="position:absolute;left:9px;top:-54px;width:2.2px;height:54px;border-radius:2px;background: {{ n.fill }};transition:background .25s;"></div>
+                <div style="position:absolute;left:-12px;top:-8.5px;width:24px;height:17px;border-radius:50%;background: {{ n.fill }};transform: {{ n.tf }};animation: {{ n.anim }};transition:background .25s, transform .2s;"></div>
+                <div style="position:absolute;left:0;top: {{ n.labelTop }};transform:translateX(-50%);font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:.5px;color: {{ n.labelColor }};">{{ n.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:26px;height:26px;">
+          <div style="font-size:15.5px;font-weight:800;color: {{ songLeadColor }};transition:color .2s;">{{ songLead }}</div>
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-style:italic;font-size:14.5px;color:#7A9070;">{{ songCheer }}</div>
+        </div>
+      </div>
+
+      <sc-if value="{{ isSongDone }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .5s ease;">
+          <sc-for list="{{ floatNotes }}" as="f" hint-placeholder-count="5">
+            <div style="position:absolute;left: {{ f.left }};top: {{ f.top }};font-size: {{ f.size }};color:var(--accent-ink);opacity:0;animation:floatNote {{ f.dur }} ease-in-out {{ f.delay }} infinite;">{{ f.glyph }}</div>
+          </sc-for>
+          <div style="position:relative;background:#FFFDF6;border:1px solid #E7DCC4;border-radius:22px;padding:38px 54px;box-shadow:0 24px 60px rgba(80,60,20,.16);text-align:center;max-width:560px;">
+            <div style="font-size:30px;color:var(--accent-ink);line-height:1;">♫</div>
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:33px;margin-top:8px;">You played Ode to Joy.</div>
+            <div style="font-size:15.5px;color:#6B5B41;margin-top:8px;text-wrap:pretty;">The whole first phrase, start to finish. That deserves a small bow.</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;">
+              <button onClick="{{ replaySong }}" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-ink);color:#FFF9EC;border:none;border-radius:999px;padding:13px 26px;font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:15px;cursor:pointer;transition:filter .15s ease;" style-hover="filter:brightness(.92)">Play it again</button>
+              <button onClick="{{ goHome }}" style="background:transparent;border:1.5px solid #D9CBB0;color:#6B5B41;border-radius:999px;padding:12px 20px;font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:14px;cursor:pointer;transition:background .15s ease;" style-hover="background:#F6EFDD">Back to my course</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ showPiano }}" hint-placeholder-val="{{ false }}">
+    <section data-screen-label="Mic simulator keyboard" style="flex:none;padding:2px 28px 18px;">
+      <div style="border:1px solid #DCCFB4;border-radius:16px;overflow:hidden;background:#FBF6EA;box-shadow:0 10px 30px rgba(80,60,20,.09);">
+        <div style="display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px dashed #DCCFB4;">
+          <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10px;letter-spacing:1.4px;color:#7A6A48;border:1px dashed #B9A87F;border-radius:6px;padding:3px 8px;background:#FFFDF6;">MIC&nbsp;SIMULATOR</div>
+          <div style="font-size:12.5px;color:#8A7B60;">Tap the keys you’d play on your real piano — I’ll pretend the microphone heard them.</div>
+        </div>
+        <div style="height:6px;background:linear-gradient(180deg,#A4453C,#8C362E);"></div>
+        <div style="position:relative;height:168px;background:#241B12;">
+          <div style="display:flex;height:100%;">
+            <sc-for list="{{ whiteKeys }}" as="k" hint-placeholder-count="8">
+              <div onClick="{{ k.onTap }}" style="flex:1;position:relative;z-index:1;border:1px solid #D9CBB4;border-top:none;border-radius:0 0 8px 8px;background: {{ k.bg }};box-shadow: {{ k.shadow }};animation: {{ k.anim }};cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:9px;transition:background .12s ease;">
+                <div style="position:absolute;top:110px;left:50%;transform:translateX(-50%);font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:9.5px;letter-spacing:.8px;color:rgba(43,36,28,.42);white-space:nowrap;opacity: {{ k.markerOp }};">middle&nbsp;C</div>
+                <div style="font-weight:800;font-size:14px;color: {{ k.labelColor }};opacity: {{ k.labelOp }};">{{ k.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ blackKeys }}" as="b" hint-placeholder-count="5">
+            <div onClick="{{ b.onTap }}" style="position:absolute;top:0;left: {{ b.left }};width:7.4%;height:104px;background: {{ b.bg }};border-radius:0 0 7px 7px;box-shadow:0 4px 8px rgba(20,12,4,.4);cursor:pointer;z-index:2;transition:background .12s ease;"></div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showKeyLabels&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Keyboard&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#B7813A&quot;,&quot;options&quot;:[&quot;#B7813A&quot;,&quot;#7C8A55&quot;,&quot;#527E8F&quot;,&quot;#A06A5E&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.WHITE = ['C4','D4','E4','F4','G4','A4','B4','C5'];
+    this.BLACKS = [{n:'C#4',after:0},{n:'D#4',after:1},{n:'F#4',after:3},{n:'G#4',after:4},{n:'A#4',after:5}];
+    this.FREQ = {'C4':261.63,'C#4':277.18,'D4':293.66,'D#4':311.13,'E4':329.63,'F4':349.23,'F#4':369.99,'G4':392,'G#4':415.3,'A4':440,'A#4':466.16,'B4':493.88,'C5':523.25};
+    this.NOTE_Y = {'C4':116,'D4':109,'E4':102,'F4':95,'G4':88,'A4':81,'B4':74,'C5':67};
+    this.STEPS = [
+      { prompt: 'This is E — it lives just to the right of D.', sub: 'Find it on your piano and play it once, whenever you’re ready.', targets: ['E4'] },
+      { prompt: 'Lovely. Now play E three times, slow and steady.', sub: 'No rush — let each note ring before the next one.', targets: ['E4','E4','E4'] },
+      { prompt: 'Walk up the little hill: C, then D, then E.', sub: 'One finger is fine. Middle C is marked on the keyboard.', targets: ['C4','D4','E4'] },
+      { prompt: 'And back down again: E, D, C.', sub: 'Gently does it — like stepping downstairs.', targets: ['E4','D4','C4'] }
+    ];
+    this.ENC = ['There it is ♪', 'Steady as a clock ♪', 'Up the hill you went ♪', 'And softly back down ♪'];
+    this.SONG = 'E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4 D4 D4'.split(' ');
+    this._tos = [];
+    this.state = {
+      screen: 'home', profile: 'Ava',
+      stepIndex: 0, seqPos: 0, misses: 0, phase: 'working',
+      feedback: '', feedbackKind: '', heard: null, pressed: null, lessonDoneOnce: false,
+      songPos: 0, songMisses: 0, songHint: '', songDone: false, demoOn: false, demoPos: -1
+    };
+  }
+
+  componentDidMount() { this.applyAccent(); }
+  componentDidUpdate(pp) { if (pp && pp.accent !== this.props.accent) this.applyAccent(); }
+  componentWillUnmount() {
+    this._dead = true;
+    this._tos.forEach(clearTimeout);
+    if (this._hTO) clearTimeout(this._hTO);
+    if (this._pTO) clearTimeout(this._pTO);
+    if (this._ac) { try { this._ac.close(); } catch (e) {} }
+  }
+  applyAccent() {
+    document.documentElement.style.setProperty('--accent', this.props.accent ?? '#B7813A');
+  }
+  to(fn, ms) { const id = setTimeout(() => { if (!this._dead) fn(); }, ms); this._tos.push(id); }
+  clearTos() { this._tos.forEach(clearTimeout); this._tos = []; }
+
+  playTone(note) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!this._ac) this._ac = new AC();
+      if (this._ac.state === 'suspended') this._ac.resume();
+      const ac = this._ac, f = this.FREQ[note] || 440, t = ac.currentTime;
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.22, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.7);
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
+      const o1 = ac.createOscillator(); o1.type = 'triangle'; o1.frequency.value = f;
+      const o2 = ac.createOscillator(); o2.type = 'sine'; o2.frequency.value = f * 2;
+      const g2 = ac.createGain();
+      g2.gain.setValueAtTime(0.06, t);
+      g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+      o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(ac.destination);
+      o1.start(t); o2.start(t); o1.stop(t + 1.8); o2.stop(t + 1.0);
+    } catch (e) {}
+  }
+
+  L(n) { return n.indexOf('#') >= 0 ? n.replace('4', '') : n.slice(0, 1); }
+  whiteIdx(n) { return this.WHITE.indexOf(n); }
+
+  hintFor(heard, target, misses, inSong) {
+    const P = ['Almost — ', 'So close — ', 'Nearly — '];
+    const p = P[Math.max(0, misses - 1) % 3];
+    if (heard.indexOf('#') >= 0) return p + 'that was one of the black keys. ' + this.L(target) + ' is a white key.';
+    const hi = this.whiteIdx(heard), ti = this.whiteIdx(target);
+    const d = Math.abs(ti - hi), dir = ti > hi ? 'right' : 'left';
+    const W = ['', 'one key', 'two keys', 'three keys', 'four keys', 'five keys', 'six keys', 'seven keys'];
+    const where = W[d] + ' to the ' + dir;
+    if (inSong) return p + 'I heard ' + this.L(heard) + '. The next note is ' + this.L(target) + ' — ' + where + '.';
+    return p + 'I heard ' + this.L(heard) + '. ' + this.L(target) + ' is ' + where + '.';
+  }
+
+  markHeard(note) {
+    if (this._hTO) clearTimeout(this._hTO);
+    this.setState({ heard: note });
+    this._hTO = setTimeout(() => { if (!this._dead) this.setState({ heard: null }); }, 1600);
+  }
+  press(note) {
+    if (this._pTO) clearTimeout(this._pTO);
+    this.setState({ pressed: note });
+    this._pTO = setTimeout(() => { if (!this._dead) this.setState({ pressed: null }); }, 170);
+  }
+
+  tapKey(note) {
+    this.playTone(note);
+    this.press(note);
+    this.markHeard(note);
+    const s = this.state;
+    if (s.demoOn) return;
+    if (s.screen === 'lesson' && s.phase === 'working') this.evalLesson(note);
+    else if (s.screen === 'song' && !s.songDone) this.evalSong(note);
+  }
+
+  evalLesson(note) {
+    const s = this.state, step = this.STEPS[s.stepIndex], target = step.targets[s.seqPos];
+    if (note === target) {
+      const np = s.seqPos + 1;
+      if (np >= step.targets.length) {
+        const wasLast = s.stepIndex + 1 >= this.STEPS.length;
+        this.setState({ seqPos: np, misses: 0, phase: 'stepdone', feedback: this.ENC[s.stepIndex % this.ENC.length], feedbackKind: 'good' });
+        this.to(() => {
+          if (wasLast) this.setState({ phase: 'lessondone', lessonDoneOnce: true, feedback: '', feedbackKind: '' });
+          else this.setState({ stepIndex: s.stepIndex + 1, seqPos: 0, misses: 0, phase: 'working', feedback: '', feedbackKind: '' });
+        }, 1150);
+      } else {
+        this.setState({ seqPos: np, misses: 0, feedback: '', feedbackKind: '' });
+      }
+    } else {
+      const m = s.misses + 1;
+      this.setState({ misses: m, feedback: this.hintFor(note, target, m, false), feedbackKind: 'hint' });
+    }
+  }
+
+  evalSong(note) {
+    const s = this.state, target = this.SONG[s.songPos];
+    if (note === target) {
+      const np = s.songPos + 1;
+      if (np >= this.SONG.length) {
+        this.setState({ songPos: np, songMisses: 0, songHint: '' });
+        this.to(() => this.setState({ songDone: true }), 500);
+      } else {
+        this.setState({ songPos: np, songMisses: 0, songHint: '' });
+      }
+    } else {
+      const m = s.songMisses + 1;
+      this.setState({ songMisses: m, songHint: this.hintFor(note, target, m, true) });
+    }
+  }
+
+  hearIt() {
+    if (this.state.demoOn || this.state.songDone) return;
+    this.setState({ demoOn: true });
+    this.SONG.forEach((n, i) => this.to(() => { this.playTone(n); this.setState({ demoPos: i }); }, 430 * i));
+    this.to(() => this.setState({ demoOn: false, demoPos: -1 }), 430 * this.SONG.length + 480);
+  }
+
+  go(screen, e) {
+    if (e && e.preventDefault) e.preventDefault();
+    this.clearTos();
+    const patch = { screen, feedback: '', feedbackKind: '', heard: null, demoOn: false, demoPos: -1, songHint: '' };
+    if (screen === 'lesson') {
+      if (this.state.phase === 'lessondone') Object.assign(patch, { stepIndex: 0, seqPos: 0, misses: 0, phase: 'working' });
+      else if (this.state.phase === 'stepdone') {
+        if (this.state.stepIndex + 1 >= this.STEPS.length) Object.assign(patch, { phase: 'lessondone', lessonDoneOnce: true });
+        else Object.assign(patch, { stepIndex: this.state.stepIndex + 1, seqPos: 0, misses: 0, phase: 'working' });
+      }
+    }
+    if (screen === 'song' && this.state.songDone) Object.assign(patch, { songPos: 0, songMisses: 0, songDone: false });
+    this.setState(patch);
+  }
+
+  replaySong() {
+    this.clearTos();
+    this.setState({ songPos: 0, songMisses: 0, songDone: false, songHint: '', demoOn: false, demoPos: -1 });
+  }
+
+  noteObj(t, status, x, w) {
+    const y = this.NOTE_Y[t];
+    const fill = status === 'played' ? '#5E8C5A' : status === 'current' ? 'var(--accent)' : status === 'demo' ? 'var(--accent-ink)' : '#C9BC9F';
+    return {
+      x: (x / w * 100).toFixed(2) + '%', y,
+      fill,
+      anim: status === 'current' ? 'glowPulse 1.8s ease-in-out infinite' : 'none',
+      tf: status === 'demo' ? 'rotate(-16deg) scale(1.22)' : 'rotate(-16deg)',
+      ledgerOp: t === 'C4' ? 1 : 0,
+      label: this.L(t),
+      labelColor: status === 'current' ? 'var(--accent-ink)' : status === 'played' ? '#5E8C5A' : '#B4A585',
+      labelTop: (140 - y) + 'px'
+    };
+  }
+
+  renderVals() {
+    const s = this.state, P = this.props;
+    const showLabels = P.showKeyLabels ?? true;
+    const h = new Date().getHours();
+    const tod = h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
+    const sage = '#5E8C5A', sageInk = '#4E7D4E', todo = '#D6C9AC';
+
+    const profiles = ['Mom', 'Leo', 'Ava'].map(name => {
+      const active = name === s.profile;
+      return {
+        initial: name[0], name,
+        onSelect: () => this.setState({ profile: name }),
+        bg: active ? 'var(--accent-ink)' : '#F1E8D5',
+        color: active ? '#FFF9EC' : '#7A6A48',
+        ring: active ? '0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent)' : 'inset 0 0 0 1px #DCCFB4'
+      };
+    });
+
+    const done = s.lessonDoneOnce;
+    const units = [
+      {
+        tag: 'UNIT 1', title: 'Sitting at the Piano',
+        lessons: [['Meet the keyboard', sage], ['Finding middle C', sage], ['Hands say hello', sage]],
+        status: 'Complete', statusColor: sageInk, opacity: 1, bg: '#FBF6EA', border: '#E2D6BC', shadow: 'none', cursor: 'default', onClick: null
+      },
+      {
+        tag: 'UNIT 2', title: 'First Notes',
+        lessons: [['Middle C, again', sage], ['Meet D', sage], ['Meet E', done ? sage : 'var(--accent-ink)']],
+        status: done ? 'Complete — replay Meet E →' : '2 of 3 · continue →',
+        statusColor: 'var(--accent-ink)', opacity: 1, bg: '#FFFDF6', border: '#E0CFA8',
+        shadow: '0 6px 18px rgba(140,100,40,.10)', cursor: 'pointer', onClick: () => this.go('lesson')
+      },
+      {
+        tag: 'UNIT 3', title: 'First Songs',
+        lessons: [['Ode to Joy', todo], ['Lightly Row', todo], ['Au clair de la lune', todo]],
+        status: 'Unlocks after First Notes', statusColor: '#A79878', opacity: .55, bg: '#FBF6EA', border: '#E7DCC4', shadow: 'none', cursor: 'default', onClick: null
+      },
+      {
+        tag: 'UNIT 4', title: 'Both Hands Say Hello',
+        lessons: [['Left hand joins', todo], ['Two-note duets', todo], ['Your first chord', todo]],
+        status: 'Locked for now', statusColor: '#A79878', opacity: .55, bg: '#FBF6EA', border: '#E7DCC4', shadow: 'none', cursor: 'default', onClick: null
+      }
+    ].map(u => ({ ...u, lessons: u.lessons.map(l => ({ name: l[0], dot: l[1] })) }));
+
+    const step = this.STEPS[Math.min(s.stepIndex, this.STEPS.length - 1)];
+    const xs = step.targets.length === 1 ? [310] : [210, 330, 450];
+    const lessonNotes = step.targets.map((t, i) => {
+      const status = i < s.seqPos ? 'played' : (i === s.seqPos && s.phase === 'working') ? 'current' : 'up';
+      return this.noteObj(t, status, xs[i], 620);
+    });
+
+    const songNotes = this.SONG.map((t, i) => {
+      let status = 'up';
+      if (s.demoOn && i === s.demoPos) status = 'demo';
+      else if (i < s.songPos) status = 'played';
+      else if (i === s.songPos && !s.songDone && !s.demoOn) status = 'current';
+      return this.noteObj(t, status, 112 + i * 62, 1060);
+    });
+
+    const glowNote =
+      (s.screen === 'lesson' && s.phase === 'working' && s.misses >= 2) ? step.targets[s.seqPos] :
+      (s.screen === 'song' && !s.songDone && s.songMisses >= 2) ? this.SONG[s.songPos] : null;
+
+    const whiteKeys = this.WHITE.map(n => {
+      const pressed = s.pressed === n, glow = n === glowNote;
+      return {
+        label: this.L(n),
+        labelOp: showLabels ? 1 : 0,
+        markerOp: n === 'C4' ? 1 : 0,
+        onTap: () => this.tapKey(n),
+        bg: pressed ? 'linear-gradient(180deg,#F1E3BE,#EAD9AC)' : glow ? 'linear-gradient(180deg,#FFF8E2,#F8ECC8)' : 'linear-gradient(180deg,#FFFDF6,#F4ECD9)',
+        shadow: pressed ? 'inset 0 3px 10px rgba(90,60,20,.28)' : 'inset 0 -7px 0 rgba(214,198,166,.5)',
+        anim: glow ? 'glowPulse 1.5s ease-in-out infinite' : 'none',
+        labelColor: glow ? 'var(--accent-ink)' : '#8A7B60'
+      };
+    });
+    const blackKeys = this.BLACKS.map(b => {
+      const pressed = s.pressed === b.n;
+      return {
+        left: ((b.after + 1) * 12.5 - 3.7) + '%',
+        onTap: () => this.tapKey(b.n),
+        bg: pressed ? 'linear-gradient(180deg,#6B5840,#4A3A28)' : 'linear-gradient(180deg,#423526,#241B12)'
+      };
+    });
+
+    const feedbackColor = s.feedbackKind === 'good' ? sageInk : s.feedbackKind === 'hint' ? '#A05A1C' : 'transparent';
+    const songTarget = this.SONG[Math.min(s.songPos, this.SONG.length - 1)];
+    const songLead = s.songHint ? s.songHint : (s.songPos >= this.SONG.length ? 'Every note — well done.' : 'Next up: ' + this.L(songTarget));
+    const cheer = s.songPos >= 12 ? 'almost home…' : s.songPos >= 9 ? 'more than halfway' : s.songPos >= 6 ? 'you’re really doing it' : s.songPos >= 3 ? 'a lovely start' : '';
+
+    return {
+      isHome: s.screen === 'home',
+      isLesson: s.screen === 'lesson',
+      isSong: s.screen === 'song',
+      showPiano: s.screen !== 'home',
+      goHome: (e) => this.go('home', e),
+      goLesson: (e) => this.go('lesson', e),
+      goSong: (e) => this.go('song', e),
+
+      greeting: 'Good ' + tod + ', ' + s.profile + '.',
+      heroKicker: done ? 'A SONG IS WAITING' : 'NEXT UP · UNIT 2 — MEET E',
+      heroLine2: done
+        ? 'Meet E is done — and it sounds even better inside a song. Ode to Joy is ready when you are.'
+        : 'Ten gentle minutes is plenty. Middle C’s neighbours are waiting to be introduced.',
+      heroBtnText: done ? 'Play Ode to Joy →' : 'Continue — Meet E →',
+      heroBtnClick: (e) => this.go(done ? 'song' : 'lesson', e),
+      heroAltText: done ? 'or revisit Meet E' : 'or peek at Ode to Joy',
+      heroAltClick: (e) => this.go(done ? 'lesson' : 'song', e),
+      profiles, units,
+
+      listenText: s.heard ? 'Heard ' + this.L(s.heard) : (s.demoOn ? 'Playing it…' : 'Listening…'),
+      listenColor: s.heard ? 'var(--accent-ink)' : '#6B5B41',
+      eqBars: [0, 1, 2, 3, 4].map(i => ({ h: [9, 14, 17, 12, 8][i] + 'px', dur: (1.1 + (i % 3) * 0.28) + 's', delay: (i * 0.16) + 's' })),
+
+      lessonWorking: s.phase !== 'lessondone',
+      lessonDoneV: s.phase === 'lessondone',
+      stepCounter: 'STEP ' + Math.min(s.stepIndex + 1, 4) + ' OF ' + this.STEPS.length,
+      stepDots: this.STEPS.map((st, i) => ({ bg: (s.phase === 'lessondone' || i < s.stepIndex || (i === s.stepIndex && s.phase === 'stepdone')) ? sage : i === s.stepIndex ? 'var(--accent-ink)' : todo })),
+      stepPrompt: step.prompt,
+      stepSub: step.sub,
+      staffLines: [0, 1, 2, 3, 4].map(i => ({ top: 46 + i * 14 })),
+      lessonNotes,
+      feedbackText: s.feedback || ' ',
+      feedbackColor,
+
+      songNotes,
+      songLead,
+      songLeadColor: s.songHint ? '#A05A1C' : '#6B5B41',
+      songCheer: cheer,
+      songCount: Math.min(s.songPos, this.SONG.length) + ' of ' + this.SONG.length + ' notes',
+      progressW: Math.round(Math.min(s.songPos / this.SONG.length, 1) * 100) + '%',
+      hearLabel: s.demoOn ? 'Playing…' : '♪ Hear it first',
+      hearIt: () => this.hearIt(),
+      replaySong: () => this.replaySong(),
+      isSongDone: s.songDone,
+      floatNotes: [
+        { glyph: '♪', left: '16%', top: '64%', size: '26px', dur: '2.8s', delay: '0s' },
+        { glyph: '♫', left: '28%', top: '72%', size: '22px', dur: '3.4s', delay: '.6s' },
+        { glyph: '♩', left: '70%', top: '66%', size: '24px', dur: '3s', delay: '.3s' },
+        { glyph: '♪', left: '82%', top: '74%', size: '20px', dur: '3.6s', delay: '.9s' },
+        { glyph: '♫', left: '50%', top: '78%', size: '22px', dur: '3.2s', delay: '1.2s' }
+      ],
+
+      whiteKeys, blackKeys
+    };
+  }
+}
+</script>
+</body>
+</html>

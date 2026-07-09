@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arietta Phase 0 — Listening Spike</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 -apple-system, system-ui, sans-serif; background: #14161c; color: #e8e6e0; }
+  header { padding: 14px 20px 0; }
+  h1 { font-size: 17px; margin: 0 0 2px; }
+  header p { margin: 0 0 10px; color: #9a97a0; font-size: 13px; }
+  nav { display: flex; gap: 6px; padding: 0 20px; border-bottom: 1px solid #2a2d38; }
+  nav button { background: none; border: none; color: #9a97a0; font: inherit; padding: 8px 14px; cursor: pointer; border-bottom: 2px solid transparent; }
+  nav button.active { color: #ffd479; border-bottom-color: #ffd479; }
+  main { padding: 16px 20px 40px; max-width: 980px; }
+  section { display: none; }
+  section.active { display: block; }
+  .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  button.action { background: #2e5e46; color: #eafff2; border: none; border-radius: 8px; padding: 10px 18px; font: inherit; cursor: pointer; }
+  button.action:disabled { opacity: 0.4; cursor: default; }
+  button.secondary { background: #2a2d38; color: #e8e6e0; }
+  label { color: #b7b4bd; font-size: 13px; }
+  select, input[type=text], input[type=number] { background: #1e2129; color: #e8e6e0; border: 1px solid #343846; border-radius: 6px; padding: 6px 8px; font: inherit; }
+  input[type=range] { width: 160px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; background: #1e2129; border: 1px solid #343846; border-radius: 999px; padding: 8px 16px; font-size: 15px; min-width: 170px; }
+  .pill .dot { width: 9px; height: 9px; border-radius: 50%; background: #666; }
+  .pill.listening .dot { background: #6fbf8f; animation: pulse 1.6s infinite; }
+  .pill.heard .dot { background: #ffd479; }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+  .big { font-size: 34px; font-weight: 700; min-height: 44px; }
+  .stats { display: flex; gap: 26px; flex-wrap: wrap; margin: 10px 0; }
+  .stat b { display: block; font-size: 19px; }
+  .stat span { color: #9a97a0; font-size: 12px; }
+  table { border-collapse: collapse; margin: 12px 0; font-size: 13px; width: 100%; }
+  th, td { text-align: left; padding: 5px 10px; border-bottom: 1px solid #2a2d38; }
+  th { color: #9a97a0; font-weight: 500; }
+  .pass { color: #6fbf8f; font-weight: 600; }
+  .fail { color: #e08c8c; font-weight: 600; }
+  #eventLog { font-family: ui-monospace, monospace; font-size: 12px; background: #101218; border: 1px solid #2a2d38; border-radius: 8px; padding: 10px; height: 180px; overflow-y: auto; white-space: pre; }
+  #flash { position: fixed; top: 12px; right: 12px; width: 90px; height: 90px; border-radius: 10px; background: #222; }
+  #flash.on { background: #fff; }
+  .note { color: #9a97a0; font-size: 13px; max-width: 640px; }
+  #status { color: #ffd479; font-size: 13px; min-height: 18px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Arietta — Phase 0 listening spike</h1>
+  <p>Throwaway harness. Gate: &ge;95% detection, &le;1 false event / 10 min, strike-to-pixel &le;300 ms (PLAN.md Phase 0).</p>
+</header>
+<nav>
+  <button data-tab="live" class="active">Live</button>
+  <button data-tab="corpus">Corpus</button>
+  <button data-tab="record">Record</button>
+  <button data-tab="latency">Latency</button>
+</nav>
+<main>
+  <div id="status"></div>
+
+  <section id="tab-live" class="active">
+    <div class="row">
+      <button id="micBtn" class="action">Start listening</button>
+      <label>Detector <select id="detector"><option value="mpm">MPM</option><option value="yin">YIN</option></select></label>
+      <label>Clarity threshold <input type="range" id="clarity" min="0.5" max="0.99" step="0.01" value="0.9"> <span id="clarityVal">0.90</span></label>
+      <label><input type="checkbox" id="noiseSuppression"> noise suppression (takes effect on next start)</label>
+    </div>
+    <div class="row">
+      <div class="pill" id="pill"><span class="dot"></span><span id="pillText">Mic off</span></div>
+      <div class="big" id="heardNote"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="stFreq">—</b><span>freq (Hz)</span></div>
+      <div class="stat"><b id="stClarity">—</b><span>clarity</span></div>
+      <div class="stat"><b id="stCompute">—</b><span>detector ms/frame (mean · p95)</span></div>
+      <div class="stat"><b id="stRate">—</b><span>sample rate</span></div>
+      <div class="stat"><b id="stEvents">0</b><span>note events</span></div>
+      <div class="stat"><b id="stSession">0:00</b><span>session</span></div>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="noiseSoak"> noise-soak mode: no one is playing — every event is false</label>
+      <div class="stat"><b id="stFalse">—</b><span>false events / 10 min</span></div>
+    </div>
+    <div id="eventLog"></div>
+    <p class="note">The white square (top right) flashes on each NoteEvent — film key strike and square together at 120/240 fps for the SR-VER-05 strike-to-pixel measurement.</p>
+  </section>
+
+  <section id="tab-corpus">
+    <div class="row">
+      <button id="synthBtn" class="action">Run synthetic suite (both detectors)</button>
+    </div>
+    <div id="synthResults"></div>
+    <hr style="border-color:#2a2d38">
+    <div class="row">
+      <input type="file" id="corpusFiles" multiple accept=".wav,audio/*">
+      <label>Detector <select id="corpusDetector"><option value="mpm">MPM</option><option value="yin">YIN</option></select></label>
+      <button id="corpusBtn" class="action" disabled>Score corpus files</button>
+      <button id="reportBtn" class="secondary" style="display:none">Download JSON report</button>
+    </div>
+    <p class="note">Name clips <code>&lt;instrument&gt;-&lt;note&gt;-&lt;distance&gt;-&lt;take&gt;.wav</code> (one strike per clip, e.g. <code>upright-C4-50cm-1.wav</code>) or <code>noise-&lt;what&gt;-&lt;take&gt;.wav</code> for false-positive material (speech, TV).</p>
+    <div id="corpusResults"></div>
+  </section>
+
+  <section id="tab-record">
+    <p class="note">Builds the SR-VER-01 corpus. Prop the iPad on the music stand, strike the note once about half a second after recording starts. For noise clips set note to <code>noise</code> and record long takes of speech/TV with no piano.</p>
+    <div class="row">
+      <label>Instrument <input type="text" id="recInstrument" value="upright" size="9"></label>
+      <label>Note <input type="text" id="recNote" value="C4" size="5"></label>
+      <label>Distance <input type="text" id="recDistance" value="50cm" size="6"></label>
+      <label>Seconds <input type="number" id="recSeconds" value="3" min="1" max="900" style="width:70px"></label>
+    </div>
+    <div class="row">
+      <button id="recBtn" class="action">Record</button>
+      <span id="recStatus" class="note"></span>
+    </div>
+  </section>
+
+  <section id="tab-latency">
+    <p class="note">In-app loopback: the harness plays 8 synthesized bursts through the speaker and measures audio-clock time from scheduled onset to emitted NoteEvent (capture + framing + detection + tracker, including output latency). Turn the volume up, keep the room quiet. The camera method on the Live tab remains the authoritative SR-VER-05 measurement.</p>
+    <div class="row"><button id="loopBtn" class="action">Run loopback test</button></div>
+    <div id="loopResults"></div>
+  </section>
+</main>
+<div id="flash"></div>
+<script type="module" src="./main.js"></script>
+</body>
+</html>
