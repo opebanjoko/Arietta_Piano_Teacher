@@ -18,6 +18,7 @@ import { startMetronome, playClap } from './audio/metronome.js'
 import { createMic } from './audio/mic.js'
 import { unregisterMic, holdFor } from './audio/gate.js'
 import { openDb } from './store/db.js'
+import { logDiag, listDiag, clearDiag } from './store/diag.js'
 import {
   listProfiles, createProfile, deleteProfile, resetProgress, getProgress,
   markComplete, recordSongRun, savePosition, getActiveProfileId, setActiveProfileId,
@@ -32,6 +33,8 @@ import { Song } from './ui/Song.jsx'
 import { FreePlay } from './ui/FreePlay.jsx'
 import { Settings, ACCENTS } from './ui/Settings.jsx'
 import { Keyboard } from './ui/Keyboard.jsx'
+
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 
 const STEP_PAUSE = 1150
 const SONG_DONE_PAUSE = 500
@@ -65,6 +68,7 @@ export function App() {
   const [recap, setRecap] = useState(null)
   const [warmupOffer, setWarmupOffer] = useState(null)
   const [beat, setBeat] = useState(false)
+  const [diagEntries, setDiagEntries] = useState([])
 
   const lessonRef = useRef(null)
   const drillRef = useRef(null)
@@ -80,6 +84,8 @@ export function App() {
   const tos = useRef([])
   const heardTO = useRef(null)
   const metroRef = useRef(null)
+  const detectorMsRef = useRef(null)
+  const micStateRef = useRef('idle')
 
   const to = (fn, ms) => tos.current.push(setTimeout(fn, ms))
   const clearTos = () => { tos.current.forEach(clearTimeout); tos.current = [] }
@@ -91,6 +97,9 @@ export function App() {
       const d = await openDb()
       const [ps, mic] = await Promise.all([listProfiles(d), getMicSettings(d)])
       setDb(d)
+      logDiag(d, 'boot', navigator.userAgent)
+      window.addEventListener('error', (e) => logDiag(d, 'error', e.message))
+      window.addEventListener('unhandledrejection', (e) => logDiag(d, 'error', e.reason?.message ?? String(e.reason)))
       setProfiles(ps)
       setMicSettings(mic)
       if (!ps.length) {
@@ -113,6 +122,7 @@ export function App() {
     micRef.current?.stop()
     micRef.current = null
     unregisterMic()
+    micStateRef.current = 'idle'
     setMicState('idle')
   }
 
@@ -123,7 +133,14 @@ export function App() {
       clarity: micSettings.clarity ?? 0.9,
       onNote: (ev) => onNote(ev),
       onOnset: (ev) => onClap(ev),
-      onState: setMicState
+      onStats: (ms) => { detectorMsRef.current = ms },
+      onState: (s) => {
+        if (s === 'interrupted') logDiag(db, 'mic-interrupted')
+        else if (s === 'lost') logDiag(db, 'mic-lost')
+        else if (s === 'listening' && micStateRef.current === 'interrupted') logDiag(db, 'mic-recovered')
+        micStateRef.current = s
+        setMicState(s)
+      }
     })
     micRef.current = mic
     try {
@@ -446,7 +463,7 @@ export function App() {
           onOpen={openFromHome} onSelectProfile={onSelectProfile}
           onNewProfile={() => setScreen('newprofile')}
           onMicCheck={() => { micReturnRef.current = 'home'; setScreen('miccheck') }}
-          onSettings={() => setScreen('settings')}
+          onSettings={async () => { setDiagEntries(await listDiag(db)); setScreen('settings') }}
           onFreePlay={() => { setFreeCount(0); setRecap(null); setScreen('freeplay') }} />
       </div>
     )
@@ -454,11 +471,34 @@ export function App() {
 
   if (screen === 'settings') {
     const active = profiles.find(p => p.id === activeId)
+    const diagInfo = {
+      version: APP_VERSION,
+      device: navigator.userAgent,
+      screen: `${window.screen.width}x${window.screen.height}`,
+      mic: micSettings,
+      detectorAvgMs: detectorMsRef.current,
+      entries: diagEntries
+    }
+    const onCopyDiag = async () => {
+      const text = JSON.stringify(diagInfo, null, 2)
+      try {
+        if (navigator.share) { await navigator.share({ text }); return true }
+        await navigator.clipboard.writeText(text)
+        return true
+      } catch {
+        return false // user cancelled the share sheet, or clipboard denied
+      }
+    }
+    const onClearDiag = async () => {
+      await clearDiag(db)
+      setDiagEntries([])
+    }
     return (
       <div class="screen">
         <Settings profile={active} micEnabled={!!micSettings?.enabled}
           settings={profileSettings} canDelete={profiles.length > 1}
           glimpse={glimpseText({ name: active.name, lessons: allLessons(), progress })}
+          diagInfo={diagInfo} onCopyDiag={onCopyDiag} onClearDiag={onClearDiag}
           onHome={() => setScreen('home')}
           onMicCheck={() => { micReturnRef.current = 'settings'; setScreen('miccheck') }}
           onAccent={(accent) => patchSettings({ accent })}
