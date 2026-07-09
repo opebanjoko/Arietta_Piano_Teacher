@@ -219,3 +219,23 @@ Clarity threshold used: ______ · Instruments recorded: ______ · Distances: ___
 When done: check off the boxes in `README.md`, update the Go/No-Go row in
 `PLAN.md` §5 (same style as the framework decision), and commit this file
 with the numbers filled in. That commit *is* the Phase 0 exit gate record.
+
+---
+
+## Phase 4 additions to the hardware session
+
+Run these alongside the deferred Phase 0 gate validation, same iPad:
+
+- **Interruption drill (SR-PLT-02)**: mid-lesson, in order — switch apps and
+  return; invoke Siri; lock and unlock; trigger a timer alarm. After each, the
+  pill must pass through "Waking up my ears…" and return to listening within
+  a few seconds, and the lesson position must be exactly where it was left.
+  Check the Settings diagnostics log afterward: each drill should appear as
+  mic-interrupted followed by mic-recovered, with zero mic-lost entries.
+- **Thermal run (SR-PLT-03)**: 10 minutes of continuous listening on the
+  oldest target iPad; the device may get warm but the UI must stay at 60 fps
+  and detection must not degrade. Record the Settings card's ms/frame reading
+  at minutes 1 and 10.
+- **Onset thresholds vs. metronome bleed** (flag carried from Phase 3): with
+  the metronome audible from the iPad speaker, clap steps must not
+  self-trigger from the click.

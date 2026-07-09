@@ -112,6 +112,14 @@ more than two more units of content would.
   problems (BO judgment) block release; polish items do not.
 - **Exit / v1 release criteria**: SR-VER-01..05 all satisfied; beta families completed
   Unit 2+ unassisted; zero data-loss incidents; offline verified cold.
+- **Build status (2026-07-09): software scope complete; human/hardware items open.**
+  Interruption handling (self-healing mic with interrupted/lost states), the
+  accessibility pass (44px targets, AA-tiered contrast enforced by test,
+  reduced motion, focus rings), detector timing instrumentation with a budget
+  tripwire, and the on-device diagnostics export in Settings are built and
+  test-covered. Beta protocol documented (docs/BETA_PROTOCOL.md). Open: the
+  device-matrix runs, the two-week family beta, BO voice review, and
+  SR-VER-01/04/05 — tracked in spike/GATE_RUNBOOK.md as release blockers.
 
 ### Phase 5 — Account & sync + tempo depth (product Phase 2, wave 1) — ~3–4 wks
 - Scope: Railway backend + auth (SR-BCK-01..03), sync client + conflict rules
