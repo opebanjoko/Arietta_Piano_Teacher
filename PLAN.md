@@ -132,7 +132,7 @@ more than two more units of content would.
 | Decision | Owner | Due |
 |---|---|---|
 | Pitch detection algorithm | Dev (QA verifies) | Phase 0 exit |
-| Production framework / PWA stack (SR-PLT-05) | Dev + PM | Phase 1 start |
+| Production framework / PWA stack (SR-PLT-05) | Dev + PM | ✅ Decided 2026-07-08: Vite + Preact (rationale in `app/README.md`) |
 | Go/No-Go on mic-first premise | All, BO has final say | Phase 0 gate |
 | Native shell (Capacitor) for MIDI (SR-MID-02) | Dev + PM | Phase 6 planning |
 | Beta household recruitment | BO + PM | During Phase 3 |
