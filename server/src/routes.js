@@ -130,8 +130,15 @@ export function pushSync({ db, now }, { token, body }) {
 export function deleteHousehold({ db, now }, { token, body }) {
   const hid = household(db, token, now)
   if (!hid) return { status: 401, body: { error: 'unknown token' } }
+  // deletion is irreversible: rate-limit PIN guesses per household ('del:' prefix cannot collide with 6-char codes)
+  const key = `del:${hid}`
+  if (limited(key, now)) return { status: 429, body: { error: 'too many tries' } }
   const row = db.prepare(`SELECT pin_hash FROM households WHERE id = ?`).get(hid)
-  if (!verifyPin(String(body?.pin ?? ''), row.pin_hash)) return { status: 401, body: { error: 'wrong code or pin' } }
+  if (!verifyPin(String(body?.pin ?? ''), row.pin_hash)) {
+    recordFail(key, now)
+    return { status: 401, body: { error: 'wrong code or pin' } }
+  }
+  attempts.delete(key)
   db.prepare(`DELETE FROM households WHERE id = ?`).run(hid)
   return { status: 204, body: undefined }
 }

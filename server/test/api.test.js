@@ -161,3 +161,18 @@ test('household deletion removes everything and needs the pin', async () => {
   assert.equal(s.db.prepare('SELECT COUNT(*) n FROM households').get().n, 0)
   await s.close()
 })
+
+test('five wrong-pin deletes lock the household out; other household unaffected', async () => {
+  const s = await start()
+  const { token } = await (await s.call('POST', '/households', { pin: '4321' })).json()
+  const other = await (await s.call('POST', '/households', { pin: '4321' })).json()
+  for (let i = 0; i < 5; i++) {
+    assert.equal((await s.call('DELETE', '/households', { pin: '9999' }, token)).status, 401)
+  }
+  const locked = await s.call('DELETE', '/households', { pin: '4321' }, token)
+  assert.equal(locked.status, 429)
+  assert.deepEqual(await locked.json(), { error: 'too many tries' })
+  // lockout is keyed per household: the other household can still delete
+  assert.equal((await s.call('DELETE', '/households', { pin: '4321' }, other.token)).status, 204)
+  await s.close()
+})
