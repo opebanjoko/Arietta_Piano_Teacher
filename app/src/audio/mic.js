@@ -14,7 +14,7 @@ import workletUrl from './capture-worklet.js?worker&url'
 import { registerMic } from './gate.js'
 import { createRecovery } from './recovery.js'
 
-export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm', clarity = 0.9, noiseSuppression = false } = {}) {
+export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm', clarity = 0.9, lowClarity = null, noiseSuppression = false } = {}) {
   let ctx = null
   let worker = null
   let stream = null
@@ -43,7 +43,7 @@ export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm',
     const mc = new MessageChannel()
     node.port.postMessage({ type: 'port' }, [mc.port1])
     worker.postMessage({ type: 'port', sampleRate: ctx.sampleRate }, [mc.port2])
-    worker.postMessage({ type: 'config', detector, clarity })
+    worker.postMessage({ type: 'config', detector, clarity, lowClarity })
     worker.onmessage = (e) => {
       if (e.data.type === 'note') onNote?.(e.data.event)
       else if (e.data.type === 'onset') onOnset?.(e.data.event)
@@ -144,6 +144,11 @@ export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm',
     setClarity(c) {
       clarity = c
       worker?.postMessage({ type: 'config', clarity: c })
+    },
+
+    setLowClarity(c) {
+      lowClarity = c
+      worker?.postMessage({ type: 'config', lowClarity: c })
     },
 
     setDetector(name) {

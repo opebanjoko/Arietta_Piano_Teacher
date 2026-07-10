@@ -8,8 +8,10 @@ import { freqToMidi } from './pitch.js';
  * note; re-strikes detected via RMS re-attack (SR-AUD-06).
  */
 export class NoteTracker {
-  constructor({ minClarity = 0.9, stableFrames = 2, silenceFrames = 3, restrikeFactor = 1.5 } = {}) {
+  constructor({ minClarity = 0.9, lowClarity = null, lowBelowMidi = 52, stableFrames = 2, silenceFrames = 3, restrikeFactor = 1.5 } = {}) {
     this.minClarity = minClarity;
+    this.lowClarity = lowClarity ?? minClarity;
+    this.lowBelowMidi = lowBelowMidi;
     this.stableFrames = stableFrames;
     this.silenceFrames = silenceFrames;
     this.restrikeFactor = restrikeFactor;
@@ -20,7 +22,9 @@ export class NoteTracker {
   }
 
   feed(detection, frameRms, timestampMs) {
-    const midi = detection && detection.clarity >= this.minClarity ? freqToMidi(detection.freq) : null;
+    const candidate = detection ? freqToMidi(detection.freq) : null;
+    const needed = candidate !== null && candidate < this.lowBelowMidi ? this.lowClarity : this.minClarity;
+    const midi = detection && detection.clarity >= needed ? candidate : null;
 
     if (midi === null) {
       this.pending = null;

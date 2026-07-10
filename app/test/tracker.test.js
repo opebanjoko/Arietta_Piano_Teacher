@@ -71,3 +71,22 @@ test('a ringing note decaying smoothly never re-emits', () => {
   const frames = Array.from({ length: 40 }, (_, i) => ({ det: det(60), rms: 0.2 * 0.9 ** i }));
   assert.equal(run(new NoteTracker(), frames).length, 1);
 });
+
+test('low-register notes use their own clarity threshold (SR-AUD-09)', () => {
+  // A new pitch buffers one frame as pending before emitting, so feed twice.
+  const t = new NoteTracker({ minClarity: 0.9, lowClarity: 0.8, stableFrames: 1 });
+  // C3 = midi 48 ≈ 130.81 Hz — clarity 0.85 passes the low bar, fails the normal one
+  t.feed({ freq: 130.81, clarity: 0.85 }, 0.1, 100);
+  const low = t.feed({ freq: 130.81, clarity: 0.85 }, 0.1, 120);
+  assert.equal(low?.pitch, 48);
+  // C4 = midi 60 ≈ 261.63 Hz — same clarity must still be rejected above the low band
+  const t2 = new NoteTracker({ minClarity: 0.9, lowClarity: 0.8, stableFrames: 1 });
+  t2.feed({ freq: 261.63, clarity: 0.85 }, 0.1, 100);
+  assert.equal(t2.feed({ freq: 261.63, clarity: 0.85 }, 0.1, 120), null);
+});
+
+test('lowClarity defaults to minClarity when not given', () => {
+  const t = new NoteTracker({ minClarity: 0.9, stableFrames: 1 });
+  t.feed({ freq: 130.81, clarity: 0.85 }, 0.1, 100);
+  assert.equal(t.feed({ freq: 130.81, clarity: 0.85 }, 0.1, 120), null);
+});

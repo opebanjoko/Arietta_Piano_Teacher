@@ -19,14 +19,24 @@ export function MicCheck({ initialClarity = 0.9, onDone }) {
   const [stage, setStage] = useState('intro') // intro | listening | confirm | denied
   const [heard, setHeard] = useState(null)
   const [sens, setSens] = useState(fromClarity(initialClarity))
+  const [lowStage, setLowStage] = useState('idle') // idle | listening | heard
   const micRef = useRef(null)
+  const lowStageRef = useRef('idle') // mirrors lowStage for the onNote closure (created once in begin)
+  const lowClarityRef = useRef(null)
+  const relaxRef = useRef(null)
 
-  useEffect(() => () => micRef.current?.stop(), [])
+  useEffect(() => () => { micRef.current?.stop(); clearInterval(relaxRef.current) }, [])
 
   const begin = async () => {
     const mic = createMic({
       clarity: toClarity(sens),
       onNote: (ev) => {
+        if (lowStageRef.current === 'listening' && ev.pitch < 55) {
+          clearInterval(relaxRef.current)
+          lowStageRef.current = 'heard'
+          setLowStage('heard')
+          return
+        }
         setHeard(ev.pitch)
         setStage(s => (s === 'listening' || s === 'confirm') ? 'confirm' : s)
       }
@@ -41,9 +51,26 @@ export function MicCheck({ initialClarity = 0.9, onDone }) {
     }
   }
 
+  const beginLow = () => {
+    lowStageRef.current = 'listening'
+    setLowStage('listening')
+    lowClarityRef.current = toClarity(sens)
+    micRef.current?.setLowClarity(lowClarityRef.current)
+    relaxRef.current = setInterval(() => {
+      lowClarityRef.current = Math.max(0.78, lowClarityRef.current - 0.03)
+      micRef.current?.setLowClarity(lowClarityRef.current)
+    }, 2000)
+  }
+
   const finish = (enabled) => {
+    clearInterval(relaxRef.current)
     micRef.current?.stop()
-    onDone({ enabled, clarity: toClarity(sens), detector: 'mpm' })
+    onDone({
+      enabled,
+      clarity: toClarity(sens),
+      detector: 'mpm',
+      lowClarity: lowStage === 'heard' ? lowClarityRef.current : undefined
+    })
   }
 
   const v = VOICE.micCheck
@@ -78,6 +105,9 @@ export function MicCheck({ initialClarity = 0.9, onDone }) {
               style="width:220px;accent-color:var(--accent-ink);" />
             <span style="font-size:12px;font-weight:700;color:var(--ink-mid);">{v.sensHigh}</span>
           </div>
+          {lowStage === 'idle' && <div style="margin-top:16px;"><button class="btn-quiet" onClick={beginLow}>{v.lowOffer}</button></div>}
+          {lowStage === 'listening' && <div style="font-size:14px;color:var(--ink-soft);margin-top:16px;">{v.lowListening}</div>}
+          {lowStage === 'heard' && <div style="font-size:14px;color:var(--ink-mid);margin-top:16px;">{v.lowHeard}</div>}
           <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;">
             <button class="btn-primary" onClick={() => finish(true)}>{v.confirm}</button>
             <button class="btn-quiet" onClick={() => { setHeard(null); setStage('listening') }} style="padding:12px 20px;">{v.retry}</button>

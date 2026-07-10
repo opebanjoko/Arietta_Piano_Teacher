@@ -83,6 +83,9 @@ export const VOICE = {
     sensitivity: 'If I miss quiet notes, slide toward Eager. If I imagine notes, slide toward Careful.',
     sensLow: 'Careful',
     sensHigh: 'Eager',
+    lowOffer: 'One more, if you like — play your lowest C, down on the left.',
+    lowListening: 'Listening low… play that deep C a few times.',
+    lowHeard: 'Got it — the deep notes come through now.',
     deniedTitle: 'That’s alright.',
     deniedLine: 'We’ll use the tap keys under each lesson instead — everything works just the same. You can let me listen any time from the home screen.',
     deniedButton: 'Onward →'

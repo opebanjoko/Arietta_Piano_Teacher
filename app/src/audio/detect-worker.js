@@ -15,6 +15,7 @@ let detect = mpm
 let tracker = new NoteTracker()
 let onsets = new OnsetTracker()
 let clarity = 0.9
+let lowClarity = null
 let sampleRate = 48000
 let suspendedUntil = 0
 let ignores = [] // [{pcs:Set<pitch class>, untilMs}] — ringing accompaniment voicings
@@ -50,13 +51,14 @@ onmessage = (e) => {
   } else if (m.type === 'config') {
     if (m.detector) detect = DETECTORS[m.detector] ?? detect
     if (m.clarity !== undefined) clarity = m.clarity
-    tracker = new NoteTracker({ minClarity: clarity })
+    if (m.lowClarity !== undefined) lowClarity = m.lowClarity
+    tracker = new NoteTracker({ minClarity: clarity, lowClarity })
   } else if (m.type === 'ignore') {
     ignores.push({ pcs: new Set(m.pitches.map(p => p % 12)), untilMs: m.untilMs })
   } else if (m.type === 'suspend') {
     // audio-clock horizon: frames stamped before this are app playback ringing out
     suspendedUntil = m.untilMs
-    tracker = new NoteTracker({ minClarity: clarity })
+    tracker = new NoteTracker({ minClarity: clarity, lowClarity })
     onsets = new OnsetTracker()
   }
 }

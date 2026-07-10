@@ -158,6 +158,7 @@ export function App() {
     const mic = createMic({
       detector: micSettings.detector ?? 'mpm',
       clarity: micSettings.clarity ?? 0.9,
+      lowClarity: micSettings.lowClarity,
       onNote: (ev) => onNote(ev),
       onOnset: (ev) => onClap(ev),
       onStats: (ms) => { detectorMsRef.current = ms },
