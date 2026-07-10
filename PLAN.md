@@ -126,6 +126,22 @@ more than two more units of content would.
   (SR-STO-04/05); steadiness view + practice tempos (SR-CRS-09, SR-OUT-05); C3
   calibration prep for Unit 6 (SR-AUD-09).
 - Gate: local-first regression — every v1 flow re-verified with backend unreachable.
+- **Build status (2026-07-09): software scope complete; deploy + live sync trial open.**
+  The sync server (node:http + better-sqlite3: household create/link with PIN,
+  rate limiting, push/pull with server-side merge, tombstoned profile deletion),
+  the shared most-progress-wins merge core (byte-identical app/server copies,
+  guarded by test), and the additive sync client (inert unless linked, silent
+  failures with backoff, server-arbitrated tombstones, reentrancy- and
+  leave-race-safe) are built and test-covered (server 18, app suite 178).
+  Practice tempos (Gently/Easy pace/Full speed with live metronome retempo),
+  the number-free steadiness view, in-time backing on the metronome grid, and
+  the C3 low-clarity band with optional mic-check calibration are in. The
+  local-first gate passed: full flows driven in a browser against an
+  unreachable backend with a clean console. SR-BCK-02 deviation: interim
+  family-code+PIN auth; email/Apple sign-in deferred. Open: Railway api
+  deploy + volume persistence check, two-device sync smoke, low-note
+  calibration on the beta pianos, backing-track behavior during trouble-spot
+  loops (known desync, verify at the piano).
 
 ### Phase 6 — Polyphony, MIDI, Course 2 (wave 2) — sized at Phase 5 exit
 - Scope: polyphonic detection stages a→c (SR-AUD-10, SR-EVT-03) unlocking lesson 21 and
