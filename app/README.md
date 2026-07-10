@@ -28,6 +28,14 @@ access. Railpack builds with `npm run build` and serves `dist/` statically
 
     cd app && railway up --service web --ci -m "<release summary>"
 
+The sync backend is service `api` at https://api-production-8427.up.railway.app
+(node:http + better-sqlite3, SQLite on a volume at /data); `VITE_SYNC_URL` in
+`app/.env.production` must match its domain. Note: `railway up` from inside
+this repo currently fails before the build starts (CLI/builder quirk with this
+checkout); deploy by copying the service files to a clean directory outside
+the repo and running `railway up --service <name> --ci` from there
+(for `api`: package.json, package-lock.json, merge.js, src/).
+
 ## Layout
 
     src/core/      NoteEvent model, note math, course engine (pure logic)
