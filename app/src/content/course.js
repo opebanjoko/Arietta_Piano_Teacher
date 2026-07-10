@@ -978,6 +978,158 @@ export const COURSE = {
           }
         }
       ]
+    },
+    {
+      id: 'u8',
+      title: 'The Left Hand Speaks',
+      tag: 'UNIT 8',
+      lessons: [
+        {
+          id: 'the-bass-clef',
+          title: 'The bass clef',
+          kind: 'drill',
+          clef: 'bass',
+          low: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'The left hand gets its own map today — the bass clef, where the deep notes live.',
+              sub: 'The curly symbol with two dots. Everything on it sits lower than middle C.'
+            },
+            {
+              kind: 'watch-me',
+              prompt: 'Watch: the left pinky finds deep C on the new map.',
+              sub: 'C, D, E — fingers 5, 4, 3, reading from the bass clef now.',
+              anim: { keys: ['C3', 'D3', 'E3'], fingers: [5, 4, 3], hand: 'left' }
+            },
+            {
+              kind: 'play',
+              prompt: 'Read the bass clef and play: C, D, E.',
+              sub: 'Deep C sits in the second space from the bottom. Fingers 5, 4, 3.',
+              targets: [n('C3', 5), n('D3', 4), n('E3', 3)]
+            },
+            {
+              kind: 'play',
+              prompt: 'The whole left-hand hill, read from its own map.',
+              sub: 'C up to G — pinky to thumb, every note on the new staff.',
+              targets: [n('C3', 5), n('D3', 4), n('E3', 3), n('F3', 2), n('G3', 1)]
+            }
+          ],
+          done: {
+            title: 'The bass clef is yours.',
+            line: 'Two clefs, two hands, one language. The deep notes finally have their own address.'
+          },
+          recap: {
+            summary: 'Today you met the bass clef — the left hand’s own map.',
+            seed: 'Next time you’ll walk down it, note by note.'
+          }
+        },
+        {
+          id: 'walking-down-the-bass',
+          title: 'Walking down the bass',
+          kind: 'drill',
+          clef: 'bass',
+          low: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Today the left hand reads little melodies of its own — starting from the top.',
+              sub: 'Same map as last time, read downhill first.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Walk down from G to deep C.',
+              sub: 'Thumb first: 1, 2, 3, 4, 5 — downhill all the way.',
+              targets: [n('G3', 1), n('F3', 2), n('E3', 3), n('D3', 4), n('C3', 5)]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now a real left-hand tune — steps and skips mixed.',
+              sub: 'Read each note from the bass clef; no habits, just the map.',
+              targets: [n('C3', 5), n('E3', 3), n('D3', 4), n('F3', 2), n('E3', 3), n('G3', 1)]
+            },
+            {
+              kind: 'reading-snippet',
+              pool: [n('C3', 5), n('D3', 4), n('E3', 3), n('F3', 2), n('G3', 1)],
+              len: 4
+            }
+          ],
+          done: {
+            title: 'The left hand reads.',
+            line: 'Brand-new music, low and warm, straight off the bass clef.'
+          },
+          recap: {
+            summary: 'Today the left hand read its own melodies from the bass clef.',
+            seed: 'Next time it carries a whole song alone: Merrily We Roll Along.'
+          }
+        },
+        {
+          id: 'merrily-left-hand',
+          title: 'Merrily We Roll Along — left hand',
+          kind: 'song',
+          clef: 'bass',
+          card: 'The whole melody, deep and warm, carried by the left hand alone.',
+          notes: [
+            n('E3', 3), n('D3', 4), n('C3', 5), n('D3', 4), n('E3', 3), n('E3', 3), n('E3', 3),
+            n('D3', 4), n('D3', 4), n('D3', 4), n('E3', 3), n('G3', 1), n('G3', 1),
+            n('E3', 3), n('D3', 4), n('C3', 5), n('D3', 4), n('E3', 3), n('E3', 3), n('E3', 3),
+            n('E3', 3), n('D3', 4), n('D3', 4), n('E3', 3), n('D3', 4), n('C3', 5)
+          ],
+          done: {
+            title: 'The left hand sang the whole song.',
+            line: 'Merrily, all the way through, an octave deep — no right hand needed.'
+          },
+          recap: {
+            summary: 'Today your left hand carried Merrily We Roll Along by itself.',
+            seed: 'Next time the hands play echo games — one asks, the other answers.'
+          }
+        },
+        {
+          id: 'echo-games',
+          title: 'Echo games',
+          kind: 'drill',
+          low: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Echo games: the right hand plays a phrase, and the left hand answers it, deeper.',
+              sub: 'One hand at a time — listen first, then echo what you heard.'
+            },
+            {
+              kind: 'ear-echo',
+              prompt: 'Listen… then echo with the right hand: C, E, G.',
+              sub: 'A skip up, a skip up again.',
+              targets: [n('C4', 1), n('E4', 3), n('G4', 5)]
+            },
+            {
+              kind: 'ear-echo',
+              prompt: 'Now the left hand answers, an octave deeper: C, E, G.',
+              sub: 'Fingers 5, 3, 1 — the mirror of what you just played.',
+              targets: [n('C3', 5), n('E3', 3), n('G3', 1)]
+            },
+            {
+              kind: 'ear-echo',
+              prompt: 'Right hand asks, coming down this time: G, E, C.',
+              sub: 'Two skips, downhill.',
+              targets: [n('G4', 5), n('E4', 3), n('C4', 1)]
+            },
+            {
+              kind: 'ear-echo',
+              prompt: 'And the left hand has the last word: G, E, C, down in the deep.',
+              sub: 'Thumb, middle, pinky — let it ring.',
+              targets: [n('G3', 1), n('E3', 3), n('C3', 5)]
+            }
+          ],
+          done: {
+            title: 'Echo games — played.',
+            line: 'Question and answer, high and low — your hands are having conversations now.'
+          },
+          recap: {
+            summary: 'Today your hands played echoes — each one answering the other, an octave apart.',
+            seed: 'Next time they stop taking turns and play together.'
+          }
+        }
+      ]
     }
   ]
 }
