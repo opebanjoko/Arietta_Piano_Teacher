@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { startDrill, drillNote, startSong, songNote } from '../src/core/engine.js'
+import { startDrill, drillNote, startSong, songNote, TEMPO_CHOICES, atTempo } from '../src/core/engine.js'
 import { nameToMidi } from '../src/core/notes.js'
 import { noteEvent } from '../src/core/events.js'
 import { VOICE } from '../src/content/voice.js'
@@ -124,4 +124,14 @@ test('an untimed play step keeps plain encouragement', () => {
   s = drillNote(s, plain, tapAt('E4', 200))
   assert.equal(s.phase, 'stepdone')
   assert.ok(VOICE.encouragements.includes(s.feedback.text))
+})
+
+test('atTempo scales the authored tempo and leaves everything else alone', () => {
+  const lesson = { id: 's1', tempo: 90, notes: [{ note: 'C4', beats: 1 }] }
+  assert.equal(atTempo(lesson, 'slow').tempo, 54)
+  assert.equal(atTempo(lesson, 'medium').tempo, 72)
+  assert.equal(atTempo(lesson, 'full'), lesson)
+  assert.equal(atTempo(lesson, 'slow').notes, lesson.notes)
+  assert.equal(atTempo({ id: 'd1', notes: [] }, 'slow').tempo, undefined)
+  assert.equal(TEMPO_CHOICES.length, 3)
 })

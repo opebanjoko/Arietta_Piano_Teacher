@@ -16,7 +16,7 @@ const FLOATS = [
 ]
 
 export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accompanyAvailable,
-  onToggleAccompany, onHome, onHearIt, onReplay, onAcceptLoop, onDeclineLoop, doneAction }) {
+  onToggleAccompany, tempoChoice, onTempo, onHome, onHearIt, onReplay, onAcceptLoop, onDeclineLoop, doneAction }) {
   const v = VOICE.song
   const total = lesson.notes.length
   const ti = songTargetIndex(song)
@@ -48,6 +48,17 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
               style={accompany ? 'background:var(--accent-soft);border-color:var(--line-strong);' : ''}>
               {accompany ? v.withMeOn : v.withMe}
             </button>
+          )}
+          {lesson.tempo && !song.done && (
+            <div style="display:flex;gap:6px;align-items:center;" role="group" aria-label={v.tempoLine}>
+              {['slow', 'medium', 'full'].map(id => (
+                <button key={id} class="btn-quiet hit" onClick={() => onTempo(id)}
+                  aria-pressed={tempoChoice === id}
+                  style={`padding:7px 12px;font-size:12.5px;${tempoChoice === id ? 'background:var(--accent-soft);border-color:var(--line-strong);' : ''}`}>
+                  {v.tempos[id]}
+                </button>
+              ))}
+            </div>
           )}
           <div style="width:230px;height:7px;border-radius:99px;background:var(--line);overflow:hidden;">
             <div style={`height:100%;border-radius:99px;background:var(--accent-ink);width:${Math.round(Math.min(song.pos / total, 1) * 100)}%;transition:width .3s ease;`}></div>

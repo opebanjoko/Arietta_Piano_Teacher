@@ -8,6 +8,19 @@ import { hintText } from './hints.js'
 import { beatMs, judgeGap, timingSummary } from './timing.js'
 import { VOICE } from '../content/voice.js'
 
+/** Practice tempos (SR-CRS-09): every timed piece playable slower, all equally celebrated. */
+export const TEMPO_CHOICES = [
+  { id: 'slow', mult: 0.6 },
+  { id: 'medium', mult: 0.8 },
+  { id: 'full', mult: 1 }
+]
+
+export function atTempo(lesson, choiceId) {
+  const c = TEMPO_CHOICES.find(t => t.id === choiceId)
+  if (!lesson.tempo || !c || c.mult === 1) return lesson
+  return { ...lesson, tempo: Math.round(lesson.tempo * c.mult) }
+}
+
 // deterministic per-lesson offset so encouragements vary between lessons
 function hash(s) {
   let h = 0

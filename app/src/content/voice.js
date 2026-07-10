@@ -137,7 +137,9 @@ export const VOICE = {
       { at: 0.6, line: 'more than halfway' },
       { at: 0.8, line: 'almost home…' }
     ],
-    octaveMention: 'One small thing for next time: a few notes landed an octave away from home. It still sounded lovely.'
+    octaveMention: 'One small thing for next time: a few notes landed an octave away from home. It still sounded lovely.',
+    tempos: { slow: 'Gently', medium: 'Easy pace', full: 'Full speed' },
+    tempoLine: 'Any speed is a good speed.'
   },
 
   greeting: {

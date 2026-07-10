@@ -12,7 +12,8 @@ import { planPracticeSession, practiceLesson } from './core/practice.js'
 import { VOICE } from './content/voice.js'
 import {
   startDrill, drillNote, drillContinue, drillChoice, drillClap, drillAdvance,
-  startSong, songNote, acceptLoop, declineLoop, songTargetIndex, lessonStates, pickWarmup
+  startSong, songNote, acceptLoop, declineLoop, songTargetIndex, lessonStates, pickWarmup,
+  atTempo
 } from './core/engine.js'
 import { letter, nameToMidi } from './core/notes.js'
 import { playTone, playHarmony } from './audio/synth.js'
@@ -76,9 +77,11 @@ export function App() {
   const [beat, setBeat] = useState(false)
   const [diagEntries, setDiagEntries] = useState([])
   const [syncState, setSyncState] = useState({ linked: false, code: null, lastSyncAt: null, failing: false })
+  const [tempoChoice, setTempoChoice] = useState('full')
 
   const syncRef = useRef(null)
   const lessonRef = useRef(null)
+  const baseLessonRef = useRef(null)
   const drillRef = useRef(null)
   const songRef = useRef(null)
   const demoRef = useRef(demo); demoRef.current = demo
@@ -368,6 +371,8 @@ export function App() {
       setDrill(s)
       setSong(null)
     } else {
+      baseLessonRef.current = lesson
+      setTempoChoice('full') // a lingering slow choice from a previous song shouldn't carry over
       const s = startSong(lesson)
       songRef.current = s
       setSong(s)
@@ -542,6 +547,13 @@ export function App() {
   const onAcceptLoop = () => commitSong(acceptLoop(songRef.current, lessonRef.current))
   const onDeclineLoop = () => commitSong(declineLoop(songRef.current))
 
+  /** Tempo change restarts the piece: the timing grid changed, a mid-piece splice would judge unfairly. */
+  const onTempo = (id) => {
+    setTempoChoice(id)
+    lessonRef.current = atTempo(baseLessonRef.current, id)
+    commitSong(startSong(lessonRef.current))
+  }
+
   // ---- render ----
 
   if (screen === 'boot') return <div class="screen"></div>
@@ -672,6 +684,7 @@ export function App() {
             accompany={accompany}
             accompanyAvailable={!!lesson.harmony && !!progress.get(lesson.id)?.completed}
             onToggleAccompany={() => setAccompany(a => !a)}
+            tempoChoice={tempoChoice} onTempo={onTempo}
             onHome={goHome} onHearIt={onHearIt} onReplay={onReplay}
             onAcceptLoop={onAcceptLoop} onDeclineLoop={onDeclineLoop}
             doneAction={doneAction} />}
