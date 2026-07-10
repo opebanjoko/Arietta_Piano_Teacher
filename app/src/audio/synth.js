@@ -27,11 +27,11 @@ function ensureContext() {
  * self-hearing gate, only the voicing's own pitch classes go deaf while it
  * rings — the student's next note is still heard (SR-OUT-02/03).
  */
-export function playHarmony(midis) {
+export function playHarmony(midis, { gain = 1 } = {}) {
   const ac = ensureContext()
   if (!ac) return
   holdPitches(midis, HARMONY_RING_MS)
-  for (const midi of midis) voice(ac, midi, { gain: 0.085, ring: 1.2 })
+  for (const midi of midis) voice(ac, midi, { gain: 0.085 * gain, ring: 1.2 })
 }
 
 export function playTone(midi) {

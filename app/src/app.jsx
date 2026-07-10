@@ -13,7 +13,7 @@ import { VOICE } from './content/voice.js'
 import {
   startDrill, drillNote, drillContinue, drillChoice, drillClap, drillAdvance,
   startSong, songNote, acceptLoop, declineLoop, songTargetIndex, lessonStates, pickWarmup,
-  atTempo
+  atTempo, harmonyByBeat
 } from './core/engine.js'
 import { letter, nameToMidi } from './core/notes.js'
 import { playTone, playHarmony } from './audio/synth.js'
@@ -96,6 +96,7 @@ export function App() {
   const tos = useRef([])
   const heardTO = useRef(null)
   const metroRef = useRef(null)
+  const backingRef = useRef(null) // in-time backing schedule for the song underway (SR-OUT-05)
   const detectorMsRef = useRef(null)
   const micStateRef = useRef('idle')
 
@@ -204,11 +205,28 @@ export function App() {
     return d?.phase !== 'done' && (step?.timed || step?.kind === 'rhythm-clap')
   }
 
+  // In-time backing (SR-OUT-05): voicings ride the same metronome click as the
+  // pulse above — a second startMetronome would double the click — quieter
+  // than the student, only while "With me" is on and the piece is underway.
+  const onBeat = () => {
+    setBeat(b => !b)
+    const backing = backingRef.current
+    if (!backing || !accompanyRef.current) return
+    backing.count += 1
+    const h = backing.byBeat.get(backing.count)
+    if (h) playHarmony(h.map(nameToMidi), { gain: 0.55 })
+  }
+
   useEffect(() => {
     if (pulseWanted() && !metroRef.current) {
-      metroRef.current = startMetronome(lessonRef.current.tempo, () => setBeat(b => !b))
+      const lesson = lessonRef.current
+      backingRef.current = lesson.kind === 'song' && lesson.harmony
+        ? { byBeat: harmonyByBeat(lesson), count: -1 }
+        : null
+      metroRef.current = startMetronome(lesson.tempo, onBeat)
     } else if (!pulseWanted() && metroRef.current) {
       stopMetro()
+      backingRef.current = null
     }
   }, [screen, drill, song, demo.on, earPlaying])
 
@@ -473,10 +491,11 @@ export function App() {
       const prev = songRef.current
       const next = songNote(prev, lesson, ev)
       commitSong(next)
-      // "Play with me": a soft voicing under each correct melody note (SR-OUT-03)
+      // "Play with me": a soft voicing under each correct melody note (SR-OUT-03).
+      // Timed pieces get grid-based backing instead (SR-OUT-05, the pulse effect above).
       const advanced = next.pos > prev.pos ||
         (prev.loop && (!next.loop || next.loop.pos !== prev.loop.pos || next.loop.round !== prev.loop.round))
-      if (advanced && accompanyRef.current && lesson.harmony) {
+      if (advanced && accompanyRef.current && lesson.harmony && !lesson.tempo) {
         const h = lesson.harmony[songTargetIndex(prev)]
         if (h) playHarmony(h.map(nameToMidi))
       }

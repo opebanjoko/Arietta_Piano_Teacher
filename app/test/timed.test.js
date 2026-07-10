@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { startDrill, drillNote, startSong, songNote, TEMPO_CHOICES, atTempo } from '../src/core/engine.js'
+import { startDrill, drillNote, startSong, songNote, TEMPO_CHOICES, atTempo, harmonyByBeat } from '../src/core/engine.js'
 import { steadinessPoints } from '../src/core/timing.js'
 import { nameToMidi } from '../src/core/notes.js'
 import { noteEvent } from '../src/core/events.js'
@@ -159,4 +159,17 @@ test('atTempo scales the authored tempo and leaves everything else alone', () =>
   assert.equal(atTempo(lesson, 'slow').notes, lesson.notes)
   assert.equal(atTempo({ id: 'd1', notes: [] }, 'slow').tempo, undefined)
   assert.equal(TEMPO_CHOICES.length, 3)
+})
+
+test('harmonyByBeat places voicings at cumulative note beats', () => {
+  const lesson = {
+    tempo: 90,
+    notes: [{ note: 'C4', beats: 1 }, { note: 'D4', beats: 2 }, { note: 'E4', beats: 1 }, { note: 'F4', beats: 1 }],
+    harmony: { 0: ['C3', 'G3'], 2: ['G3', 'B3'], 3: ['C3', 'G3'] }
+  }
+  const m = harmonyByBeat(lesson)
+  assert.deepEqual(m.get(0), ['C3', 'G3'])
+  assert.deepEqual(m.get(3), ['G3', 'B3']) // note 2 starts after beats 1+2
+  assert.deepEqual(m.get(4), ['C3', 'G3'])
+  assert.equal(harmonyByBeat({ notes: [] }).size, 0)
 })

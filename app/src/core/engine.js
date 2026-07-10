@@ -348,3 +348,21 @@ export function lessonStates(lessons, completedIds) {
   }
   return states
 }
+
+// ---- backing tracks (SR-OUT-05) ----
+
+/**
+ * Backing track schedule (SR-OUT-05): harmony voicings mapped from note
+ * index to the beat where that note starts, so playback can follow the
+ * metronome grid instead of reacting to the student.
+ */
+export function harmonyByBeat(lesson) {
+  const map = new Map()
+  if (!lesson.harmony) return map
+  let beat = 0
+  lesson.notes.forEach((n, i) => {
+    if (lesson.harmony[i]) map.set(Math.round(beat), lesson.harmony[i])
+    beat += n.beats ?? 1
+  })
+  return map
+}
