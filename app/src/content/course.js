@@ -1130,6 +1130,130 @@ export const COURSE = {
           }
         }
       ]
+    },
+    {
+      id: 'u9',
+      title: 'Hands Together',
+      tag: 'UNIT 9',
+      lessons: [
+        {
+          id: 'both-thumbs',
+          title: 'Both thumbs share middle C',
+          kind: 'drill',
+          poly: true,
+          low: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Today, for the first time, both hands play at once.',
+              sub: 'Left thumb on G below middle C, right thumb on middle C — neighbours, nearly touching.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Both thumbs land together: G below, and middle C.',
+              sub: 'One gentle press, two notes, one sound.',
+              targets: [c(['G3', 'C4'], [1, 1])]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now hold that low G and let the right hand walk on top of it.',
+              sub: 'Strike both thumbs, then D, E, D, C — the deep note keeps humming underneath.',
+              targets: [c(['G3', 'C4'], [1, 1]), n('D4', 2), n('E4', 3), n('D4', 2), n('C4', 1)]
+            },
+            {
+              kind: 'play',
+              prompt: 'Once more — a longer walk over the held note.',
+              sub: 'Left thumb down with the right middle finger this time, then step away.',
+              targets: [c(['G3', 'E4'], [1, 3]), n('D4', 2), n('C4', 1)]
+            }
+          ],
+          done: {
+            title: 'Both hands, at once.',
+            line: 'A note below, a melody above — that’s the whole idea of piano, right there.'
+          },
+          recap: {
+            summary: 'Today both thumbs landed together and the hands played at once.',
+            seed: 'Next time the left hand holds one long drone while the right sings.'
+          }
+        },
+        {
+          id: 'drone-and-melody',
+          title: 'Drone and melody',
+          kind: 'drill',
+          poly: true,
+          low: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'A drone is one deep note that keeps sounding while a melody moves above it.',
+              sub: 'Left pinky holds deep C. The right hand does all the walking.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Land the drone and a melody note together: deep C under E.',
+              sub: 'Left pinky and right middle finger, one press.',
+              targets: [c(['C3', 'E4'], [5, 3])]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now the whole hill over the drone.',
+              sub: 'Strike C and E together, then walk: F, G, F, E, D — and land on C.',
+              targets: [c(['C3', 'E4'], [5, 3]), n('F4', 4), n('G4', 5), n('F4', 4), n('E4', 3), n('D4', 2), n('C4', 1)]
+            }
+          ],
+          done: {
+            title: 'Drone and melody — together.',
+            line: 'One note held like the ground, a tune walking on top. Bagpipes do it; now you do too.'
+          },
+          recap: {
+            summary: 'Today the left hand held a drone while the right walked the whole hill.',
+            seed: 'Next time: Au clair de la lune, hands together.'
+          }
+        },
+        {
+          id: 'au-clair-together',
+          title: 'Au clair de la lune — together',
+          kind: 'song',
+          poly: true,
+          low: true,
+          card: 'The gentle moonlight song returns — with long left-hand notes glowing underneath.',
+          notes: [
+            c(['G3', 'C4'], [1, 1]), n('C4', 1), n('C4', 1), n('D4', 2),
+            c(['C3', 'E4'], [5, 3]), n('D4', 2), n('C4', 1), n('E4', 3),
+            c(['G3', 'D4'], [1, 2]), n('D4', 2), c(['E3', 'C4'], [3, 1])
+          ],
+          done: {
+            title: 'Au clair de la lune, hands together.',
+            line: 'The moonlight song with its own ground underneath — both hands, one music.'
+          },
+          recap: {
+            summary: 'Today Au clair de la lune got its left-hand glow — hands together.',
+            seed: 'Next time Twinkle comes back, with the left hand changing beneath the tune.'
+          }
+        },
+        {
+          id: 'twinkle-together',
+          title: 'Twinkle — together',
+          kind: 'song',
+          poly: true,
+          low: true,
+          card: 'The sky’s favourite tune — now the left hand changes notes beneath it.',
+          notes: [
+            c(['E3', 'C4'], [3, 1]), n('C4', 1), c(['C3', 'G4'], [5, 5]), n('G4', 5),
+            c(['F3', 'A4'], [2, 5]), n('A4', 5), n('G4', 5),
+            c(['A3', 'F4'], [1, 4]), n('F4', 4), c(['C3', 'E4'], [5, 3]), n('E4', 3),
+            c(['G3', 'D4'], [1, 2]), n('D4', 2), n('C4', 1)
+          ],
+          done: {
+            title: 'Twinkle, hands together.',
+            line: 'The tune up top, the harmony moving underneath — you played both at once.'
+          },
+          recap: {
+            summary: 'Today Twinkle twinkled over a left hand that moved beneath it.',
+            seed: 'Next time the black keys finally join in.'
+          }
+        }
+      ]
     }
   ]
 }
