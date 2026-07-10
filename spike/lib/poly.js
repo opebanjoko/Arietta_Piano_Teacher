@@ -27,7 +27,9 @@ function harmonicScore(peaks, f0, taken) {
     if (!taken.has(best)) unshared++;
   }
   const near = (t) => hits.some((p) => Math.abs(p.freq - t) < t * 0.03);
-  if (!near(f0) && !near(2 * f0)) return { score: 0, hits: [], unshared: 0 };
+  // a piano note shows several partials; single-peak candidates are
+  // interpolation ghosts (a merged low-fundamental lobe splits into two)
+  if (hits.length < 2 || (!near(f0) && !near(2 * f0))) return { score: 0, hits: [], unshared: 0 };
   return { score, hits, unshared };
 }
 
@@ -43,17 +45,18 @@ function frameSpectrum(frame, sampleRate, floor) {
   return { peaks, total };
 }
 
-export function polySieve(frame, sampleRate, { maxNotes = 4, floor = 0.005, minClarity = 0.5 } = {}) {
-  const spec = frameSpectrum(frame, sampleRate, floor);
-  if (!spec) return [];
-  let pool = spec.peaks.slice();
+/** Iterative pick-and-subtract over a peak list. */
+export function sieveFromPeaks(peaks, { maxNotes = 4, minClarity = 0.5 } = {}) {
+  let pool = peaks.slice();
   const taken = new Set();
   const out = [];
   for (let n = 0; n < maxNotes; n++) {
     let best = null;
     for (let m = MIDI_LO; m <= MIDI_HI; m++) {
       const r = harmonicScore(pool, midiFreq(m), taken);
-      if (r.score > 0 && (!best || r.score > best.score)) best = { midi: m, ...r };
+      if (r.score === 0) continue;
+      if (out.length && r.unshared < 2) continue; // harmonic ghost of a picked note
+      if (!best || r.score > best.score) best = { midi: m, ...r };
     }
     if (!best) break;
     // normalize against what is left in the pool: each subtraction removes
@@ -62,22 +65,31 @@ export function polySieve(frame, sampleRate, { maxNotes = 4, floor = 0.005, minC
     for (const p of pool) poolTotal += p.mag;
     const clarity = Math.min(1, best.score / (poolTotal * 0.35));
     if (clarity < minClarity) break;
-    if (out.length && best.unshared < 2) break;
     out.push({ freq: midiFreq(best.midi), clarity });
-    for (const p of best.hits) {
-      taken.add(p);
-      pool = pool.filter((x) => x !== p);
+    // sweep every pool peak near the picked note's harmonic positions:
+    // windowing can split one partial into sibling peaks, and a surviving
+    // sibling stack reads back as a phantom octave
+    const f0 = midiFreq(best.midi);
+    for (const p of pool) {
+      for (let h = 1; h <= 8; h++) {
+        if (Math.abs(p.freq - f0 * h) < f0 * h * 0.04) {
+          taken.add(p);
+          break;
+        }
+      }
     }
+    pool = pool.filter((x) => !taken.has(x));
   }
   return out;
 }
 
-export function polySalience(frame, sampleRate, { maxNotes = 4, floor = 0.005, minClarity = 0.5 } = {}) {
-  const spec = frameSpectrum(frame, sampleRate, floor);
-  if (!spec) return [];
+/** Joint scoring over a peak list; harmonically-explained candidates rejected. */
+export function salienceFromPeaks(peaks, { maxNotes = 4, minClarity = 0.5 } = {}) {
+  let total = 0;
+  for (const p of peaks) total += p.mag;
   const scored = [];
   for (let m = MIDI_LO; m <= MIDI_HI; m++) {
-    const r = harmonicScore(spec.peaks, midiFreq(m), new Set());
+    const r = harmonicScore(peaks, midiFreq(m), new Set());
     if (r.score > 0) scored.push({ midi: m, ...r });
   }
   scored.sort((a, b) => b.score - a.score);
@@ -85,7 +97,7 @@ export function polySalience(frame, sampleRate, { maxNotes = 4, floor = 0.005, m
   const used = new Set();
   for (const c of scored) {
     if (out.length >= maxNotes) break;
-    const clarity = Math.min(1, c.score / (spec.total * 0.35));
+    const clarity = Math.min(1, c.score / (total * 0.35));
     if (clarity < minClarity) continue;
     let shared = 0;
     let own = 0;
@@ -99,3 +111,15 @@ export function polySalience(frame, sampleRate, { maxNotes = 4, floor = 0.005, m
   }
   return out;
 }
+
+export function polySieve(frame, sampleRate, opts = {}) {
+  const spec = frameSpectrum(frame, sampleRate, opts.floor ?? 0.005);
+  return spec ? sieveFromPeaks(spec.peaks, opts) : [];
+}
+
+export function polySalience(frame, sampleRate, opts = {}) {
+  const spec = frameSpectrum(frame, sampleRate, opts.floor ?? 0.005);
+  return spec ? salienceFromPeaks(spec.peaks, opts) : [];
+}
+
+export const POLY_PICKERS = { sieve: sieveFromPeaks, salience: salienceFromPeaks };
