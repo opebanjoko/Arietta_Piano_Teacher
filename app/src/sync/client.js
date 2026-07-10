@@ -73,6 +73,8 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
     await db.delete('profiles', profileId)
     const rows = await db.getAll('progress')
     for (const r of rows.filter(r => r.profileId === profileId)) await db.delete('progress', [r.profileId, r.lessonId])
+    const packs = await db.getAll('practice')
+    for (const r of packs.filter(r => r.profileId === profileId)) await db.delete('practice', [r.profileId, r.packId])
     await db.delete('app', `settings:${profileId}`)
   }
 
@@ -93,7 +95,12 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
       for (const d of pushed.docs) await applyDoc(d)
       for (const pid of pushed.deleted ?? []) await removeLocal(pid)
       failStreak = 0
-      await putCfg({ ...cfg, deleted: [], lastSyncAt: now() })
+      // re-read cfg: leave() during the round trips must stay left, and
+      // tombstones queued mid-sync must survive for the next push
+      const fresh = await getCfg()
+      if (fresh?.token === cfg.token) {
+        await putCfg({ ...fresh, deleted: (fresh.deleted ?? []).filter(p => !deleted.includes(p)), lastSyncAt: now() })
+      }
       onChange()
       return 'ok'
     } catch {

@@ -4,8 +4,9 @@ import { createSyncClient } from '../src/sync/client.js'
 
 /** Minimal in-memory stand-in for the db handle in src/store/db.js. */
 function fakeDb() {
-  const stores = { profiles: new Map(), progress: new Map(), app: new Map() }
-  const key = (store, v) => store === 'progress' ? `${v.profileId}|${v.lessonId}` : (v.id ?? v.key)
+  const stores = { profiles: new Map(), progress: new Map(), practice: new Map(), app: new Map() }
+  const key = (store, v) => store === 'progress' ? `${v.profileId}|${v.lessonId}`
+    : store === 'practice' ? `${v.profileId}|${v.packId}` : (v.id ?? v.key)
   return {
     get: async (s, k) => stores[s].get(Array.isArray(k) ? k.join('|') : k) ?? undefined,
     getAll: async (s) => [...stores[s].values()],
@@ -129,6 +130,7 @@ test('cross-device deletion: a server tombstone newer than the local doc wipes l
   const db = fakeDb()
   await db.put('profiles', { id: 'p1', name: 'Maya', createdAt: 1 })
   await db.put('progress', { profileId: 'p1', lessonId: 'l1', completed: true, lastPlayedAt: 5 })
+  await db.put('practice', { profileId: 'p1', packId: 'k1', completedCount: 2, lastPracticedAt: 4 })
   await db.put('app', { key: 'settings:p1', value: { accent: '#B7813A' } })
   await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
   const srv = fakeServer()
@@ -137,6 +139,7 @@ test('cross-device deletion: a server tombstone newer than the local doc wipes l
   assert.equal(await c.syncNow(), 'ok')
   assert.equal(await db.get('profiles', 'p1'), undefined)
   assert.equal(await db.get('progress', ['p1', 'l1']), undefined)
+  assert.equal(await db.get('practice', ['p1', 'k1']), undefined)
   assert.equal(await db.get('app', 'settings:p1'), undefined)
   assert.equal(srv.docs.has('p1'), false)
   assert.equal(srv.tombstones.has('p1'), true)
@@ -154,6 +157,46 @@ test('legitimate revive: a local doc newer than the tombstone brings p1 back on 
   assert.equal(srv.docs.has('p1'), true)
   assert.equal(srv.tombstones.has('p1'), false)
   assert.deepEqual(await db.get('profiles', 'p1'), { id: 'p1', name: 'Maya', createdAt: 1 })
+})
+
+/** Wraps a server fetchFn so its first call blocks until release() is called. */
+function gatedFetch(fetchFn) {
+  let release
+  const gate = new Promise(r => { release = r })
+  let n = 0
+  return { release, fetchFn: async (url, opts) => { if (++n === 1) await gate; return fetchFn(url, opts) } }
+}
+
+test('leave during an in-flight sync stays left: the success writeback is skipped', async () => {
+  const db = fakeDb()
+  await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  const srv = fakeServer()
+  const gated = gatedFetch(srv.fetchFn)
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: gated.fetchFn })
+  const p = c.syncNow()
+  await c.leave()
+  gated.release()
+  assert.equal(await p, 'ok')
+  assert.equal((await c.getState()).linked, false)
+  assert.equal(await db.get('app', 'sync'), undefined)
+})
+
+test('a tombstone queued during an in-flight sync survives the writeback and pushes next round', async () => {
+  const db = fakeDb()
+  await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  const srv = fakeServer()
+  srv.docs.set('pGone', { profileId: 'pGone', name: 'Old', createdAt: 1, lessons: {}, settings: {}, updatedAt: 0 })
+  const gated = gatedFetch(srv.fetchFn)
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: gated.fetchFn })
+  const p = c.syncNow()
+  await c.noteProfileDeleted('pGone')
+  gated.release()
+  assert.equal(await p, 'ok')
+  assert.deepEqual((await db.get('app', 'sync')).value.deleted, ['pGone'])
+  assert.equal(await c.syncNow(), 'ok')
+  assert.equal(srv.docs.has('pGone'), false)
+  assert.equal(srv.tombstones.has('pGone'), true)
+  assert.deepEqual((await db.get('app', 'sync')).value.deleted, [])
 })
 
 test('reentrancy: two concurrent syncNow calls collapse into one round trip', async () => {
