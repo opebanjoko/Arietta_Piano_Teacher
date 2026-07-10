@@ -1389,6 +1389,151 @@ export const COURSE = {
           }
         }
       ]
+    },
+    {
+      id: 'u11',
+      title: 'First Chords',
+      tag: 'UNIT 11',
+      lessons: [
+        {
+          id: 'building-the-c-chord',
+          title: 'Building the C chord',
+          kind: 'drill',
+          poly: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'The C chord comes back — not as a trick this time, but as a tool.',
+              sub: 'C, E, G under fingers 1, 3, 5. Today it learns to repeat and to be steady.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Land the C chord once, all together.',
+              sub: 'Roll it if you need to — ending together is what counts.',
+              targets: [c(['C4', 'E4', 'G4'], [1, 3, 5])]
+            },
+            {
+              kind: 'ear-choice',
+              prompt: 'Listen — is that one note, or three sounding together?',
+              sub: 'A chord is thicker, like three voices agreeing.',
+              play: [c(['C4', 'E4', 'G4'], [1, 3, 5])],
+              choices: [{ label: 'One note', correct: false }, { label: 'Three together', correct: true }]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now three in a row — steady as breathing.',
+              sub: 'Land, lift, land, lift, land. Same shape every time.',
+              targets: [c(['C4', 'E4', 'G4'], [1, 3, 5]), c(['C4', 'E4', 'G4'], [1, 3, 5]), c(['C4', 'E4', 'G4'], [1, 3, 5])]
+            }
+          ],
+          done: {
+            title: 'The C chord is a tool now.',
+            line: 'Once is a discovery; three in a row is a skill. Your hand owns that shape.'
+          },
+          recap: {
+            summary: 'Today the C chord became steady — three clean landings in a row.',
+            seed: 'Next time it meets its neighbour, G seven, and they take turns.'
+          }
+        },
+        {
+          id: 'c-and-g7',
+          title: 'C and G7 take turns',
+          kind: 'drill',
+          poly: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Every chord has a best friend. C’s is called G seven — it leans, and C answers.',
+              sub: 'Thumb slides down to B, finger 4 finds F, pinky keeps G. A new shape, one key of travel.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Make the G seven shape: B, F and G together.',
+              sub: 'Thumb on B (just below middle C), 4 on F, pinky stays home on G.',
+              targets: [c(['B3', 'F4', 'G4'], [1, 4, 5])]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now they take turns: C… G seven… and home again.',
+              sub: 'Slow is beautiful. Feel the lean, feel the landing.',
+              targets: [
+                c(['C4', 'E4', 'G4'], [1, 3, 5]), c(['B3', 'F4', 'G4'], [1, 4, 5]),
+                c(['C4', 'E4', 'G4'], [1, 3, 5]), c(['B3', 'F4', 'G4'], [1, 4, 5]),
+                c(['C4', 'E4', 'G4'], [1, 3, 5])
+              ]
+            }
+          ],
+          done: {
+            title: 'C and G seven — talking.',
+            line: 'Lean and answer, tension and home. That little pair carries half the songs ever sung.'
+          },
+          recap: {
+            summary: 'Today C and G seven took turns — the lean and the landing.',
+            seed: 'Next time F joins, and you’ll own the whole I–IV–V neighbourhood.'
+          }
+        },
+        {
+          id: 'f-joins',
+          title: 'F joins the family',
+          kind: 'drill',
+          poly: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'One more friend: the F chord. Thumb stays on C; the top two fingers reach up.',
+              sub: 'C stays, F and A stack above it. Three chords now — the whole neighbourhood.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Make the F shape: C, F and A together.',
+              sub: 'Thumb on C, finger 4 on F, pinky on A.',
+              targets: [c(['C4', 'F4', 'A4'], [1, 4, 5])]
+            },
+            {
+              kind: 'play',
+              prompt: 'The round trip: C, F, C, G seven, C.',
+              sub: 'Home, away, home, lean… and home. Songs live inside this loop.',
+              targets: [
+                c(['C4', 'E4', 'G4'], [1, 3, 5]), c(['C4', 'F4', 'A4'], [1, 4, 5]),
+                c(['C4', 'E4', 'G4'], [1, 3, 5]), c(['B3', 'F4', 'G4'], [1, 4, 5]),
+                c(['C4', 'E4', 'G4'], [1, 3, 5])
+              ]
+            }
+          ],
+          done: {
+            title: 'Three chords. The family.',
+            line: 'C, F and G seven — with those three shapes you can accompany half the world’s songs.'
+          },
+          recap: {
+            summary: 'Today F joined the family — the whole I–IV–V neighbourhood under one hand.',
+            seed: 'Next time: When the Saints, with real chords in the left hand.'
+          }
+        },
+        {
+          id: 'saints-with-chords',
+          title: 'When the Saints — with chords',
+          kind: 'song',
+          poly: true,
+          low: true,
+          card: 'The march comes back grown-up: melody in the right hand, block chords in the left.',
+          notes: [
+            n('C4', 1), n('E4', 3), c(['C3', 'E3', 'G3', 'F4'], [5, 3, 1, 4]), n('G4', 5),
+            n('C4', 1), n('E4', 3), c(['C3', 'E3', 'G3', 'F4'], [5, 3, 1, 4]), n('G4', 5),
+            n('C4', 1), n('E4', 3), n('F4', 4), n('G4', 5), n('E4', 3), n('C4', 1), n('E4', 3), c(['G3', 'B3', 'D4'], [5, 3, 1]),
+            n('E4', 3), n('E4', 3), c(['G3', 'B3', 'D4'], [5, 3, 1]), n('C4', 1), n('C4', 1),
+            n('E4', 3), n('G4', 5), n('G4', 5), c(['A3', 'C4', 'F4'], [3, 1, 4]),
+            n('E4', 3), n('F4', 4), n('G4', 5), n('E4', 3), n('C4', 1), c(['G3', 'B3', 'D4'], [5, 3, 1]), n('C4', 1)
+          ],
+          done: {
+            title: 'The Saints, with chords.',
+            line: 'Melody up top, chords marching underneath — that’s two-handed piano, the real thing.'
+          },
+          recap: {
+            summary: 'Today the Saints marched with block chords under the tune.',
+            seed: 'Next time: louds and softs — making the piano whisper and roar.'
+          }
+        }
+      ]
     }
   ]
 }

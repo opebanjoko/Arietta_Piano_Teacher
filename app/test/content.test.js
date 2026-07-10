@@ -63,7 +63,8 @@ test('every drill step is well-formed and every target carries a finger', () => 
         if (s.timed) assert.ok(l.tempo, `${l.id} step ${i}: timed steps need a lesson tempo`)
       }
       if (s.kind === 'ear-choice') {
-        assert.ok(s.play.length >= 2, `${l.id} step ${i}: needs notes to play`)
+        assert.ok(s.play.length >= 2 || s.play.some(t => t.notes?.length >= 2),
+          `${l.id} step ${i}: needs notes to play`)
         s.play.forEach(t => checkTarget(t, `${l.id} step ${i}`))
         assert.equal(s.choices.filter(c => c.correct).length, 1, `${l.id} step ${i}: exactly one correct choice`)
       }
