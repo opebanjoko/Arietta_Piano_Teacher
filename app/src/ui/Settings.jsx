@@ -4,6 +4,7 @@
  */
 import { useState, useRef, useEffect } from 'preact/hooks'
 import { VOICE } from '../content/voice.js'
+import { FamilySync } from './FamilySync.jsx'
 
 const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
 
@@ -26,7 +27,8 @@ function Card({ title, children }) {
 }
 
 export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
-  onHome, onMicCheck, onAccent, onLabels, onReset, onDelete, onCopyDiag, onClearDiag, canDelete }) {
+  onHome, onMicCheck, onAccent, onLabels, onReset, onDelete, onCopyDiag, onClearDiag, canDelete,
+  sync, onSyncCreate, onSyncJoin, onSyncLeave, onSyncDeleteEverywhere, onSyncNow }) {
   const v = VOICE.settings
   const [confirming, setConfirming] = useState(null)
   const [copied, setCopied] = useState(false)
@@ -126,6 +128,11 @@ export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
             </button>
             {diagInfo.entries.length > 0 && <button class="btn-quiet" onClick={onClearDiag}>{v.diagClear}</button>}
           </div>
+        </Card>
+
+        <Card title={v.sync.title}>
+          <FamilySync sync={sync} onCreate={onSyncCreate} onJoin={onSyncJoin}
+            onLeave={onSyncLeave} onDeleteEverywhere={onSyncDeleteEverywhere} onSyncNow={onSyncNow} />
         </Card>
       </div>
     </section>

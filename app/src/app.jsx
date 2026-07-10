@@ -20,6 +20,7 @@ import { startMetronome, playClap } from './audio/metronome.js'
 import { createMic } from './audio/mic.js'
 import { unregisterMic, holdFor } from './audio/gate.js'
 import { openDb } from './store/db.js'
+import { createSyncClient } from './sync/client.js'
 import { logDiag, listDiag, clearDiag } from './store/diag.js'
 import {
   listProfiles, createProfile, deleteProfile, resetProgress, getProgress,
@@ -74,7 +75,9 @@ export function App() {
   const [practiceOffer, setPracticeOffer] = useState(null)
   const [beat, setBeat] = useState(false)
   const [diagEntries, setDiagEntries] = useState([])
+  const [syncState, setSyncState] = useState({ linked: false, code: null, lastSyncAt: null, failing: false })
 
+  const syncRef = useRef(null)
   const lessonRef = useRef(null)
   const drillRef = useRef(null)
   const songRef = useRef(null)
@@ -108,6 +111,14 @@ export function App() {
       window.addEventListener('unhandledrejection', (e) => logDiag(d, 'error', e.reason?.message ?? String(e.reason)))
       setProfiles(ps)
       setMicSettings(mic)
+      const sync = createSyncClient({
+        db: d,
+        url: import.meta.env.VITE_SYNC_URL ?? '',
+        onChange: () => sync.getState().then(setSyncState)
+      })
+      syncRef.current = sync
+      sync.getState().then(setSyncState)
+      sync.schedule()
       if (!ps.length) {
         micReturnRef.current = 'firstrun'
         setScreen(mic ? 'firstrun' : 'miccheck')
@@ -171,6 +182,13 @@ export function App() {
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', profileSettings.accent ?? ACCENTS[0])
   }, [profileSettings.accent])
+
+  // coming back online is a good moment to try carrying progress over (SR-STO-04)
+  useEffect(() => {
+    const onUp = () => syncRef.current?.schedule()
+    window.addEventListener('online', onUp)
+    return () => window.removeEventListener('online', onUp)
+  }, [])
 
   // ---- the pulse (SR-OUT-04): ticking whenever a timed step or piece is live ----
 
@@ -243,6 +261,7 @@ export function App() {
     setPracticeProgress(new Map())
     setProfileSettings({})
     setScreen('home')
+    syncRef.current?.schedule()
   }
 
   const onSelectProfile = async (pid) => {
@@ -255,10 +274,25 @@ export function App() {
     setPracticeOffer(null)
   }
 
+  /** Re-list profiles and refresh the active player's progress (after a sync pull). */
+  const reloadAll = async () => {
+    const ps = await listProfiles(db)
+    setProfiles(ps)
+    if (!ps.some(p => p.id === activeId)) {
+      if (!ps.length) { setScreen('firstrun'); return }
+      await onSelectProfile(ps[0].id)
+      return
+    }
+    await refreshProgress()
+    await refreshPracticeProgress()
+    setProfileSettings(await getSettings(db, activeId))
+  }
+
   const patchSettings = (patch) => {
     const next = { ...profileSettings, ...patch }
     setProfileSettings(next)
     saveSettings(db, activeId, next)
+    syncRef.current?.schedule()
   }
 
   const onMicCheckDone = async (settings) => {
@@ -369,6 +403,7 @@ export function App() {
     const d = drillRef.current
     if (lesson?.kind === 'drill' && !lesson.ephemeral && d && d.phase !== 'done' && d.stepIndex > 0) {
       savePosition(db, activeId, lesson.id, d.stepIndex)
+      syncRef.current?.schedule()
     }
     lessonRef.current = null
     warmupNextRef.current = null
@@ -445,6 +480,7 @@ export function App() {
           completePractice(lesson)
         } else {
           recordSongRun(db, activeId, lesson.id, next.cleanCount).then(() => refreshProgress())
+          syncRef.current?.schedule()
           noteRecap(lesson)
         }
         to(() => setOverlay(true), SONG_DONE_PAUSE)
@@ -462,10 +498,12 @@ export function App() {
             completePractice(lesson)
           } else {
             if (!lesson.ephemeral) markComplete(db, activeId, lesson.id).then(() => refreshProgress())
+            syncRef.current?.schedule()
             noteRecap(lesson)
           }
         } else if (!lesson.ephemeral) {
           savePosition(db, activeId, lesson.id, adv.stepIndex)
+          syncRef.current?.schedule()
         }
       }, STEP_PAUSE)
     }
@@ -570,13 +608,21 @@ export function App() {
           onLabels={(labels) => patchSettings({ labels })}
           onReset={async () => { await resetProgress(db, activeId); await refreshProgress(); await refreshPracticeProgress() }}
           onDelete={async () => {
+            await syncRef.current?.noteProfileDeleted(activeId)
             await deleteProfile(db, activeId)
+            syncRef.current?.schedule()
             const ps = await listProfiles(db)
             setProfiles(ps)
             if (!ps.length) { setScreen('firstrun'); return }
             await onSelectProfile(ps[0].id)
             setScreen('home')
-          }} />
+          }}
+          sync={syncState}
+          onSyncCreate={(pin) => syncRef.current.create(pin)}
+          onSyncJoin={async (code, pin) => { await syncRef.current.join(code, pin); await reloadAll() }}
+          onSyncLeave={() => syncRef.current.leave()}
+          onSyncDeleteEverywhere={(pin) => syncRef.current.deleteEverywhere(pin)}
+          onSyncNow={async () => { await syncRef.current.syncNow(); await reloadAll() }} />
       </div>
     )
   }

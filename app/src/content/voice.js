@@ -223,7 +223,27 @@ export const VOICE = {
     diagCopy: 'Copy report',
     diagCopied: 'Copied — thank you',
     diagClear: 'Clear the notes',
-    diagEmpty: 'Nothing to report — all quiet.'
+    diagEmpty: 'Nothing to report — all quiet.',
+    sync: {
+      title: 'Family sync',
+      offLine: 'Keep progress safe across iPads. Everything works without it, always.',
+      createButton: 'Start a family',
+      joinButton: 'Join a family',
+      pinLabel: 'Family PIN (4 to 8 digits)',
+      codeLabel: 'Family code',
+      codeShow: 'Your family code is {code}. Write it inside the piano bench — with the PIN it links another iPad.',
+      onLine: 'Linked to family {code}.',
+      lastSync: 'Progress last carried over {when}.',
+      neverSync: 'Waiting to carry progress over.',
+      failing: 'Having trouble reaching home base — it will keep trying quietly.',
+      syncNow: 'Carry it over now',
+      leaveButton: 'Unlink this iPad',
+      leaveLine: 'Progress stays on this iPad; it just stops carrying over.',
+      deleteButton: 'Delete family data everywhere',
+      deleteLine: 'Removes the family and its progress from home base. iPads keep their local copies.',
+      wrong: 'That code and PIN did not match. Have another look.',
+      confirm: 'Yes, delete it everywhere'
+    }
   },
 
   firstRun: {
