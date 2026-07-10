@@ -816,6 +816,168 @@ export const COURSE = {
           }
         }
       ]
+    },
+    {
+      id: 'u7',
+      title: 'Reading the Map',
+      tag: 'UNIT 7',
+      lessons: [
+        {
+          id: 'notes-cold',
+          title: 'Notes without training wheels',
+          kind: 'drill',
+          plain: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'The letter labels are coming off today — you don’t need them anymore.',
+              sub: 'The staff is the map now. Line, space, line — your eyes already know the way.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Read and play: the five home notes, no labels anywhere.',
+              sub: 'C sits on its little ledger line. Count up from there.',
+              targets: [n('C4', 1), n('D4', 2), n('E4', 3), n('F4', 4), n('G4', 5)]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now out of order — trust the staff, not your habit.',
+              sub: 'Higher on the map means higher on the keys. That’s the whole secret.',
+              targets: [n('E4', 3), n('C4', 1), n('G4', 5), n('D4', 2), n('F4', 4)]
+            },
+            {
+              kind: 'reading-snippet',
+              pool: [n('C4', 1), n('D4', 2), n('E4', 3), n('F4', 4), n('G4', 5)],
+              len: 4
+            },
+            {
+              kind: 'reading-snippet',
+              pool: [n('C4', 1), n('D4', 2), n('E4', 3), n('F4', 4), n('G4', 5)],
+              len: 5
+            }
+          ],
+          done: {
+            title: 'You read music cold.',
+            line: 'No labels, no help — just you and the map. That’s real reading.'
+          },
+          recap: {
+            summary: 'Today the training wheels came off — you read C to G with bare notes.',
+            seed: 'Next time: the difference between a step and a skip.'
+          }
+        },
+        {
+          id: 'steps-and-skips',
+          title: 'Steps and skips',
+          kind: 'drill',
+          plain: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Notes move two ways: a step to the very next key, or a skip over one.',
+              sub: 'On the staff: line-to-space is a step; line-to-line jumps a space — that’s a skip.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Play a walk of steps: neighbour to neighbour and back.',
+              sub: 'C, D, E, D, C — no key left out.',
+              targets: [n('C4', 1), n('D4', 2), n('E4', 3), n('D4', 2), n('C4', 1)]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now skips: leap over a key each time.',
+              sub: 'C, E, G, E, C — the middle keys just watch.',
+              targets: [n('C4', 1), n('E4', 3), n('G4', 5), n('E4', 3), n('C4', 1)]
+            },
+            {
+              kind: 'ear-choice',
+              prompt: 'Close your eyes — is this a step or a skip?',
+              sub: 'Steps sound like walking; skips sound like hopping.',
+              play: [n('C4', 1), n('E4', 3)],
+              choices: [{ label: 'A step', correct: false }, { label: 'A skip', correct: true }]
+            },
+            {
+              kind: 'reading-snippet',
+              pool: [n('C4', 1), n('D4', 2), n('E4', 3), n('F4', 4), n('G4', 5)],
+              len: 4
+            }
+          ],
+          done: {
+            title: 'Steps and skips — sorted.',
+            line: 'Walking and hopping — every melody ever written is made of those two moves.'
+          },
+          recap: {
+            summary: 'Today you learned the two ways notes travel: steps and skips.',
+            seed: 'Next time your hand packs up and moves to a brand-new home: G position.'
+          }
+        },
+        {
+          id: 'meet-g-position',
+          title: 'Meet G position',
+          kind: 'drill',
+          high: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Your hand can move house. Slide it up so the thumb lives on G.',
+              sub: 'Same five fingers, same shapes — a new neighbourhood called G position.'
+            },
+            {
+              kind: 'watch-me',
+              prompt: 'Watch: thumb on G, one finger per key up to D.',
+              sub: 'G, A, B, C, D — the hill you know, four keys higher.',
+              anim: { keys: ['G4', 'A4', 'B4', 'C5', 'D5'], fingers: [1, 2, 3, 4, 5], hand: 'right' }
+            },
+            {
+              kind: 'play',
+              prompt: 'Climb the new hill: G up to D.',
+              sub: 'Fingers 1, 2, 3, 4, 5 — just like home, only brighter.',
+              targets: [n('G4', 1), n('A4', 2), n('B4', 3), n('C5', 4), n('D5', 5)]
+            },
+            {
+              kind: 'play',
+              prompt: 'And back down to G.',
+              sub: 'Pinky to thumb, gently downhill.',
+              targets: [n('D5', 5), n('C5', 4), n('B4', 3), n('A4', 2), n('G4', 1)]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now mix it up — skips in the new neighbourhood.',
+              sub: 'G, B, D, B, G — hopping over the in-between keys.',
+              targets: [n('G4', 1), n('B4', 3), n('D5', 5), n('B4', 3), n('G4', 1)]
+            }
+          ],
+          done: {
+            title: 'G position is yours.',
+            line: 'Your hand has two homes now — and every song just got twice as many places to live.'
+          },
+          recap: {
+            summary: 'Today your hand moved house: thumb on G, pinky on D.',
+            seed: 'Next time, Ode to Joy comes back — the whole theme, read from the staff.'
+          }
+        },
+        {
+          id: 'ode-whole-theme',
+          title: 'Ode to Joy — the whole theme',
+          kind: 'song',
+          plain: true,
+          card: 'Both phrases this time, read from a clean score — the tune that started everything.',
+          notes: [
+            n('E4', 3), n('E4', 3), n('F4', 4), n('G4', 5), n('G4', 5), n('F4', 4), n('E4', 3), n('D4', 2),
+            n('C4', 1), n('C4', 1), n('D4', 2), n('E4', 3), n('E4', 3), n('D4', 2), n('D4', 2),
+            n('E4', 3), n('E4', 3), n('F4', 4), n('G4', 5), n('G4', 5), n('F4', 4), n('E4', 3), n('D4', 2),
+            n('C4', 1), n('C4', 1), n('D4', 2), n('E4', 3), n('D4', 2), n('C4', 1), n('C4', 1)
+          ],
+          harmony: { 0: ['C3', 'G3'], 8: ['C3', 'G3'], 13: ['G3', 'B3'], 15: ['C3', 'G3'], 23: ['C3', 'G3'], 27: ['G3', 'B3'], 29: ['C3', 'G3'] },
+          done: {
+            title: 'The whole theme. All of it.',
+            line: 'You met this tune with three notes and labels. Today you read it, both phrases, bare.'
+          },
+          recap: {
+            summary: 'Today you played the whole Ode to Joy from a clean score.',
+            seed: 'Next time the left hand gets a map of its very own.'
+          }
+        }
+      ]
     }
   ]
 }
