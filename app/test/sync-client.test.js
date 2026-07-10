@@ -254,6 +254,21 @@ test('a settings-only change survives a sync round trip instead of being reverte
   assert.equal(srv.docs.get('p1').settings.accent, '#6F8C5A')
 })
 
+test('a 401 on a stale in-flight token never unlinks a new link made mid-sync', async () => {
+  const db = fakeDb()
+  await db.put('app', { key: 'sync', value: { token: 'revoked', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  const gated = gatedFetch(async () => ({ ok: false, status: 401, json: async () => ({ error: 'unknown token' }) }))
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: gated.fetchFn })
+  const p = c.syncNow() // doomed round trip on the old token
+  // user leaves and re-joins another household while it is in flight
+  await c.leave()
+  await db.put('app', { key: 'sync', value: { token: 'newT0ken', code: 'GHJKMN', deleted: [], lastSyncAt: null } })
+  gated.release()
+  assert.equal(await p, 'off') // the 401 belonged to the stale token
+  assert.equal((await db.get('app', 'sync')).value.token, 'newT0ken')
+  assert.equal((await c.getState()).linked, true)
+})
+
 test('401 from GET or PUT /sync auto-unlinks (no backoff), keeping local data intact', async () => {
   const db = fakeDb()
   await db.put('profiles', { id: 'p1', name: 'Maya', createdAt: 1 })

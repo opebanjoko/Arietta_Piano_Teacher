@@ -115,7 +115,10 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
       // "having trouble reaching home base"; unlink instead, keeping local data
       if (err.status === 401) {
         clearTimeout(timer)
-        await db.delete('app', 'sync')
+        // like the success writeback: a leave+re-join during this round trip
+        // means the 401 belonged to the stale token — never unlink the new one
+        const fresh = await getCfg()
+        if (fresh?.token === cfg.token) await db.delete('app', 'sync')
         failStreak = 0
         onChange()
         return 'off'
