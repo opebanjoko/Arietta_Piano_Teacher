@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { detectPoly, PolyTracker } from '../src/audio/detect/poly.js'
+import { detectPoly, PolyTracker, applyIgnores } from '../src/audio/detect/poly.js'
 import { pianoTone, whiteNoise, mix, silence } from './signals.js'
 
 const SR = 48000
@@ -24,6 +24,17 @@ test('detectPoly: a single note does not sprout phantom octaves', () => {
 test('detectPoly: silence and noise return nothing', () => {
   assert.deepEqual(detectPoly(silence(N), SR), [])
   assert.deepEqual(detectPoly(whiteNoise(N, 0.05), SR), [])
+})
+
+test('applyIgnores thins sets by pitch class and demotes or drops them', () => {
+  const set = { pitches: [48, 55, 64], source: 'mic', confidence: 0.8, timestamp: 9 }
+  assert.equal(applyIgnores(set, new Set()), set)
+  assert.deepEqual(applyIgnores(set, new Set([0])).pitches, [55, 64])
+  assert.deepEqual(applyIgnores(set, new Set([0, 7])), { pitch: 64, source: 'mic', confidence: 0.8, timestamp: 9 })
+  assert.equal(applyIgnores(set, new Set([0, 7, 4])), null)
+  const single = { pitch: 60, source: 'mic', confidence: 1, timestamp: 1 }
+  assert.equal(applyIgnores(single, new Set([0])), null)
+  assert.equal(applyIgnores(single, new Set([5])), single)
 })
 
 /** Stream a buffer through the tracker the way the capture worklet delivers it. */

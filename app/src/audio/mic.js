@@ -14,7 +14,7 @@ import workletUrl from './capture-worklet.js?worker&url'
 import { registerMic } from './gate.js'
 import { createRecovery } from './recovery.js'
 
-export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm', clarity = 0.9, lowClarity = null, noiseSuppression = false } = {}) {
+export function createMic({ onNote, onNoteSet, onOnset, onState, onStats, detector = 'mpm', clarity = 0.9, lowClarity = null, noiseSuppression = false, poly = false } = {}) {
   let ctx = null
   let worker = null
   let stream = null
@@ -43,9 +43,10 @@ export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm',
     const mc = new MessageChannel()
     node.port.postMessage({ type: 'port' }, [mc.port1])
     worker.postMessage({ type: 'port', sampleRate: ctx.sampleRate }, [mc.port2])
-    worker.postMessage({ type: 'config', detector, clarity, lowClarity })
+    worker.postMessage({ type: 'config', detector, clarity, lowClarity, poly })
     worker.onmessage = (e) => {
       if (e.data.type === 'note') onNote?.(e.data.event)
+      else if (e.data.type === 'noteset') onNoteSet?.(e.data.event)
       else if (e.data.type === 'onset') onOnset?.(e.data.event)
       else if (e.data.type === 'stats') onStats?.(e.data.avgMs)
     }
@@ -154,6 +155,12 @@ export function createMic({ onNote, onOnset, onState, onStats, detector = 'mpm',
     setDetector(name) {
       detector = name
       worker?.postMessage({ type: 'config', detector: name })
+    },
+
+    /** Polyphonic mode per lesson (SR-AUD-10); mono lessons keep the v1 path. */
+    setPoly(on) {
+      poly = on
+      worker?.postMessage({ type: 'config', poly: on })
     },
 
     stop() {

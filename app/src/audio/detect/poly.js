@@ -85,6 +85,19 @@ export function detectPoly(frame, sampleRate, opts = {}) {
   return sieveFromPeaks(spectralPeaks(realFFT(hann(frame)), sampleRate, { floor: 0.02 }), opts)
 }
 
+/**
+ * Self-hearing gate for sets (SR-OUT-02): drop ignored pitch classes from an
+ * event; a set thinned to one pitch demotes to a NoteEvent, to none -> null.
+ */
+export function applyIgnores(ev, ignoredPc) {
+  if (ev.pitches === undefined) return ignoredPc.has(ev.pitch % 12) ? null : ev
+  const pitches = ev.pitches.filter((p) => !ignoredPc.has(p % 12))
+  if (pitches.length === 0) return null
+  if (pitches.length === 1) return { pitch: pitches[0], source: ev.source, confidence: ev.confidence, timestamp: ev.timestamp }
+  if (pitches.length === ev.pitches.length) return ev
+  return { ...ev, pitches }
+}
+
 const WINDOW = 4096
 
 export class PolyTracker {
