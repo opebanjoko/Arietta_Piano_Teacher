@@ -2,7 +2,9 @@
 import { PlayHeader } from './PlayHeader.jsx'
 import { Staff } from './Staff.jsx'
 import { Pulse } from './Pulse.jsx'
+import { Steadiness } from './Steadiness.jsx'
 import { songTargetIndex, TEMPO_CHOICES } from '../core/engine.js'
+import { steadinessPoints } from '../core/timing.js'
 import { VOICE } from '../content/voice.js'
 
 const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
@@ -98,6 +100,9 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{lesson.done.line}</div>
             {song.timingMention && <div style="font-size:14px;color:var(--ink-mid);margin-top:10px;text-wrap:pretty;">{song.timingMention}</div>}
             {song.mention && <div style="font-size:14px;color:var(--ink-mid);margin-top:10px;text-wrap:pretty;">{song.mention}</div>}
+            {song.done && lesson.tempo && (
+              <div style="margin-top:14px;"><Steadiness points={steadinessPoints(song.verdicts, song.offsets)} /></div>
+            )}
             <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;">
               {doneAction
                 ? <button class="btn-primary" onClick={doneAction.go}>{doneAction.label}</button>

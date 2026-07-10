@@ -40,14 +40,19 @@ export function startDrill(lesson) {
     kind: 'drill', lessonId: lesson.id,
     stepIndex: 0, seqPos: 0, misses: 0,
     phase: 'working', feedback: null, encUsed: 0,
-    lastOnset: null, verdicts: []
+    lastOnset: null, verdicts: [], offsets: []
   }
 }
 
-/** Grid verdict for a correct onset, or null when this note isn't judged (SR-CRS-08). */
+/** Grid verdict + signed offset (in beats) for a correct onset, or null (SR-CRS-08). */
 function judgeOnset(state, tempo, prevBeats, timestamp) {
   if (!tempo || state.lastOnset === null || timestamp == null) return null
-  return judgeGap(timestamp - state.lastOnset, (prevBeats ?? 1) * beatMs(tempo), tempo)
+  const expectedMs = (prevBeats ?? 1) * beatMs(tempo)
+  const actualMs = timestamp - state.lastOnset
+  return {
+    verdict: judgeGap(actualMs, expectedMs, tempo),
+    offBeats: (actualMs - expectedMs) / beatMs(tempo)
+  }
 }
 
 const liveWord = (verdict, voice) =>
@@ -70,7 +75,8 @@ export function drillNote(state, lesson, ev, voice = VOICE) {
   }
 
   const tempo = step.timed ? lesson.tempo : null
-  const verdict = judgeOnset(state, tempo, step.targets[state.seqPos - 1]?.beats, ev.timestamp)
+  const judged = judgeOnset(state, tempo, step.targets[state.seqPos - 1]?.beats, ev.timestamp)
+  const verdict = judged?.verdict ?? null
   const verdicts = verdict ? [...state.verdicts] : state.verdicts
   if (verdict) verdicts[state.seqPos] = verdict
   const timed = { lastOnset: tempo ? ev.timestamp : null, verdicts }
@@ -103,14 +109,14 @@ export function drillClap(state, lesson, ev, voice = VOICE) {
   if (step.kind !== 'rhythm-clap') return state
 
   if (state.seqPos === 0) {
-    return { ...state, seqPos: 1, lastOnset: ev.timestamp, verdicts: [], feedback: null }
+    return { ...state, seqPos: 1, lastOnset: ev.timestamp, verdicts: [], offsets: [], feedback: null }
   }
 
   const expected = step.pattern[state.seqPos - 1] * beatMs(lesson.tempo)
   const verdict = judgeGap(ev.timestamp - state.lastOnset, expected, lesson.tempo)
   if (verdict === 'pause') {
     // the student stopped to think and began again — start the pattern fresh, silently
-    return { ...state, seqPos: 1, lastOnset: ev.timestamp, verdicts: [], feedback: null }
+    return { ...state, seqPos: 1, lastOnset: ev.timestamp, verdicts: [], offsets: [], feedback: null }
   }
 
   const verdicts = [...state.verdicts]
@@ -123,7 +129,7 @@ export function drillClap(state, lesson, ev, voice = VOICE) {
   const off = verdicts.map((v, i) => ({ v, i })).find(({ v }) => v === 'early' || v === 'late')
   if (off) {
     return {
-      ...state, seqPos: 0, lastOnset: null, verdicts: [], misses: state.misses + 1,
+      ...state, seqPos: 0, lastOnset: null, verdicts: [], offsets: [], misses: state.misses + 1,
       feedback: {
         kind: 'hint',
         text: fill(voice.rhythm.retry, {
@@ -179,7 +185,7 @@ function advance(state, lesson) {
   }
   return {
     ...state, stepIndex, seqPos: 0, misses: 0, phase: 'working', feedback: null,
-    lastOnset: null, verdicts: []
+    lastOnset: null, verdicts: [], offsets: []
   }
 }
 
@@ -189,7 +195,7 @@ export function startSong(lesson) {
   return {
     kind: 'song', lessonId: lesson.id,
     pos: 0, misses: 0, slips: 0, cleanCount: 0, done: false, hint: null, mention: null,
-    lastOnset: null, verdicts: [], pulse: null, timingMention: null,
+    lastOnset: null, verdicts: [], offsets: [], pulse: null, timingMention: null,
     missLog: [], trouble: null, offered: [], loop: null, say: null
   }
 }
@@ -274,14 +280,17 @@ export function songNote(state, lesson, ev, voice = VOICE) {
   }
 
   // a hint moment breaks the pulse; the grid picks back up from this onset
-  const verdict = state.misses === 0
+  const judged = state.misses === 0
     ? judgeOnset(state, lesson.tempo, lesson.notes[state.pos - 1]?.beats, ev.timestamp)
     : null
+  const verdict = judged?.verdict ?? null
   const verdicts = verdict ? [...state.verdicts] : state.verdicts
-  if (verdict) verdicts[state.pos] = verdict
+  const offsets = verdict ? [...state.offsets] : state.offsets
+  if (verdict) { verdicts[state.pos] = verdict; offsets[state.pos] = judged.offBeats }
   const timed = {
     lastOnset: lesson.tempo ? ev.timestamp : null,
     verdicts,
+    offsets,
     pulse: verdict && verdict !== 'pause' ? voice.timing.live[verdict] : null
   }
 

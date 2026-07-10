@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { startDrill, drillNote, startSong, songNote, TEMPO_CHOICES, atTempo } from '../src/core/engine.js'
+import { steadinessPoints } from '../src/core/timing.js'
 import { nameToMidi } from '../src/core/notes.js'
 import { noteEvent } from '../src/core/events.js'
 import { VOICE } from '../src/content/voice.js'
@@ -124,6 +125,30 @@ test('an untimed play step keeps plain encouragement', () => {
   s = drillNote(s, plain, tapAt('E4', 200))
   assert.equal(s.phase, 'stepdone')
   assert.ok(VOICE.encouragements.includes(s.feedback.text))
+})
+
+test('songNote records offsets in beats alongside verdicts', () => {
+  const lesson = {
+    id: 's1', kind: 'song', tempo: 60, // 1000ms per beat
+    notes: [n('C4', 1, 1), n('D4', 1, 1), n('E4', 1, 1)]
+  }
+  let s = startSong(lesson)
+  s = songNote(s, lesson, tapAt('C4', 1000))
+  s = songNote(s, lesson, tapAt('D4', 2100)) // 100ms late = +0.1 beats
+  s = songNote(s, lesson, tapAt('E4', 3100)) // on the gap
+  assert.ok(Math.abs(s.offsets[1] - 0.1) < 1e-9)
+  assert.ok(Math.abs(s.offsets[2]) < 1e-9)
+  assert.equal(s.offsets[0], undefined) // first onset anchors, never judged
+})
+
+test('steadinessPoints keeps judged notes only and clamps wild offsets', () => {
+  const pts = steadinessPoints(
+    [undefined, 'on', 'late', 'pause', 'early'],
+    [undefined, 0, 0.4, 2.1, -1.5]
+  )
+  assert.deepEqual(pts.map(p => p.i), [1, 2, 4])
+  assert.equal(pts[2].off, -0.6) // clamped
+  assert.equal(pts[1].verdict, 'late')
 })
 
 test('atTempo scales the authored tempo and leaves everything else alone', () => {

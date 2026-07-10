@@ -38,7 +38,13 @@ export const VOICE = {
     words: { early: 'a little early', late: 'a little late' },
     ordinals: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth',
       'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth',
-      'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'last']
+      'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'last'],
+    steadiness: {
+      label: 'How the notes sat against the pulse',
+      eager: 'a little eager',
+      pulseWord: 'right on the pulse',
+      dreamy: 'taking their time'
+    }
   },
 
   ear: {

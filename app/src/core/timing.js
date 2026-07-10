@@ -53,3 +53,17 @@ export function timingSummary(verdicts, voice) {
   if (late > early * 2) return voice.timing.late
   return voice.timing.mixed
 }
+
+const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x))
+
+/**
+ * Points for the steadiness view (SR-CRS-09): judged notes only, offset in
+ * beats clamped to a gentle band. Rendering stays number-free — these values
+ * become positions, never labels.
+ */
+export function steadinessPoints(verdicts, offsets) {
+  return verdicts
+    .map((v, i) => ({ v, i }))
+    .filter(({ v }) => v === 'on' || v === 'early' || v === 'late')
+    .map(({ v, i }) => ({ i, off: clamp(offsets[i] ?? 0, -0.6, 0.6), verdict: v }))
+}
