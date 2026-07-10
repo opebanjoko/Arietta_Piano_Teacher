@@ -106,7 +106,7 @@ export function drillNote(state, lesson, ev, voice = VOICE) {
     const misses = state.misses + 1
     const text = entry.notes
       ? chordHintText({ wrong: r.wrong, targetMidis: r.targetMidis, misses, voice })
-      : hintText({ heard: r.wrong, target: r.targetMidis[0], misses, inSong: false, voice })
+      : hintText({ heard: r.wrong, target: r.targetMidis[0], misses, inSong: false, voice, flats: lesson.flats })
     return { ...state, misses, gather: null, feedback: { kind: 'hint', text } }
   }
   if (!r.done) {
@@ -287,7 +287,7 @@ function loopNote(state, lesson, ev, voice) {
     const misses = state.misses + 1
     const hint = entry.notes
       ? chordHintText({ wrong: r.wrong, targetMidis: r.targetMidis, misses, voice })
-      : hintText({ heard: r.wrong, target: r.targetMidis[0], misses, inSong: true, voice })
+      : hintText({ heard: r.wrong, target: r.targetMidis[0], misses, inSong: true, voice, flats: lesson.flats })
     return { ...state, misses, gather: null, hint }
   }
   if (!r.done) return { ...state, gather: r.gather }
@@ -321,7 +321,7 @@ export function songNote(state, lesson, ev, voice = VOICE) {
     const misses = state.misses + 1
     const hint = entry.notes
       ? chordHintText({ wrong: r.wrong, targetMidis: r.targetMidis, misses, voice })
-      : hintText({ heard: r.wrong, target: r.targetMidis[0], misses, inSong: true, voice })
+      : hintText({ heard: r.wrong, target: r.targetMidis[0], misses, inSong: true, voice, flats: lesson.flats })
     const missLog = [...state.missLog, state.pos]
     const at = troubleAt(missLog, state.offered, state.pos)
     return {

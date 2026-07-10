@@ -84,6 +84,18 @@ test('the gather window expires: a late note starts a fresh gather, silently', (
   assert.equal(s.phase, 'stepdone')
 })
 
+test('a black-key target names the white key it leans on (Unit 10)', () => {
+  const sharp = {
+    id: 'fs', title: 'F#', kind: 'drill',
+    steps: [{ kind: 'play', prompt: 'x', sub: '', targets: [{ note: 'F#4', finger: 1 }] }]
+  }
+  let s = drillNote(startDrill(sharp), sharp, tap('F4', 0))
+  assert.ok(s.feedback.text.includes('right of F'), s.feedback.text)
+  const flat = { ...sharp, id: 'bb', flats: true, steps: [{ kind: 'play', prompt: 'x', sub: '', targets: [{ note: 'Bb4', finger: 4 }] }] }
+  s = drillNote(startDrill(flat), flat, tap('B4', 0))
+  assert.ok(s.feedback.text.includes('Bb') && s.feedback.text.includes('left of B'), s.feedback.text)
+})
+
 const togetherSong = {
   id: 'together', title: 'Together', kind: 'song',
   notes: [

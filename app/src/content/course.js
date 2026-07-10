@@ -1254,6 +1254,141 @@ export const COURSE = {
           }
         }
       ]
+    },
+    {
+      id: 'u10',
+      title: 'Black Keys Join In',
+      tag: 'UNIT 10',
+      lessons: [
+        {
+          id: 'meet-f-sharp',
+          title: 'Meet F sharp',
+          kind: 'drill',
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'G position comes with a gift: its own black key, F sharp.',
+              sub: 'The sharp sign ♯ means “the black key just to the right.” F sharp leans on G like a doorstep.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Find it: the black key just left of G. Thumb, gently.',
+              sub: 'It’s in the group of three black keys — the first one.',
+              targets: [n('F#4', 1)]
+            },
+            {
+              kind: 'play',
+              prompt: 'Rock between the doorstep and the door: F sharp, G, F sharp, G.',
+              sub: 'Thumb walks the tiny distance — black, white, black, white.',
+              targets: [n('F#4', 1), n('G4', 1), n('F#4', 1), n('G4', 1)]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now a G-position pattern that uses it.',
+              sub: 'Up the hill, then home by the doorstep: G, A, B, F sharp, G.',
+              targets: [n('G4', 1), n('A4', 2), n('B4', 3), n('F#4', 1), n('G4', 1)]
+            }
+          ],
+          done: {
+            title: 'F sharp — met.',
+            line: 'Your first black key by name. G position sounds properly at home now.'
+          },
+          recap: {
+            summary: 'Today you met F sharp — the black key that makes G position home.',
+            seed: 'Next time a flat: the same idea, leaning the other way.'
+          }
+        },
+        {
+          id: 'meet-b-flat',
+          title: 'Meet B flat',
+          kind: 'drill',
+          flats: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Meet the flat: ♭ means “the black key just to the left.” B flat lives beside A.',
+              sub: 'New home today too — thumb on F. Same tune shapes, starting somewhere new. That’s called transposing.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Climb F position: F, G, A, B flat, C.',
+              sub: 'Fingers 1 to 5 — the fourth step is the black key.',
+              targets: [n('F4', 1), n('G4', 2), n('A4', 3), n('Bb4', 4), n('C5', 5)]
+            },
+            {
+              kind: 'play',
+              prompt: 'And back down through the flat.',
+              sub: 'C, B flat, A, G, F — let the black key be as gentle as the whites.',
+              targets: [n('C5', 5), n('Bb4', 4), n('A4', 3), n('G4', 2), n('F4', 1)]
+            },
+            {
+              kind: 'play',
+              prompt: 'A tune you know, in the new home: Merrily begins on A now.',
+              sub: 'A, G, F, G, A, A, A — same shape, new address.',
+              targets: [n('A4', 3), n('G4', 2), n('F4', 1), n('G4', 2), n('A4', 3), n('A4', 3), n('A4', 3)]
+            }
+          ],
+          done: {
+            title: 'B flat — met.',
+            line: 'Sharps lean right, flats lean left — and you just transposed your first tune.'
+          },
+          recap: {
+            summary: 'Today you met B flat and played an old tune from a brand-new home.',
+            seed: 'Next time: a whole song in G — sharp and all.'
+          }
+        },
+        {
+          id: 'london-bridge-in-g',
+          title: 'London Bridge in G',
+          kind: 'drill',
+          high: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'A whole song in G position — and the sharp gets the last word.',
+              sub: 'Phrase by phrase. The pinky stretches one key past its post for the top note.'
+            },
+            {
+              kind: 'play',
+              prompt: 'The big phrase: London Bridge is falling down…',
+              sub: 'Pinky starts on D, stretches up to E, then steps down the hill.',
+              targets: [n('D5', 5), n('E5', 5), n('D5', 5), n('C5', 4), n('B4', 3), n('C5', 4), n('D5', 5)]
+            },
+            {
+              kind: 'play',
+              prompt: '…falling down…',
+              sub: 'Three little steps up: A, B, C.',
+              targets: [n('A4', 2), n('B4', 3), n('C5', 4)]
+            },
+            {
+              kind: 'play',
+              prompt: '…falling down…',
+              sub: 'And three more, one key higher: B, C, D.',
+              targets: [n('B4', 3), n('C5', 4), n('D5', 5)]
+            },
+            {
+              kind: 'play',
+              prompt: 'The big phrase again, start to finish.',
+              sub: 'Same as before — let it swing.',
+              targets: [n('D5', 5), n('E5', 5), n('D5', 5), n('C5', 4), n('B4', 3), n('C5', 4), n('D5', 5)]
+            },
+            {
+              kind: 'play',
+              prompt: 'My fair la-dy — with the sharp leaning home.',
+              sub: 'A, up to D, then F sharp falls onto G. That’s the whole song.',
+              targets: [n('A4', 2), n('D5', 5), n('F#4', 1), n('G4', 1)]
+            }
+          ],
+          done: {
+            title: 'London Bridge, in G.',
+            line: 'A full song in the new position — black key and all. Nothing fell down.'
+          },
+          recap: {
+            summary: 'Today London Bridge stood tall in G — sharp included.',
+            seed: 'Next time, chords come back: C, and its two best friends.'
+          }
+        }
+      ]
     }
   ]
 }
