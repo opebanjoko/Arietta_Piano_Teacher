@@ -1,5 +1,6 @@
 /** Arietta sync API (SR-BCK-01..03). Plain node:http, JSON in and out. */
 import { createServer } from 'node:http'
+import { pathToFileURL } from 'node:url'
 import { openDb } from './db.js'
 import { createHousehold, linkHousehold, pullSync, pushSync, deleteHousehold } from './routes.js'
 
@@ -55,7 +56,7 @@ export function createApp({ db, now = () => Date.now(), allowOrigin = process.en
 }
 
 // Started directly (Railway): serve on PORT with the volume-backed db.
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const db = openDb(process.env.DB_PATH ?? '/data/arietta.db')
   const port = Number(process.env.PORT ?? 8080)
   createApp({ db }).listen(port, () => console.log(`arietta api on :${port}`))
