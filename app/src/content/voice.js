@@ -205,7 +205,8 @@ export const VOICE = {
   },
 
   pill: {
-    waking: 'Waking up my ears…'
+    waking: 'Waking up my ears…',
+    midi: 'Hearing your piano through the cable ♪'
   },
 
   settings: {

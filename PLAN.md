@@ -184,7 +184,7 @@ more than two more units of content would.
 | Pitch detection algorithm | Dev (QA verifies) | Phase 0 exit |
 | Production framework / PWA stack (SR-PLT-05) | Dev + PM | ✅ Decided 2026-07-08: Vite + Preact (rationale in `app/README.md`) |
 | Go/No-Go on mic-first premise | All, BO has final say | ⏳ Provisional Go 2026-07-09; human validation deferred — release blocker (see Phase 0 gate status) |
-| Native shell (Capacitor) for MIDI (SR-MID-02) | Dev + PM | Phase 6 planning |
+| Native shell (Capacitor) for MIDI (SR-MID-02) | Dev + PM | ✅ Decided 2026-07-10: Capacitor when needed, not built yet; Web MIDI adapter ships now (`docs/decisions/2026-07-10-native-shell.md`) |
 | Beta household recruitment | BO + PM | During Phase 3 |
 
 ## 6. Governance

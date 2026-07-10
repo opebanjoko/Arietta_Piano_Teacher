@@ -19,6 +19,7 @@ import { letter, nameToMidi } from './core/notes.js'
 import { playTone, playHarmony } from './audio/synth.js'
 import { startMetronome, playClap } from './audio/metronome.js'
 import { createMic } from './audio/mic.js'
+import { createMidiInput } from './audio/midi.js'
 import { unregisterMic, holdFor } from './audio/gate.js'
 import { openDb } from './store/db.js'
 import { createSyncClient } from './sync/client.js'
@@ -78,6 +79,7 @@ export function App() {
   const [diagEntries, setDiagEntries] = useState([])
   const [syncState, setSyncState] = useState({ linked: false, code: null, lastSyncAt: null, failing: false })
   const [tempoChoice, setTempoChoice] = useState('full')
+  const [midiDevices, setMidiDevices] = useState(0)
 
   const syncRef = useRef(null)
   const lessonRef = useRef(null)
@@ -99,6 +101,7 @@ export function App() {
   const backingRef = useRef(null) // in-time backing schedule for the song underway (SR-OUT-05)
   const detectorMsRef = useRef(null)
   const micStateRef = useRef('idle')
+  const midiRef = useRef(null)
 
   const to = (fn, ms) => tos.current.push(setTimeout(fn, ms))
   const clearTos = () => { tos.current.forEach(clearTimeout); tos.current = [] }
@@ -180,10 +183,24 @@ export function App() {
     }
   }
 
+  // A connected MIDI piano is preferred over the mic automatically (SR-MID-01);
+  // no Web MIDI (iPad Safari today, SR-MID-02) resolves to null and costs nothing.
   useEffect(() => {
-    if (screen === 'lesson' || screen === 'freeplay') startMic()
+    let cancelled = false
+    createMidiInput({
+      onNote: (ev) => onNote(ev),
+      onDevices: (n) => { if (!cancelled) setMidiDevices(n) }
+    }).then(m => {
+      if (cancelled) { m?.stop(); return }
+      midiRef.current = m
+    })
+    return () => { cancelled = true; midiRef.current?.stop(); midiRef.current = null }
+  }, [])
+
+  useEffect(() => {
+    if ((screen === 'lesson' || screen === 'freeplay') && midiDevices === 0) startMic()
     else stopMic()
-  }, [screen, micSettings])
+  }, [screen, micSettings, midiDevices])
 
   // per-player accent colour: one var, the palette derives from it
   useEffect(() => {
@@ -610,7 +627,8 @@ export function App() {
   const pill = {
     text: heard !== null ? `Heard ${(Array.isArray(heard) ? heard : [heard]).map(letter).join(' + ')}`
       : micState === 'interrupted' ? VOICE.pill.waking
-      : (demo.on || earPlaying || micState === 'suspended') ? 'Playing it…' : 'Listening…',
+      : (demo.on || earPlaying || micState === 'suspended') ? 'Playing it…'
+      : midiDevices > 0 ? VOICE.pill.midi : 'Listening…',
     active: heard !== null
   }
 
