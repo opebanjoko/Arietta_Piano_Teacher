@@ -159,7 +159,9 @@ export function App() {
       detector: micSettings.detector ?? 'mpm',
       clarity: micSettings.clarity ?? 0.9,
       lowClarity: micSettings.lowClarity,
+      poly: !!lessonRef.current?.poly,
       onNote: (ev) => onNote(ev),
+      onNoteSet: (ev) => onNoteSet(ev),
       onOnset: (ev) => onClap(ev),
       onStats: (ms) => { detectorMsRef.current = ms },
       onState: (s) => {
@@ -240,7 +242,7 @@ export function App() {
     const notes = step.play ?? step.targets
     earRef.current = true
     setEarPlaying(true)
-    notes.forEach((t, i) => to(() => playTone(nameToMidi(t.note)), EAR_STEP * i))
+    notes.forEach((t, i) => to(() => (t.notes ?? [t.note]).forEach(n => playTone(nameToMidi(n))), EAR_STEP * i))
     to(() => { earRef.current = false; setEarPlaying(false) }, EAR_STEP * notes.length + 700)
   }
 
@@ -373,6 +375,7 @@ export function App() {
     const lesson = resolveReading(raw, readingSeed)
     if (lesson !== raw) patchSettings({ readingSeed: readingSeed + 1 })
     lessonRef.current = lesson
+    micRef.current?.setPoly(!!lesson.poly) // chord lessons hear sets (SR-AUD-10)
     earPlayedStepRef.current = -1
     setRecap(null) // the recap is said once; moving on dismisses it
     setOverlay(false)
@@ -469,9 +472,27 @@ export function App() {
     if (next.misses > prev.misses) to(() => playPattern(), 1200) // clap it again for them
   }
 
+  /** Mic NoteSetEvents (SR-EVT-03): chords route to the same reducers as notes. */
+  const onNoteSet = (ev) => {
+    markHeard(ev.pitches)
+    if (demoRef.current.on || earRef.current) return
+    const scr = screenRef.current
+    if (scr === 'freeplay') { setFreeCount(c => c + 1); return }
+    const lesson = lessonRef.current
+    if (!lesson || scr !== 'lesson') return
+    if (lesson.kind === 'drill') {
+      const prev = drillRef.current
+      const next = drillNote(prev, lesson, ev)
+      commitDrill(next)
+      afterDrill(prev, next, lesson)
+    } else {
+      onNote(ev) // songNote handles both shapes; tap-only branches don't apply
+    }
+  }
+
   const onNote = (ev) => {
     if (ev.source === 'tap') playTone(ev.pitch) // key-tap feedback; mic notes are the piano itself
-    markHeard(ev.pitch)
+    markHeard(ev.pitches ?? ev.pitch)
     if (demoRef.current.on || earRef.current) return // app is playing — never grade our own sound
     const scr = screenRef.current
     if (scr === 'freeplay') { setFreeCount(c => c + 1); return }
@@ -552,7 +573,7 @@ export function App() {
     if (demoRef.current.on || songRef.current?.done) return
     setDemo({ on: true, pos: -1 })
     lesson.notes.forEach((t, i) => to(() => {
-      playTone(nameToMidi(t.note))
+      ;(t.notes ?? [t.note]).forEach(n => playTone(nameToMidi(n)))
       setDemo({ on: true, pos: i })
     }, DEMO_STEP * i))
     to(() => setDemo({ on: false, pos: -1 }), DEMO_STEP * lesson.notes.length + 480)
@@ -587,7 +608,7 @@ export function App() {
 
   const states = lessonStates(allLessons(), new Set([...progress.values()].filter(r => r.completed).map(r => r.lessonId)))
   const pill = {
-    text: heard !== null ? `Heard ${letter(heard)}`
+    text: heard !== null ? `Heard ${(Array.isArray(heard) ? heard : [heard]).map(letter).join(' + ')}`
       : micState === 'interrupted' ? VOICE.pill.waking
       : (demo.on || earPlaying || micState === 'suspended') ? 'Playing it…' : 'Listening…',
     active: heard !== null
@@ -673,13 +694,21 @@ export function App() {
   }
 
   const lesson = lessonRef.current
-  const lessonLow = lesson.kind === 'drill'
-    ? lesson.steps.some(s => (s.targets ?? []).some(t => nameToMidi(t.note) < 60))
-    : lesson.notes.some(t => nameToMidi(t.note) < 60)
+  const entryMidisAll = (t) => (t.notes ?? [t.note]).map(nameToMidi)
+  const lessonEntries = lesson.kind === 'drill' ? lesson.steps.flatMap(s => s.targets ?? []) : lesson.notes
+  const lessonMidis = lessonEntries.flatMap(entryMidisAll)
+  const lessonLow = lessonMidis.some(m => m < 60)
+  const lessonHigh = lessonMidis.some(m => m > 72)
+  // glow the first chord member still missing from the gather
+  const glowFor = (entry, gather) => {
+    const midis = entryMidisAll(entry)
+    const have = new Set(gather?.pitches ?? [])
+    return midis.find(m => !have.has(m)) ?? midis[0]
+  }
   const glowMidi = lesson.kind === 'drill'
     ? (drill.phase === 'working' && drill.misses >= 2 && ['play', 'ear-echo'].includes(lesson.steps[drill.stepIndex].kind)
-        ? nameToMidi(lesson.steps[drill.stepIndex].targets[drill.seqPos].note) : null)
-    : (!song.done && song.misses >= 2 ? nameToMidi(lesson.notes[songTargetIndex(song)].note) : null)
+        ? glowFor(lesson.steps[drill.stepIndex].targets[drill.seqPos], drill.gather) : null)
+    : (!song.done && song.misses >= 2 ? glowFor(lesson.notes[songTargetIndex(song)], song.gather) : null)
 
   const nextAfterWarmup = warmupNextRef.current && findLesson(warmupNextRef.current)
   const nextPractice = lesson.practicePackId ? practiceQueueRef.current[0] : null
@@ -712,7 +741,8 @@ export function App() {
             onHome={goHome} onHearIt={onHearIt} onReplay={onReplay}
             onAcceptLoop={onAcceptLoop} onDeclineLoop={onDeclineLoop}
             doneAction={doneAction} />}
-      <Keyboard onNote={onNote} glowMidi={glowMidi} low={lessonLow} showLabels={profileSettings.labels !== false} />
+      <Keyboard onNote={onNote} glowMidi={glowMidi} low={lessonLow} high={lessonHigh} flats={!!lesson.flats}
+        showLabels={profileSettings.labels !== false && !lesson.plain} />
     </div>
   )
 }

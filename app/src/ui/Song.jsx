@@ -33,8 +33,9 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
   })
 
   const target = lesson.notes[Math.min(ti, total - 1)]
+  const targetText = (target.notes ?? [target.note]).map(n => n.replace(/-?\d/, '')).join(' + ')
   const lead = song.hint ?? song.say
-    ?? (song.done ? v.leadDone : fill(v.lead, { target: target.note.replace(/\d/, '') }))
+    ?? (song.done ? v.leadDone : fill(v.lead, { target: targetText }))
   const cheer = song.pulse ?? ([...v.cheers].reverse().find(c => song.pos / total >= c.at)?.line ?? '')
 
   return (
@@ -68,7 +69,8 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
           <div style="font-size:12.5px;font-weight:700;color:var(--ink-mid);">{Math.min(song.pos, total)} of {total} notes</div>
           {lesson.tempo && !song.done && <Pulse beat={beat} />}
         </div>
-        <Staff notes={staffNotes} width={1060} height={170} />
+        <Staff notes={staffNotes} width={1060} height={170}
+          clef={lesson.clef} flats={!!lesson.flats} plain={!!lesson.plain} />
         <div style="display:flex;align-items:center;justify-content:center;gap:26px;height:26px;">
           <div style={`font-size:15.5px;font-weight:800;color:${song.hint ? 'var(--hint)' : 'var(--ink-soft)'};transition:color .2s;`}>{lead}</div>
           <div style="font-family:var(--serif);font-style:italic;font-size:14.5px;color:#7A9070;">{cheer}</div>

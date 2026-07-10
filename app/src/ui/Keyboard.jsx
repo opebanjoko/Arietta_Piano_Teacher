@@ -3,7 +3,7 @@
  * Emits source:'tap' NoteEvents through the same pipeline the mic will use.
  */
 import { useState, useRef, useEffect } from 'preact/hooks'
-import { nameToMidi, letter } from '../core/notes.js'
+import { nameToMidi, letter, letterIn } from '../core/notes.js'
 import { noteEvent } from '../core/events.js'
 
 const OCTAVE_BLACKS = [
@@ -11,9 +11,12 @@ const OCTAVE_BLACKS = [
   { l: 'F#', after: 3 }, { l: 'G#', after: 4 }, { l: 'A#', after: 5 }
 ]
 
-/** One octave from C4 by default; `low` adds the left hand's C3 octave (Unit 6). */
-function layout(low) {
-  const octaves = low ? [3, 4] : [4]
+/**
+ * One octave from C4 by default; `low` adds the left hand's C3 octave
+ * (Unit 6), `high` adds the octave up to C6 (G position and beyond).
+ */
+function layout(low, high) {
+  const octaves = [...(low ? [3] : []), 4, ...(high ? [5] : [])]
   const whites = octaves.flatMap(o => ['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(w => `${w}${o}`))
   whites.push(`C${octaves.at(-1) + 1}`)
   const blacks = octaves.flatMap((o, oi) =>
@@ -21,19 +24,22 @@ function layout(low) {
   return { whites, blacks }
 }
 
-export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = false }) {
-  const [pressed, setPressed] = useState(null)
-  const pressTO = useRef(null)
-  useEffect(() => () => clearTimeout(pressTO.current), [])
+export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = false, high = false, flats = false }) {
+  const [pressed, setPressed] = useState(() => new Set())
+  const pressTOs = useRef(new Map())
+  useEffect(() => () => { for (const t of pressTOs.current.values()) clearTimeout(t) }, [])
 
+  // chords are real now (SR-AUD-10): each key presses independently so a
+  // rolled or two-handed chord lights every key it touches
   const tap = (name) => {
-    setPressed(name)
-    clearTimeout(pressTO.current)
-    pressTO.current = setTimeout(() => setPressed(null), 170)
+    setPressed(p => new Set(p).add(name))
+    clearTimeout(pressTOs.current.get(name))
+    pressTOs.current.set(name, setTimeout(() =>
+      setPressed(p => { const n = new Set(p); n.delete(name); return n }), 170))
     onNote(noteEvent({ pitch: nameToMidi(name), source: 'tap', timestamp: performance.now() }))
   }
 
-  const { whites, blacks } = layout(low)
+  const { whites, blacks } = layout(low, high)
   const w = 100 / whites.length
 
   return (
@@ -47,7 +53,7 @@ export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = fal
         <div style="position:relative;height:168px;background:#241B12;">
           <div style="display:flex;height:100%;">
             {whites.map(name => {
-              const isPressed = pressed === name
+              const isPressed = pressed.has(name)
               const glow = glowMidi === nameToMidi(name)
               const bg = isPressed ? 'linear-gradient(180deg,#F1E3BE,#EAD9AC)'
                 : glow ? 'linear-gradient(180deg,#FFF8E2,#F8ECC8)'
@@ -61,10 +67,16 @@ export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = fal
               )
             })}
           </div>
-          {blacks.map(b => (
-            <div key={b.note} onPointerDown={() => tap(b.note)}
-              style={`position:absolute;top:0;left:${(b.after + 1) * w - 0.296 * w}%;width:${0.592 * w}%;height:104px;background:${pressed === b.note ? 'linear-gradient(180deg,#6B5840,#4A3A28)' : 'linear-gradient(180deg,#423526,#241B12)'};border-radius:0 0 7px 7px;box-shadow:0 4px 8px rgba(20,12,4,.4);cursor:pointer;z-index:2;transition:background .12s ease;touch-action:none;`}></div>
-          ))}
+          {blacks.map(b => {
+            const midi = nameToMidi(b.note)
+            const glow = glowMidi === midi
+            return (
+              <div key={b.note} onPointerDown={() => tap(b.note)}
+                style={`position:absolute;top:0;left:${(b.after + 1) * w - 0.296 * w}%;width:${0.592 * w}%;height:104px;background:${pressed.has(b.note) ? 'linear-gradient(180deg,#6B5840,#4A3A28)' : glow ? 'linear-gradient(180deg,#5C4A32,#3A2C1C)' : 'linear-gradient(180deg,#423526,#241B12)'};border-radius:0 0 7px 7px;box-shadow:0 4px 8px rgba(20,12,4,.4);cursor:pointer;z-index:2;transition:background .12s ease;touch-action:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:7px;animation:${glow ? 'glowPulse 1.5s ease-in-out infinite' : 'none'};`}>
+                {showLabels && glow && <div style="font-weight:800;font-size:11px;color:#EFE3C4;">{letterIn(midi, flats)}</div>}
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

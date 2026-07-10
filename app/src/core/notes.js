@@ -1,13 +1,14 @@
 /** Note math over MIDI numbers (SR-EVT-01: the app's pitch range is MIDI 48-96). */
 
 const LETTERS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+const FLAT_LETTERS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 const BLACK_PCS = new Set([1, 3, 6, 8, 10])
 // white-key ordinal within an octave, by pitch class (C D E F G A B -> 0..6)
 const WHITE_ORD = { 0: 0, 2: 1, 4: 2, 5: 3, 7: 4, 9: 5, 11: 6 }
 
 export function nameToMidi(name) {
-  const m = /^([A-G]#?)(-?\d)$/.exec(name)
-  const semis = LETTERS.indexOf(m[1])
+  const m = /^([A-G][#b]?)(-?\d)$/.exec(name)
+  const semis = m[1].endsWith('b') ? FLAT_LETTERS.indexOf(m[1]) : LETTERS.indexOf(m[1])
   return (Number(m[2]) + 1) * 12 + semis
 }
 
@@ -18,6 +19,23 @@ export function midiToName(midi) {
 /** Student-facing label without octave: 'C', 'C#', ... */
 export function letter(midi) {
   return LETTERS[midi % 12]
+}
+
+/** Label honouring the lesson's accidental preference ('Bb' in F position). */
+export function letterIn(midi, flats = false) {
+  return (flats ? FLAT_LETTERS : LETTERS)[midi % 12]
+}
+
+/**
+ * Staff placement: black keys sit on their natural letter's line with an
+ * accidental glyph (sharps anchor below, flats anchor above).
+ */
+export function staffPos(midi, flats = false) {
+  const wi = whiteIndex(midi)
+  if (wi !== null) return { line: wi, accidental: null }
+  return flats
+    ? { line: whiteIndex(midi + 1), accidental: 'b' }
+    : { line: whiteIndex(midi - 1), accidental: '#' }
 }
 
 export function pitchClass(midi) {

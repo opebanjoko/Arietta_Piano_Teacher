@@ -44,8 +44,8 @@ export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContin
           <div style="font-size:15px;color:var(--ink-soft);text-align:center;max-width:600px;">{step.sub}</div>
           {step.kind === 'play' && (
             <div style="margin-top:8px;">
-              <Staff notes={staffNotes}
-                height={staffNotes.some(t => nameToMidi(t.note) < 60) ? 196 : 166} />
+              <Staff notes={staffNotes} clef={lesson.clef} flats={!!lesson.flats} plain={!!lesson.plain}
+                height={lesson.clef !== 'bass' && staffNotes.some(t => (t.notes ?? [t.note]).some(n => nameToMidi(n) < 60)) ? 196 : 166} />
             </div>
           )}
           {pulsing && <Pulse beat={beat} />}

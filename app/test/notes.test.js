@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  nameToMidi, midiToName, letter, pitchClass, isBlack, freq, whiteIndex
+  nameToMidi, midiToName, letter, letterIn, pitchClass, isBlack, freq, whiteIndex, staffPos
 } from '../src/core/notes.js'
 
 test('nameToMidi and midiToName round-trip the course range C3-C6', () => {
@@ -33,6 +33,28 @@ test('freq matches equal temperament, A4=440', () => {
   assert.equal(freq(69), 440)
   assert.ok(Math.abs(freq(60) - 261.63) < 0.01)
   assert.ok(Math.abs(freq(48) - 130.81) < 0.01)
+})
+
+test('nameToMidi reads flat spellings (Unit 10: meet B flat)', () => {
+  assert.equal(nameToMidi('Bb4'), 70)
+  assert.equal(nameToMidi('Bb4'), nameToMidi('A#4'))
+  assert.equal(nameToMidi('Eb3'), 51)
+})
+
+test('letterIn spells black keys per the lesson accidental preference', () => {
+  assert.equal(letterIn(70), 'A#')
+  assert.equal(letterIn(70, true), 'Bb')
+  assert.equal(letterIn(66, true), 'Gb')
+  assert.equal(letterIn(60, true), 'C')
+})
+
+test('staffPos anchors black keys to their natural letter with an accidental', () => {
+  assert.deepEqual(staffPos(64), { line: whiteIndex(64), accidental: null })
+  // F#4 sits on F4's position with a sharp
+  assert.deepEqual(staffPos(66), { line: whiteIndex(65), accidental: '#' })
+  // Bb4 (flats spelling) sits on B4's position with a flat
+  assert.deepEqual(staffPos(70, true), { line: whiteIndex(71), accidental: 'b' })
+  assert.deepEqual(staffPos(70), { line: whiteIndex(69), accidental: '#' })
 })
 
 test('whiteIndex counts white keys so hint distances work across octaves', () => {
