@@ -162,10 +162,12 @@ test('linear unlocking: next after last complete; sneak peek playable early (SR-
 })
 
 test('a coming-soon lesson never unlocks and never blocks the path', () => {
-  const lessons = allLessons()
-  const allButLast = lessonStates(lessons, new Set(['meet-the-keyboard']))
-  assert.equal(allButLast.get('your-first-chord'), 'coming-soon')
-  const v1Done = lessonStates(lessons, new Set(lessons.filter(l => !l.comingSoon).map(l => l.id)))
-  assert.equal(v1Done.get('your-first-chord'), 'coming-soon')
-  assert.ok(![...v1Done.values()].includes('next'), 'nothing left to unlock in v1')
+  // synthetic: no real lesson is gated since the polyphony gate opened lesson 21
+  const lessons = [{ id: 'a' }, { id: 'gated', comingSoon: true }, { id: 'b' }]
+  const fresh = lessonStates(lessons, new Set(['a']))
+  assert.equal(fresh.get('gated'), 'coming-soon')
+  assert.equal(fresh.get('b'), 'next', 'a gated lesson must not block the path')
+  const done = lessonStates(lessons, new Set(['a', 'b']))
+  assert.equal(done.get('gated'), 'coming-soon')
+  assert.ok(![...done.values()].includes('next'), 'nothing left to unlock')
 })

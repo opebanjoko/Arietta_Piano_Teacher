@@ -15,9 +15,22 @@ import {
 import { resolveReading } from '../src/core/reading.js'
 import { beatMs } from '../src/core/timing.js'
 import { nameToMidi, midiToName } from '../src/core/notes.js'
-import { noteEvent } from '../src/core/events.js'
+import { noteEvent, noteSetEvent } from '../src/core/events.js'
 
 const tap = (name, timestamp = 0) => noteEvent({ pitch: nameToMidi(name), source: 'tap', timestamp })
+const entryNames = (t) => t.notes ?? [t.note]
+
+/** Play one target entry — a single note, or a chord rolled as quick taps. */
+const playEntry = (dispatch) => (s, lesson, t, clock) => {
+  for (const [i, name] of entryNames(t).entries()) s = dispatch(s, lesson, tap(name, clock + i * 40))
+  return s
+}
+
+/** A wrong note for this entry: not a member (by pitch class) of what it wants. */
+const wrongFor = (t) => {
+  const pcs = new Set(entryNames(t).map(n => nameToMidi(n) % 12))
+  return midiToName([67, 60, 62].find(m => !pcs.has(m % 12)))
+}
 
 function playDrill(lesson, playTarget) {
   let s = startDrill(lesson)
@@ -78,30 +91,32 @@ function runCourse(playDrillTarget, playSongTarget) {
   }
 }
 
-test('a perfect student completes all twenty v1 lessons by tap, on the grid', () => {
-  runCourse(
-    (s, lesson, t, clock) => drillNote(s, lesson, tap(t.note, clock)),
-    (s, lesson, t, clock) => songNote(s, lesson, tap(t.note, clock))
-  )
+test('a perfect student completes the whole course by tap, on the grid', () => {
+  runCourse(playEntry(drillNote), playEntry(songNote))
 })
 
 test('a wobbly student (wrong note first, every time) still completes the course', () => {
-  const wrong = t => {
-    const midi = nameToMidi(t.note)
-    return midiToName(midi % 12 === 0 ? 67 : 60) // G4 when the target is any C, else C4
-  }
   runCourse(
     (s, lesson, t, clock) => {
-      const afterMiss = drillNote(s, lesson, tap(wrong(t), clock - 200))
+      const afterMiss = drillNote(s, lesson, tap(wrongFor(t), clock - 200))
       assert.equal(afterMiss.feedback.kind, 'hint', `${lesson.id}: expected a hint`)
-      return drillNote(afterMiss, lesson, tap(t.note, clock))
+      return playEntry(drillNote)(afterMiss, lesson, t, clock)
     },
     (s, lesson, t, clock) => {
-      const afterMiss = songNote(s, lesson, tap(wrong(t), clock - 200))
+      const afterMiss = songNote(s, lesson, tap(wrongFor(t), clock - 200))
       assert.ok(afterMiss.hint, `${lesson.id}: expected a song hint`)
-      return songNote(afterMiss, lesson, tap(t.note, clock))
+      return playEntry(songNote)(afterMiss, lesson, t, clock)
     }
   )
+})
+
+test('chord entries also land as one mic NoteSetEvent (SR-EVT-03)', () => {
+  const asSets = (dispatch) => (s, lesson, t, clock) => {
+    const names = entryNames(t)
+    if (names.length === 1) return dispatch(s, lesson, tap(names[0], clock))
+    return dispatch(s, lesson, noteSetEvent({ pitches: names.map(nameToMidi), source: 'mic', timestamp: clock }))
+  }
+  runCourse(asSets(drillNote), asSets(songNote))
 })
 
 test('an octave-up student completes every C4-octave song, and each earns the kind mention', () => {

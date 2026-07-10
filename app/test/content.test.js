@@ -7,6 +7,18 @@ import { nameToMidi } from '../src/core/notes.js'
 const lessons = allLessons()
 
 function checkTarget(t, where) {
+  if (t.notes) {
+    // chord entry (SR-AUD-10): 2-4 members within C3-C5, one finger each
+    assert.ok(t.notes.length >= 2 && t.notes.length <= 4, `${where}: chord size`)
+    assert.equal(t.notes.length, t.fingers.length, `${where}: chord fingering is mandatory`)
+    const midis = t.notes.map(nameToMidi)
+    midis.forEach(m => assert.ok(m >= 48 && m <= 72, `${where}: chord note outside C3-C5`))
+    // recorded spike constraint: no unison/octave doubles struck together
+    assert.equal(new Set(midis.map(m => m % 12)).size, midis.length,
+      `${where}: simultaneous octave doubles cannot be heard apart (POLY_GATE_RUNBOOK)`)
+    t.fingers.forEach(f => assert.ok(Number.isInteger(f) && f >= 1 && f <= 5, where))
+    return
+  }
   const midi = nameToMidi(t.note)
   assert.ok(midi >= 48 && midi <= 96, `${where}: note ${t.note} outside range`)
   assert.ok(Number.isInteger(t.finger) && t.finger >= 1 && t.finger <= 5,
@@ -24,7 +36,7 @@ test('lesson ids are unique and lessons are complete', () => {
 })
 
 test('Units 1-6 cover the 21-lesson v1 map in course order (§3.2)', () => {
-  assert.deepEqual(lessons.map(l => l.id), [
+  assert.deepEqual(lessons.map(l => l.id).slice(0, 21), [
     'meet-the-keyboard', 'finding-middle-c', 'hands-say-hello',
     'middle-c-again', 'meet-d', 'meet-e', 'meet-f-and-g',
     'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune',
@@ -32,9 +44,11 @@ test('Units 1-6 cover the 21-lesson v1 map in course order (§3.2)', () => {
     'meet-a-and-b', 'up-to-high-c', 'when-the-saints', 'twinkle',
     'left-hand-home', 'taking-turns', 'your-first-chord'
   ])
-  // lesson 21 is on the map but gated until polyphony (§3.2, SR-AUD-10)
-  assert.ok(findLesson('your-first-chord').comingSoon)
-  assert.equal(lessons.filter(l => l.comingSoon).length, 1)
+  // lesson 21 opened with the polyphony gate (SR-AUD-10, spike/POLY_GATE_RUNBOOK.md)
+  const chord = findLesson('your-first-chord')
+  assert.ok(!chord.comingSoon && chord.poly)
+  assert.ok(chord.steps.some(s => s.kind === 'play' && s.targets.some(t => t.notes?.length === 3)))
+  assert.equal(lessons.filter(l => l.comingSoon).length, 0)
 })
 
 test('every drill step is well-formed and every target carries a finger', () => {

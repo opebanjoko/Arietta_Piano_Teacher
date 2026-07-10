@@ -10,6 +10,8 @@
  */
 
 const n = (note, finger, beats) => beats ? { note, finger, beats } : { note, finger }
+// chord entry (SR-AUD-10): notes sound together; members match exact midi
+const c = (notes, fingers, beats) => beats ? { notes, fingers, beats } : { notes, fingers }
 
 export const COURSE = {
   units: [
@@ -766,21 +768,51 @@ export const COURSE = {
           id: 'your-first-chord',
           title: 'Your first chord',
           kind: 'drill',
-          comingSoon: true,
+          poly: true,
           steps: [
             {
               kind: 'info',
               prompt: 'Three notes at once — C, E and G under one hand, sounding together.',
-              sub: 'Arietta is still learning to hear three notes at the same time. This lesson opens when she can.'
+              sub: 'One sound made of three. It has a name — the C chord — and your hand already knows the shape.'
+            },
+            {
+              kind: 'watch-me',
+              prompt: 'Watch: thumb, middle and little finger land together.',
+              sub: 'Fingers 1, 3 and 5 rest on C, E and G — then press as one.',
+              anim: { keys: ['C4', 'E4', 'G4'], fingers: [1, 3, 5], hand: 'right', together: true }
+            },
+            {
+              kind: 'play',
+              prompt: 'Start with two: C and E together.',
+              sub: 'Thumb on C, middle finger on E. Let them sound at the same moment.',
+              targets: [c(['C4', 'E4'], [1, 3])]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now the top pair: E and G.',
+              sub: 'Middle finger keeps E; the little finger takes G.',
+              targets: [c(['E4', 'G4'], [3, 5])]
+            },
+            {
+              kind: 'play',
+              prompt: 'All three — roll it gently, bottom to top.',
+              sub: 'C, then E, then G — let each one keep ringing until they blend.',
+              targets: [c(['C4', 'E4', 'G4'], [1, 3, 5])]
+            },
+            {
+              kind: 'play',
+              prompt: 'Once more — and this time, land it as one.',
+              sub: 'Three fingers, one motion, one sound.',
+              targets: [c(['C4', 'E4', 'G4'], [1, 3, 5])]
             }
           ],
           done: {
             title: 'Your first chord.',
-            line: 'Coming a little later — when my ears learn to hear three notes at once.'
+            line: 'Three notes, one sound — and your hand made it. Chords are where songs get their warmth.'
           },
           recap: {
-            summary: 'Your first chord is still on its way.',
-            seed: 'It opens when Arietta’s ears learn to hear three notes at once.'
+            summary: 'You played the C chord — C, E and G, together.',
+            seed: 'Course 2 is open now: new maps to read, and the left hand finds its voice.'
           }
         }
       ]
