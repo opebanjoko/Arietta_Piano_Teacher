@@ -551,6 +551,7 @@ export function App() {
   const onTempo = (id) => {
     setTempoChoice(id)
     lessonRef.current = atTempo(baseLessonRef.current, id)
+    stopMetro() // the pulse effect recreates the metronome at the new tempo
     commitSong(startSong(lessonRef.current))
   }
 

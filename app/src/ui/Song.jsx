@@ -2,7 +2,7 @@
 import { PlayHeader } from './PlayHeader.jsx'
 import { Staff } from './Staff.jsx'
 import { Pulse } from './Pulse.jsx'
-import { songTargetIndex } from '../core/engine.js'
+import { songTargetIndex, TEMPO_CHOICES } from '../core/engine.js'
 import { VOICE } from '../content/voice.js'
 
 const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
@@ -51,7 +51,7 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
           )}
           {lesson.tempo && !song.done && (
             <div style="display:flex;gap:6px;align-items:center;" role="group" aria-label={v.tempoLine}>
-              {['slow', 'medium', 'full'].map(id => (
+              {TEMPO_CHOICES.map(({ id }) => (
                 <button key={id} class="btn-quiet hit" onClick={() => onTempo(id)}
                   aria-pressed={tempoChoice === id}
                   style={`padding:7px 12px;font-size:12.5px;${tempoChoice === id ? 'background:var(--accent-soft);border-color:var(--line-strong);' : ''}`}>
