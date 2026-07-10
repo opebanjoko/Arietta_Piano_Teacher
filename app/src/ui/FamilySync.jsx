@@ -56,6 +56,7 @@ export function FamilySync({ sync, onCreate, onJoin, onLeave, onDeleteEverywhere
 
   return (
     <>
+      {shownCode && <div style="font-size:14px;color:var(--ink-mid);text-wrap:pretty;">{fill(v.codeShow, { code: shownCode })}</div>}
       <div style="font-size:14px;color:var(--ink-soft);">{fill(v.onLine, { code: sync.code })}</div>
       <div style="font-size:13px;color:var(--ink-mid);">
         {sync.failing ? v.failing : sync.lastSyncAt ? fill(v.lastSync, { when: new Date(sync.lastSyncAt).toLocaleString() }) : v.neverSync}
