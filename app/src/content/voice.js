@@ -12,7 +12,9 @@ export const VOICE = {
     directional: '{soft}I heard {heard}. {target} is {distance} to the {dir}.',
     directionalSong: '{soft}I heard {heard}. The next note is {target} — {distance} to the {dir}.',
     octaveSlip: 'That was {target} — just one octave too {highlow}. The one you want is a little to the {dir}.',
-    far: '{soft}I heard {heard}. {target} is further to the {dir}.'
+    far: '{soft}I heard {heard}. {target} is further to the {dir}.',
+    chordExtra: '{soft}a {extra} slipped in there. This chord wants just {want}, all sounding together.',
+    chordMissing: '{soft}{have} — lovely. Now {missing} wants to join in too.'
   },
 
   distances: ['', 'one key', 'two keys', 'three keys', 'four keys', 'five keys', 'six keys', 'seven keys'],

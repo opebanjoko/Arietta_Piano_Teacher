@@ -4,9 +4,45 @@
  * by pitch alone. The UI owns pacing (delays between stepdone and advance).
  */
 import { nameToMidi, pitchClass } from './notes.js'
-import { hintText } from './hints.js'
+import { hintText, chordHintText } from './hints.js'
+import { eventPitches } from './events.js'
 import { beatMs, judgeGap, timingSummary } from './timing.js'
 import { VOICE } from '../content/voice.js'
+
+// ---- chord gather (SR-AUD-10 / SR-EVT-03) ----
+// A chord target may be rolled: pitches accumulate across events (taps, MIDI
+// singles, mic sets alike) inside this window before the chord must be whole.
+const CHORD_WINDOW_MS = 2500
+
+const entryMidis = (entry) => (entry.notes ?? [entry.note]).map(nameToMidi)
+
+/**
+ * Advance one target entry (single note or chord) by one event.
+ * Chord members always match exact midi - hands together needs the octave.
+ * Returns { wrong } | { done } | { gather, stuck } (stuck: nothing new).
+ */
+function entryProgress(entry, gather, ev, pc) {
+  const targets = entryMidis(entry)
+  const byMidi = entry.notes ? true : !pc
+  const hits = (p, t) => (byMidi ? t === p : pitchClass(t) === pitchClass(p))
+  const open = gather && ev.timestamp - gather.startTs <= CHORD_WINDOW_MS ? gather.pitches : []
+  const sat = new Set(open)
+  let added = false
+  for (const p of eventPitches(ev)) {
+    const t = targets.find((t) => !sat.has(t) && hits(p, t)) ?? targets.find((t) => hits(p, t))
+    if (t === undefined) return { wrong: p, haveMidis: [...sat], targetMidis: targets }
+    if (!sat.has(t)) added = true
+    sat.add(t)
+  }
+  if (sat.size === targets.length) return { done: true }
+  return {
+    gather: { pitches: [...sat], startTs: open.length ? gather.startTs : ev.timestamp },
+    stuck: !added,
+    haveMidis: [...sat],
+    missingMidis: targets.filter((t) => !sat.has(t)),
+    targetMidis: targets
+  }
+}
 
 /** Practice tempos (SR-CRS-09): every timed piece playable slower, all equally celebrated. */
 export const TEMPO_CHOICES = [
@@ -38,7 +74,7 @@ function encouragement(lesson, used, voice) {
 export function startDrill(lesson) {
   return {
     kind: 'drill', lessonId: lesson.id,
-    stepIndex: 0, seqPos: 0, misses: 0,
+    stepIndex: 0, seqPos: 0, misses: 0, gather: null,
     phase: 'working', feedback: null, encUsed: 0,
     lastOnset: null, verdicts: [], offsets: []
   }
@@ -63,15 +99,21 @@ export function drillNote(state, lesson, ev, voice = VOICE) {
   const step = lesson.steps[state.stepIndex]
   if (step.kind !== 'play' && step.kind !== 'ear-echo') return state
 
-  const target = nameToMidi(step.targets[state.seqPos].note)
-  const matched = step.match === 'pitch-class'
-    ? pitchClass(ev.pitch) === pitchClass(target)
-    : ev.pitch === target
+  const entry = step.targets[state.seqPos]
+  const r = entryProgress(entry, state.gather, ev, step.match === 'pitch-class')
 
-  if (!matched) {
+  if (r.wrong !== undefined) {
     const misses = state.misses + 1
-    const text = hintText({ heard: ev.pitch, target, misses, inSong: false, voice })
-    return { ...state, misses, feedback: { kind: 'hint', text } }
+    const text = entry.notes
+      ? chordHintText({ wrong: r.wrong, targetMidis: r.targetMidis, misses, voice })
+      : hintText({ heard: r.wrong, target: r.targetMidis[0], misses, inSong: false, voice })
+    return { ...state, misses, gather: null, feedback: { kind: 'hint', text } }
+  }
+  if (!r.done) {
+    const feedback = r.stuck
+      ? { kind: 'hint', text: chordHintText({ haveMidis: r.haveMidis, missingMidis: r.missingMidis, misses: state.misses, voice }) }
+      : null
+    return { ...state, gather: r.gather, feedback }
   }
 
   const tempo = step.timed ? lesson.tempo : null
@@ -83,10 +125,10 @@ export function drillNote(state, lesson, ev, voice = VOICE) {
 
   const seqPos = state.seqPos + 1
   if (seqPos < step.targets.length) {
-    return { ...state, ...timed, seqPos, misses: 0, feedback: liveWord(verdict, voice) }
+    return { ...state, ...timed, seqPos, misses: 0, gather: null, feedback: liveWord(verdict, voice) }
   }
   return {
-    ...state, ...timed, seqPos, misses: 0, phase: 'stepdone',
+    ...state, ...timed, seqPos, misses: 0, gather: null, phase: 'stepdone',
     feedback: {
       kind: 'good',
       text: (tempo && timingSummary(verdicts, voice)) || encouragement(lesson, state.encUsed, voice)
@@ -184,7 +226,7 @@ function advance(state, lesson) {
     return { ...state, phase: 'done', feedback: null }
   }
   return {
-    ...state, stepIndex, seqPos: 0, misses: 0, phase: 'working', feedback: null,
+    ...state, stepIndex, seqPos: 0, misses: 0, gather: null, phase: 'working', feedback: null,
     lastOnset: null, verdicts: [], offsets: []
   }
 }
@@ -194,7 +236,7 @@ function advance(state, lesson) {
 export function startSong(lesson) {
   return {
     kind: 'song', lessonId: lesson.id,
-    pos: 0, misses: 0, slips: 0, cleanCount: 0, done: false, hint: null, mention: null,
+    pos: 0, misses: 0, slips: 0, cleanCount: 0, done: false, hint: null, mention: null, gather: null,
     lastOnset: null, verdicts: [], offsets: [], pulse: null, timingMention: null,
     missLog: [], trouble: null, offered: [], loop: null, say: null
   }
@@ -239,25 +281,30 @@ export function declineLoop(state) {
 
 function loopNote(state, lesson, ev, voice) {
   const loop = state.loop
-  const target = nameToMidi(lesson.notes[loop.pos].note)
-  if (pitchClass(ev.pitch) !== pitchClass(target)) {
+  const entry = lesson.notes[loop.pos]
+  const r = entryProgress(entry, state.gather, ev, true)
+  if (r.wrong !== undefined) {
     const misses = state.misses + 1
-    const hint = hintText({ heard: ev.pitch, target, misses, inSong: true, voice })
-    return { ...state, misses, hint }
+    const hint = entry.notes
+      ? chordHintText({ wrong: r.wrong, targetMidis: r.targetMidis, misses, voice })
+      : hintText({ heard: r.wrong, target: r.targetMidis[0], misses, inSong: true, voice })
+    return { ...state, misses, gather: null, hint }
   }
+  if (!r.done) return { ...state, gather: r.gather }
+  const cleared = { gather: null }
   if (loop.pos < loop.to) {
-    return { ...state, loop: { ...loop, pos: loop.pos + 1 }, misses: 0, hint: null, say: null }
+    return { ...state, ...cleared, loop: { ...loop, pos: loop.pos + 1 }, misses: 0, hint: null, say: null }
   }
   const round = loop.round + 1
   if (round < LOOP_ROUNDS) {
     return {
-      ...state, loop: { ...loop, round, pos: loop.from },
+      ...state, ...cleared, loop: { ...loop, round, pos: loop.from },
       misses: 0, hint: null, say: voice.trouble.again
     }
   }
   // rejoin the song a note before the corner, so the join is practiced too
   return {
-    ...state, loop: null, pos: loop.from,
+    ...state, ...cleared, loop: null, pos: loop.from,
     misses: 0, hint: null, say: voice.trouble.rejoin, lastOnset: null
   }
 }
@@ -265,19 +312,24 @@ function loopNote(state, lesson, ev, voice) {
 export function songNote(state, lesson, ev, voice = VOICE) {
   if (state.done) return state
   if (state.loop) return loopNote(state, lesson, ev, voice)
-  const target = nameToMidi(lesson.notes[state.pos].note)
+  const entry = lesson.notes[state.pos]
 
-  // pitch class in any octave counts, so the music keeps flowing (SR-CRS-03)
-  if (pitchClass(ev.pitch) !== pitchClass(target)) {
+  // pitch class in any octave counts for single notes, so the music keeps
+  // flowing (SR-CRS-03); chord entries are exact - hands together needs the octave
+  const r = entryProgress(entry, state.gather, ev, true)
+  if (r.wrong !== undefined) {
     const misses = state.misses + 1
-    const hint = hintText({ heard: ev.pitch, target, misses, inSong: true, voice })
+    const hint = entry.notes
+      ? chordHintText({ wrong: r.wrong, targetMidis: r.targetMidis, misses, voice })
+      : hintText({ heard: r.wrong, target: r.targetMidis[0], misses, inSong: true, voice })
     const missLog = [...state.missLog, state.pos]
     const at = troubleAt(missLog, state.offered, state.pos)
     return {
-      ...state, misses, hint, pulse: null, missLog,
+      ...state, misses, hint, gather: null, pulse: null, missLog,
       trouble: at !== null ? { at } : state.trouble
     }
   }
+  if (!r.done) return { ...state, gather: r.gather }
 
   // a hint moment breaks the pulse; the grid picks back up from this onset
   const judged = state.misses === 0
@@ -294,14 +346,15 @@ export function songNote(state, lesson, ev, voice = VOICE) {
     pulse: verdict && verdict !== 'pause' ? voice.timing.live[verdict] : null
   }
 
-  const slips = state.slips + (ev.pitch !== target ? 1 : 0)
+  const octaveSlip = !entry.notes && !eventPitches(ev).includes(r.targetMidis?.[0] ?? entryMidis(entry)[0])
+  const slips = state.slips + (octaveSlip ? 1 : 0)
   const cleanCount = state.cleanCount + (state.misses === 0 ? 1 : 0)
   const pos = state.pos + 1
   if (pos < lesson.notes.length) {
-    return { ...state, ...timed, pos, slips, cleanCount, misses: 0, hint: null, say: null }
+    return { ...state, ...timed, pos, slips, cleanCount, misses: 0, gather: null, hint: null, say: null }
   }
   return {
-    ...state, ...timed, pos, slips, cleanCount, misses: 0, hint: null, say: null, done: true,
+    ...state, ...timed, pos, slips, cleanCount, misses: 0, gather: null, hint: null, say: null, done: true,
     mention: slips >= 3 ? voice.song.octaveMention : null,
     timingMention: lesson.tempo ? timingSummary(verdicts, voice) : null
   }

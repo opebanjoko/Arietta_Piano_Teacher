@@ -27,3 +27,20 @@ export function hintText({ heard, target, misses, inSong, voice }) {
   vals.distance = voice.distances[d]
   return fill(inSong ? voice.hints.directionalSong : voice.hints.directional, vals)
 }
+
+const listLetters = (midis) => {
+  const ls = midis.map(letter)
+  return ls.length <= 1 ? ls.join('') : `${ls.slice(0, -1).join(', ')} and ${ls.at(-1)}`
+}
+
+/**
+ * Chord hints (SR-AUD-10 lessons): a stray note names itself and what the
+ * chord wants; a re-strike with nothing new points at who is still hiding.
+ */
+export function chordHintText({ wrong, haveMidis, missingMidis, targetMidis, misses, voice }) {
+  const soft = voice.softeners[Math.max(0, misses - 1) % voice.softeners.length]
+  if (wrong !== undefined) {
+    return fill(voice.hints.chordExtra, { soft, extra: letter(wrong), want: listLetters(targetMidis) })
+  }
+  return fill(voice.hints.chordMissing, { soft, have: listLetters(haveMidis), missing: listLetters(missingMidis) })
+}
