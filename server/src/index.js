@@ -9,6 +9,8 @@ function readBody(req) {
   return new Promise((resolve, reject) => {
     let data = ''
     let settled = false
+    req.setEncoding('utf8') // decode chunks as utf8 text, not per-chunk Buffers — a multibyte
+    // char split across a chunk boundary must not get coerced into two mangled halves
     req.on('data', c => {
       if (settled) return
       data += c

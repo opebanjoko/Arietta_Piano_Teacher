@@ -15,7 +15,7 @@ const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
 const toClarity = (v) => 0.95 - (v / 100) * 0.13
 const fromClarity = (c) => Math.round(((0.95 - c) / 0.13) * 100)
 
-export function MicCheck({ initialClarity = 0.9, onDone }) {
+export function MicCheck({ initialClarity = 0.9, initialLowClarity, onDone }) {
   const [stage, setStage] = useState('intro') // intro | listening | confirm | denied
   const [heard, setHeard] = useState(null)
   const [sens, setSens] = useState(fromClarity(initialClarity))
@@ -69,7 +69,8 @@ export function MicCheck({ initialClarity = 0.9, onDone }) {
       enabled,
       clarity: toClarity(sens),
       detector: 'mpm',
-      lowClarity: lowStage === 'heard' ? lowClarityRef.current : undefined
+      // keep the prior C3 calibration unless the low step was redone this session
+      lowClarity: lowStage === 'heard' ? lowClarityRef.current : initialLowClarity
     })
   }
 

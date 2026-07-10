@@ -93,18 +93,27 @@ test('reset clears progress; delete removes profile, progress and settings', asy
   const p = await createProfile(db, 'Ava')
   await markComplete(db, p.id, 'meet-e')
   await recordPracticeRun(db, p.id, 'practice-meet-e-little-hill', 20)
-  await saveSettings(db, p.id, { accent: '#7C8A55' })
+  await saveSettings(db, p.id, { accent: '#7C8A55' }, 50)
 
   await resetProgress(db, p.id)
   assert.equal((await getProgress(db, p.id)).size, 0)
   assert.equal((await getPracticeProgress(db, p.id)).size, 0)
-  assert.deepEqual(await getSettings(db, p.id), { accent: '#7C8A55' })
+  assert.deepEqual(await getSettings(db, p.id), { accent: '#7C8A55', updatedAt: 50 })
 
   await recordPracticeRun(db, p.id, 'practice-meet-e-little-hill', 30)
   await deleteProfile(db, p.id)
   assert.deepEqual(await listProfiles(db), [])
   assert.equal((await getPracticeProgress(db, p.id)).size, 0)
   assert.deepEqual(await getSettings(db, p.id), {})
+})
+
+test('saveSettings stamps an injected updatedAt so a settings-only change has its own clock (Finding 1)', async () => {
+  const db = memDb()
+  const p = await createProfile(db, 'Ava')
+  await saveSettings(db, p.id, { accent: '#7C8A55' }, 500)
+  assert.deepEqual(await getSettings(db, p.id), { accent: '#7C8A55', updatedAt: 500 })
+  await saveSettings(db, p.id, { accent: '#6F8C5A' }, 900)
+  assert.deepEqual(await getSettings(db, p.id), { accent: '#6F8C5A', updatedAt: 900 })
 })
 
 test('active profile survives via the app store', async () => {

@@ -15,7 +15,7 @@ export function FamilySync({ sync, onCreate, onJoin, onLeave, onDeleteEverywhere
   const [shownCode, setShownCode] = useState(null)
 
   const input = (props) => (
-    <input {...props} class="hit" style="border:1px solid var(--line-strong);border-radius:10px;padding:9px 12px;font-size:15px;background:var(--card-warm);width:150px;" />
+    <input {...props} aria-label={props.placeholder} class="hit" style="border:1px solid var(--line-strong);border-radius:10px;padding:9px 12px;font-size:15px;background:var(--card-warm);width:150px;" />
   )
 
   const submit = async (fn) => {

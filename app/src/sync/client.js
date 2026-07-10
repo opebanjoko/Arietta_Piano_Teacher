@@ -32,8 +32,10 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
       body: body === undefined ? undefined : JSON.stringify(body)
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.error ?? `sync ${res.status}`)
+      const body = await res.json().catch(() => ({}))
+      const err = new Error(body.error ?? `sync ${res.status}`)
+      err.status = res.status
+      throw err
     }
     return res.status === 204 ? {} : res.json()
   }
@@ -53,6 +55,10 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
         doc.updatedAt = Math.max(doc.updatedAt, r.lastPlayedAt ?? 0)
       }
       doc.settings = (await db.get('app', `settings:${p.id}`))?.value ?? {}
+      // settings can be the only thing that changed (accent, labels) — a doc
+      // whose clock ignores that ties the server copy and a merge tie keeps
+      // the stored side, silently reverting the settings-only change
+      doc.updatedAt = Math.max(doc.updatedAt, doc.settings.updatedAt ?? 0)
       docs.push(doc)
     }
     return docs
@@ -103,7 +109,17 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
       }
       onChange()
       return 'ok'
-    } catch {
+    } catch (err) {
+      // another device deleted the household (or the token was otherwise
+      // revoked) — retrying forever would just show a permanent, false
+      // "having trouble reaching home base"; unlink instead, keeping local data
+      if (err.status === 401) {
+        clearTimeout(timer)
+        await db.delete('app', 'sync')
+        failStreak = 0
+        onChange()
+        return 'off'
+      }
       failStreak += 1
       clearTimeout(timer)
       timer = setTimeout(syncNow, BACKOFF_MS[Math.min(failStreak - 1, BACKOFF_MS.length - 1)])

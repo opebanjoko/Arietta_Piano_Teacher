@@ -1,6 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createSyncClient } from '../src/sync/client.js'
+import { mergeDocs } from '../src/sync/merge.js'
+import { saveSettings } from '../src/store/progress.js'
 
 /** Minimal in-memory stand-in for the db handle in src/store/db.js. */
 function fakeDb() {
@@ -208,4 +210,60 @@ test('reentrancy: two concurrent syncNow calls collapse into one round trip', as
   assert.equal(a, 'ok')
   assert.equal(b, 'ok')
   assert.equal(srv.calls.length, 2) // one GET + one PUT, not two rounds
+})
+
+/**
+ * Real-merge fake server (unlike fakeServer() above, which just overwrites):
+ * runs the actual mergeDocs on push the way server/src/routes.js does —
+ * stored doc first, incoming doc second — so a tie keeps the stored side.
+ * Needed to reproduce Finding 1: a settings-only push whose clock ties the
+ * server copy gets its settings silently reverted by that tie-break.
+ */
+function realMergeServer() {
+  const docs = new Map()
+  const fetchFn = async (url, opts = {}) => {
+    const path = new URL(url).pathname
+    const body = opts.body ? JSON.parse(opts.body) : {}
+    const json = (status, data) => ({ ok: status < 400, status, json: async () => data })
+    if (path === '/sync' && opts.method === 'PUT') {
+      for (const incoming of body.docs ?? []) docs.set(incoming.profileId, mergeDocs(docs.get(incoming.profileId) ?? null, incoming))
+      return json(200, { docs: [...docs.values()], deleted: [] })
+    }
+    if (path === '/sync') return json(200, { docs: [...docs.values()], deleted: [] })
+    return json(404, { error: 'not found' })
+  }
+  return { docs, fetchFn }
+}
+
+test('a settings-only change survives a sync round trip instead of being reverted by a merge tie (Finding 1)', async () => {
+  const db = fakeDb()
+  await db.put('profiles', { id: 'p1', name: 'Maya', createdAt: 1 })
+  await db.put('progress', { profileId: 'p1', lessonId: 'l1', completed: true, lastPlayedAt: 5 })
+  await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  await saveSettings(db, 'p1', { accent: '#B7813A' }, 5) // stamped the same as the lesson's lastPlayedAt
+
+  const srv = realMergeServer()
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: srv.fetchFn })
+  assert.equal(await c.syncNow(), 'ok') // seeds the server with the original settings
+
+  // settings-only change, no new lesson activity — its own clock must still advance
+  await saveSettings(db, 'p1', { accent: '#6F8C5A' }, 999)
+
+  assert.equal(await c.syncNow(), 'ok')
+  assert.equal((await db.get('app', 'settings:p1')).value.accent, '#6F8C5A')
+  assert.equal(srv.docs.get('p1').settings.accent, '#6F8C5A')
+})
+
+test('401 from GET or PUT /sync auto-unlinks (no backoff), keeping local data intact', async () => {
+  const db = fakeDb()
+  await db.put('profiles', { id: 'p1', name: 'Maya', createdAt: 1 })
+  await db.put('progress', { profileId: 'p1', lessonId: 'l1', completed: true, lastPlayedAt: 5 })
+  await db.put('app', { key: 'sync', value: { token: 'revoked', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  const fetchFn = async () => ({ ok: false, status: 401, json: async () => ({ error: 'unknown token' }) })
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn })
+  assert.equal(await c.syncNow(), 'off')
+  assert.equal(await db.get('app', 'sync'), undefined)
+  assert.deepEqual(await c.getState(), { linked: false, code: null, lastSyncAt: null, failing: false })
+  assert.deepEqual(await db.get('profiles', 'p1'), { id: 'p1', name: 'Maya', createdAt: 1 })
+  assert.deepEqual(await db.get('progress', ['p1', 'l1']), { profileId: 'p1', lessonId: 'l1', completed: true, lastPlayedAt: 5 })
 })

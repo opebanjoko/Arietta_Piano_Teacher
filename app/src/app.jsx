@@ -569,6 +569,9 @@ export function App() {
 
   /** Tempo change restarts the piece: the timing grid changed, a mid-piece splice would judge unfairly. */
   const onTempo = (id) => {
+    if (id === tempoChoice) return // re-tapping the active tempo shouldn't restart the piece
+    clearTos() // a "Hear it first" demo mid-flight shouldn't keep sounding over the restarted piece
+    setDemo({ on: false, pos: -1 })
     setTempoChoice(id)
     lessonRef.current = atTempo(baseLessonRef.current, id)
     stopMetro() // the pulse effect recreates the metronome at the new tempo
@@ -578,7 +581,7 @@ export function App() {
   // ---- render ----
 
   if (screen === 'boot') return <div class="screen"></div>
-  if (screen === 'miccheck') return <MicCheck initialClarity={micSettings?.clarity ?? 0.9} onDone={onMicCheckDone} />
+  if (screen === 'miccheck') return <MicCheck initialClarity={micSettings?.clarity ?? 0.9} initialLowClarity={micSettings?.lowClarity} onDone={onMicCheckDone} />
   if (screen === 'firstrun') return <FirstRun onCreate={onCreateProfile} />
   if (screen === 'newprofile') return <FirstRun onCreate={onCreateProfile} onCancel={() => setScreen('home')} />
 

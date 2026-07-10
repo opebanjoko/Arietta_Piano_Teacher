@@ -1,5 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { request } from 'node:http'
 import { openDb } from '../src/db.js'
 import { createApp } from '../src/index.js'
 import { resetRateLimit } from '../src/routes.js'
@@ -128,6 +129,46 @@ test('push merges with stored docs; pull returns household state', async () => {
 
   const pull = await (await s.call('GET', '/sync', undefined, token)).json()
   assert.deepEqual(pull.docs, push2.docs)
+  await s.close()
+})
+
+/**
+ * PUT whose request body is written in two separate writes, split exactly
+ * between the two bytes of a multibyte utf8 character, with a delay between
+ * them so they land as distinct TCP segments (a real network chunk boundary
+ * can fall anywhere; this pins it to the worst case). Uses node:http's own
+ * client so response parsing — chunked or not — is handled normally; only
+ * the request body's write timing is being controlled here.
+ */
+function putSplitBody(port, token, bodyBuf, splitAt) {
+  return new Promise((resolve, reject) => {
+    const req = request({
+      host: '127.0.0.1', port, method: 'PUT', path: '/sync',
+      headers: { 'content-type': 'application/json', 'content-length': bodyBuf.length, authorization: `Bearer ${token}` }
+    }, (res) => {
+      const chunks = []
+      res.on('data', c => chunks.push(c))
+      res.on('end', () => resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))))
+    })
+    req.on('error', reject)
+    req.write(bodyBuf.subarray(0, splitAt), () => {
+      setTimeout(() => req.end(bodyBuf.subarray(splitAt)), 30)
+    })
+  })
+}
+
+test('a multibyte char split exactly at a chunk boundary round-trips intact (Finding 4)', async () => {
+  const s = await start()
+  const { token } = await (await s.call('POST', '/households', { pin: '4321' })).json()
+  const name = 'José' // 'é' is the 2-byte utf8 sequence 0xC3 0xA9
+  const doc = { profileId: 'p1', name, createdAt: 1, lessons: {}, settings: {}, updatedAt: 10 }
+  const bodyBuf = Buffer.from(JSON.stringify({ docs: [doc], deleted: [] }), 'utf8')
+  const splitAt = bodyBuf.indexOf(0xC3) + 1 // right between the é's two bytes
+
+  const pushed = await putSplitBody(s.server.address().port, token, bodyBuf, splitAt)
+  assert.equal(pushed.docs[0].name, name)
+  const pull = await (await s.call('GET', '/sync', undefined, token)).json()
+  assert.equal(pull.docs[0].name, name)
   await s.close()
 })
 
