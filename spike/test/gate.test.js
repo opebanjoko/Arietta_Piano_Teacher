@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { encodeWav } from '../gate/wav.js';
 import { encodeZip, crc32 } from '../gate/zip.js';
+import { monoCorpusTasks, polyCorpusTasks, SOAK } from '../gate/tasks.js';
 
 test('encodeWav writes a valid 16-bit mono RIFF header and PCM data', () => {
   const samples = Float32Array.from([0, 0.5, -0.5, 1, -1]);
@@ -37,4 +38,35 @@ test('encodeZip writes readable stored entries and a central directory', () => {
   assert.equal(dv.getUint16(eocd + 10, true), 2); // total entries
   const cdStart = dv.getUint32(eocd + 16, true);
   assert.equal(dv.getUint32(cdStart, true), 0x02014b50); // central dir signature
+});
+
+test('mono corpus covers chromatic C3-C6 with runbook filenames', () => {
+  const tasks = monoCorpusTasks({ instrument: 'acoustic', distance: 'stand' });
+  assert.equal(tasks.length, 37);
+  assert.equal(tasks[0].expect.midi, 48);
+  assert.equal(tasks.at(-1).expect.midi, 84);
+  assert.equal(tasks[0].filename, 'acoustic-C3-stand-1.wav');
+  assert.ok(tasks.some(t => t.filename === 'acoustic-Cs4-stand-1.wav'));
+  for (const t of tasks) {
+    assert.equal(t.mode, 'mono');
+    assert.ok(t.prompt && t.recordSec > 0 && t.id, t.filename);
+  }
+});
+
+test('poly corpus stays in range with distinct pitch classes per chord', () => {
+  const tasks = polyCorpusTasks({ piano: 'acoustic', distance: 'near' });
+  const labels = tasks.map(t => t.id);
+  for (const chord of ['C3maj', 'F3maj', 'G3maj', 'C4maj', 'F4maj']) assert.ok(labels.includes(chord), chord);
+  assert.ok(!labels.includes('G4maj'), 'G4maj is out of detector range by design');
+  for (const t of tasks) {
+    for (const m of t.expect?.midis ?? []) assert.ok(m >= 48 && m <= 72, t.id);
+    if (t.expect?.midis) {
+      assert.equal(new Set(t.expect.midis.map(m => m % 12)).size, t.expect.midis.length, t.id);
+    }
+    for (const set of t.expectSeq ?? []) for (const m of set) assert.ok(m >= 48 && m <= 72, t.id);
+    assert.ok(t.filename.startsWith('poly-acoustic-') && t.filename.endsWith('-near-1.wav'), t.filename);
+    assert.equal(t.mode, 'poly');
+  }
+  assert.ok(tasks.some(t => t.expectSeq && t.recordSec >= 8));
+  assert.ok(SOAK.minutes === 10 && SOAK.passMax === 1);
 });
