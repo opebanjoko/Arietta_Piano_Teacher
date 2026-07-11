@@ -2,6 +2,7 @@
 import { COURSE, allLessons } from '../content/course.js'
 import { VOICE } from '../content/voice.js'
 import { fill, pressable } from './util.js'
+import { Overlay } from './Overlay.jsx'
 
 function greeting(name) {
   const h = new Date().getHours()
@@ -135,7 +136,7 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
           const openable = st.active || st.complete
           const firstOpen = u.lessons.find(l => ['next', 'peek'].includes(states.get(l.id))) ?? u.lessons[0]
           return (
-            <div key={u.id} {...(openable ? pressable(() => onOpen(firstOpen.id)) : {})}
+            <div key={u.id} {...(openable ? pressable(() => onOpen(firstOpen.id)) : {})} class={openable ? 'card-press' : ''}
               style={`background:${st.active ? 'var(--card)' : 'var(--card-warm)'};border:1px solid ${st.active ? 'var(--line-strong)' : 'var(--line)'};border-radius:16px;padding:16px 18px;opacity:${st.locked ? .55 : 1};cursor:${openable ? 'pointer' : 'default'};box-shadow:${st.active ? '0 6px 18px rgba(140,100,40,.10)' : 'none'};transition:all .2s ease;`}>
               <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.6px;color:var(--ink-faint);">{u.tag}</div>
               <div style="font-family:var(--serif);font-weight:600;font-size:19px;margin:6px 0 10px;">{u.title}</div>
@@ -166,7 +167,7 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
           const tag = s === 'complete' ? v.songDone : s === 'peek' ? v.songPeek : s === 'next' ? v.songNext : v.songNext
           const action = s === 'complete' ? v.songReplay : playable ? v.songPlay : v.songLocked
           return (
-            <div key={song.id} {...(playable ? pressable(() => onOpen(song.id)) : {})}
+            <div key={song.id} {...(playable ? pressable(() => onOpen(song.id)) : {})} class={playable ? 'card-press' : ''}
               style={`background:${playable ? 'var(--card)' : 'var(--card-warm)'};border:1px solid ${playable ? 'var(--line-strong)' : 'var(--line)'};border-radius:16px;padding:16px 18px;opacity:${playable ? 1 : .55};cursor:${playable ? 'pointer' : 'default'};box-shadow:${playable ? '0 6px 18px rgba(140,100,40,.10)' : 'none'};transition:all .2s ease;`}>
               <div style={`font-family:var(--mono);font-size:10px;letter-spacing:1.6px;color:${playable ? 'var(--accent-ink)' : 'var(--ink-faint)'};`}>{tag}</div>
               <div style="font-family:var(--serif);font-weight:600;font-size:19px;margin:6px 0 6px;">{song.title}</div>
@@ -178,8 +179,7 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
       </div>
 
       {warmup && (
-        <div class="overlay">
-          <div class="card-modal" style="max-width:520px;">
+        <Overlay label={VOICE.warmup.title} onDismiss={warmup.skip}>
             <div class="kicker">{VOICE.warmup.kicker}</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:30px;margin-top:8px;">{VOICE.warmup.title}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{fill(VOICE.warmup.line, { title: warmup.lesson.title })}</div>
@@ -187,13 +187,11 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
               <button class="btn-primary" onClick={warmup.accept}>{VOICE.warmup.accept}</button>
               <button class="btn-quiet" onClick={warmup.skip} style="padding:12px 20px;font-size:14px;">{VOICE.warmup.skip}</button>
             </div>
-          </div>
-        </div>
+        </Overlay>
       )}
 
       {practice && !warmup && (
-        <div class="overlay">
-          <div class="card-modal" style="max-width:560px;">
+        <Overlay label={VOICE.practice.title} onDismiss={practice.skip} maxWidth={560}>
             <div class="kicker">{VOICE.practice.kicker}</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:30px;margin-top:8px;">{VOICE.practice.title}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{fill(VOICE.practice.line, { titles: practice.session.entries.map(e => e.title).join(', ') })}</div>
@@ -201,8 +199,7 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
               <button class="btn-primary" onClick={practice.accept}>{VOICE.practice.accept}</button>
               <button class="btn-quiet" onClick={practice.skip} style="padding:12px 20px;font-size:14px;">{VOICE.practice.skip}</button>
             </div>
-          </div>
-        </div>
+        </Overlay>
       )}
     </section>
   )

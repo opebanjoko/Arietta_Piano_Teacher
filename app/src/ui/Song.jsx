@@ -7,6 +7,7 @@ import { songTargetIndex, TEMPO_CHOICES } from '../core/engine.js'
 import { steadinessPoints } from '../core/timing.js'
 import { VOICE } from '../content/voice.js'
 import { fill } from './util.js'
+import { Overlay } from './Overlay.jsx'
 
 const FLOATS = [
   { glyph: '♪', left: '16%', top: '64%', size: 26, dur: 2.8, delay: 0 },
@@ -47,8 +48,8 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
         pillText={pill.text} pillActive={pill.active} onHome={onHome} />
 
       <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:0 30px;">
-        <div style="display:flex;align-items:center;gap:16px;">
-          <button class="btn-quiet" onClick={onHearIt}>{demo.on ? 'Playing…' : '♪ Hear it first'}</button>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 16px;">
+          <button class="btn-quiet" onClick={onHearIt} disabled={demo.on}>{demo.on ? 'Playing…' : '♪ Hear it first'}</button>
           {accompanyAvailable && (
             <button class="btn-quiet" onClick={onToggleAccompany}
               style={accompany ? 'background:var(--accent-soft);border-color:var(--line-strong);' : ''}>
@@ -56,7 +57,7 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
             </button>
           )}
           {lesson.tempo && !song.done && (
-            <div style="display:flex;gap:6px;align-items:center;" role="group" aria-label={v.tempoLine}>
+            <div style="display:flex;gap:12px;align-items:center;" role="group" aria-label={v.tempoLine}>
               {TEMPO_CHOICES.map(({ id }) => (
                 <button key={id} class="btn-quiet hit" onClick={() => onTempo(id)}
                   aria-pressed={tempoChoice === id}
@@ -66,7 +67,7 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
               ))}
             </div>
           )}
-          <div style="width:230px;height:7px;border-radius:99px;background:var(--line);overflow:hidden;">
+          <div style="width:clamp(140px,22vw,230px);height:7px;border-radius:99px;background:var(--line);overflow:hidden;">
             <div style={`height:100%;border-radius:99px;background:var(--accent-ink);width:${Math.round(Math.min(song.pos / total, 1) * 100)}%;transition:width .3s ease;`}></div>
           </div>
           <div style="font-size:12.5px;font-weight:700;color:var(--ink-mid);">{Math.min(song.pos, total)} of {total} notes</div>
@@ -81,8 +82,7 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
       </div>
 
       {song.trouble && !overlay && !recital && (
-        <div class="overlay">
-          <div class="card-modal" style="max-width:520px;">
+        <Overlay label={VOICE.trouble.title} onDismiss={onDeclineLoop}>
             <div class="kicker">{VOICE.trouble.kicker}</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:30px;margin-top:8px;">{VOICE.trouble.title}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{VOICE.trouble.line}</div>
@@ -90,16 +90,14 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
               <button class="btn-primary" onClick={onAcceptLoop}>{VOICE.trouble.accept}</button>
               <button class="btn-quiet" onClick={onDeclineLoop} style="padding:12px 20px;font-size:14px;">{VOICE.trouble.skip}</button>
             </div>
-          </div>
-        </div>
+        </Overlay>
       )}
 
       {overlay && (
-        <div class="overlay">
-          {FLOATS.map((f, i) => (
-            <div key={i} style={`position:absolute;left:${f.left};top:${f.top};font-size:${f.size}px;color:var(--accent-ink);opacity:0;animation:floatNote ${f.dur}s ease-in-out ${f.delay}s infinite;`}>{f.glyph}</div>
-          ))}
-          <div class="card-modal" style="max-width:560px;">
+        <Overlay label={lesson.done.title} maxWidth={560}
+          backdrop={FLOATS.map((f, i) => (
+            <div key={i} aria-hidden="true" style={`position:absolute;left:${f.left};top:${f.top};font-size:${f.size}px;color:var(--accent-ink);opacity:0;animation:floatNote ${f.dur}s ease-in-out ${f.delay}s infinite;`}>{f.glyph}</div>
+          ))}>
             <div style="font-size:30px;color:var(--accent-ink);line-height:1;">♫</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:33px;margin-top:8px;">{lesson.done.title}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{lesson.done.line}</div>
@@ -114,8 +112,7 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
                 : <button class="btn-primary" onClick={onReplay}>Play it again</button>}
               <button class="btn-quiet" onClick={doneAction ? onReplay : onHome} style="padding:12px 20px;font-size:14px;">{doneAction ? 'Play it again' : 'Back to my course'}</button>
             </div>
-          </div>
-        </div>
+        </Overlay>
       )}
     </section>
   )

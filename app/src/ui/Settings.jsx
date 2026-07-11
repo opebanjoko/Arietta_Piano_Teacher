@@ -77,7 +77,7 @@ export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
             {confirming === 'reset' ? (
               <>
-                <button class="btn-primary" style="background:var(--hint);" onClick={() => { setConfirming(null); onReset() }}>{v.resetConfirm}</button>
+                <button class="btn-primary" style="background:var(--danger);" onClick={() => { setConfirming(null); onReset() }}>{v.resetConfirm}</button>
                 <button class="btn-quiet" onClick={() => setConfirming(null)}>{v.cancel}</button>
               </>
             ) : (
@@ -90,7 +90,7 @@ export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
                 {confirming === 'delete' ? (
                   <>
-                    <button class="btn-primary" style="background:var(--hint);" onClick={() => { setConfirming(null); onDelete() }}>{fill(v.deleteConfirm, { name: profile.name })}</button>
+                    <button class="btn-primary" style="background:var(--danger);" onClick={() => { setConfirming(null); onDelete() }}>{fill(v.deleteConfirm, { name: profile.name })}</button>
                     <button class="btn-quiet" onClick={() => setConfirming(null)}>{v.cancel}</button>
                   </>
                 ) : (

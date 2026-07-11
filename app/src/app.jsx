@@ -630,7 +630,19 @@ export function App() {
 
   // ---- render ----
 
-  if (screen === 'boot') return <div class="screen"></div>
+  if (screen === 'boot') {
+    return (
+      <div class="screen" style="align-items:center;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:14px;animation:fadeUp .4s ease;">
+          <div style="position:relative;width:10px;height:10px;">
+            <div style="position:absolute;inset:0;border-radius:50%;background:var(--accent);animation:breath 2.2s ease-out infinite;"></div>
+            <div style="position:absolute;inset:0;border-radius:50%;background:var(--accent-ink);"></div>
+          </div>
+          <div style="font-family:var(--serif);font-weight:700;font-size:28px;letter-spacing:.2px;">Arietta</div>
+        </div>
+      </div>
+    )
+  }
   if (screen === 'miccheck') return <MicCheck initialClarity={micSettings?.clarity ?? 0.9} initialLowClarity={micSettings?.lowClarity} onDone={onMicCheckDone} />
   if (screen === 'firstrun') return <FirstRun onCreate={onCreateProfile} />
   if (screen === 'newprofile') return <FirstRun onCreate={onCreateProfile} onCancel={() => setScreen('home')} />

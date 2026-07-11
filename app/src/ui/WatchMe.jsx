@@ -66,12 +66,12 @@ export function WatchMe({ anim }) {
 
   return (
     <div style="width:420px;max-width:80vw;">
-      <div style="position:relative;height:100px;pointer-events:none;">
+      <div aria-hidden="true" style="position:relative;height:100px;pointer-events:none;">
         <div style={`position:absolute;bottom:-14px;left:${handLeft}%;transform:translateX(-${hand === 'right' ? FINGER_X[fingers[handAt]] + 1 : 92 - FINGER_X[fingers[handAt]] - 1}px);transition:left .32s ease, transform .32s ease;z-index:2;`}>
           <Hand active={activeFingers} side={hand} />
         </div>
       </div>
-      <div style="position:relative;height:92px;border:1px solid var(--line-soft);border-radius:10px;overflow:hidden;background:#241B12;">
+      <div aria-hidden="true" style="position:relative;height:92px;border:1px solid var(--line-soft);border-radius:10px;overflow:hidden;background:#241B12;">
         <div style="display:flex;height:100%;">
           {whites.map(m => {
             const pressed = pressedMidis.includes(m)

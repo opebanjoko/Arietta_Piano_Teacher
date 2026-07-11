@@ -17,7 +17,9 @@ export function Setlist({ lesson, candidates, pill, onBegin, onHome }) {
     <section style="flex:1;min-height:0;display:flex;flex-direction:column;animation:fadeUp .4s ease;">
       <PlayHeader kicker={`${lesson.unitTag} · ${lesson.unitTitle.toUpperCase()}`} title={lesson.title}
         pillText={pill.text} pillActive={pill.active} onHome={onHome} />
-      <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0 30px;overflow:auto;">
+      {/* margin:auto (not justify-content:center) so overflowing picks stay scrollable to the top */}
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:0 30px;overflow:auto;">
+        <div style="margin:auto;display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px 0 22px;">
         <div class="kicker">{v.pickKicker}</div>
         <div style="font-size:15px;color:var(--ink-soft);text-align:center;max-width:560px;">
           {lesson.recital ? v.pickLineRecital : v.pickLinePolish}
@@ -27,7 +29,7 @@ export function Setlist({ lesson, candidates, pill, onBegin, onHome }) {
             const on = picked.includes(c.id)
             const order = picked.indexOf(c.id)
             return (
-              <button key={c.id} class="hit" onClick={() => toggle(c.id)} aria-pressed={on}
+              <button key={c.id} class="hit card-press" onClick={() => toggle(c.id)} aria-pressed={on}
                 style={`text-align:left;max-width:260px;background:${on ? 'var(--accent-soft)' : 'var(--card)'};border:1px solid ${on ? 'var(--line-strong)' : 'var(--line)'};border-radius:14px;padding:13px 16px;cursor:pointer;transition:all .15s ease;`}>
                 <div style="display:flex;align-items:center;gap:8px;">
                   <div style={`width:20px;height:20px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${on ? 'var(--card)' : 'var(--ink-faint)'};background:${on ? 'var(--accent-ink)' : 'var(--line)'};`}>{on ? order + 1 : '♪'}</div>
@@ -41,6 +43,7 @@ export function Setlist({ lesson, candidates, pill, onBegin, onHome }) {
         <button class="btn-primary" disabled={picked.length < lesson.pick} onClick={() => onBegin(picked)}>
           {v.begin}
         </button>
+        </div>
       </div>
     </section>
   )

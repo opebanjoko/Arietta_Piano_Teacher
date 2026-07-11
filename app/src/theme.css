@@ -17,8 +17,8 @@
 
   --ink: #2B241C;
   --ink-soft: #6B5B41;
-  --ink-mid: #8A7B60;
-  --ink-faint: #8F7F58;
+  --ink-mid: #74654A;
+  --ink-faint: #756347;
   --ink-mono: #7A6A48;
 
   --sage: #5E8C5A;
@@ -26,6 +26,7 @@
   --todo: #D6C9AC;
   --hint: #96541A;
   --cheer: #59704F;
+  --danger: #A5453A;
 
   --shadow-card: 0 10px 30px rgba(80, 60, 20, .07);
   --shadow-modal: 0 24px 60px rgba(80, 60, 20, .16);
@@ -46,7 +47,7 @@ body {
 }
 a { color: var(--accent-ink); text-decoration: none; }
 a:hover { color: var(--ink); text-decoration: underline; }
-button { font-family: var(--sans); }
+button { font-family: var(--sans); touch-action: manipulation; }
 
 @keyframes eq { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
 @keyframes breath { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.4); opacity: 0; } }
@@ -67,6 +68,11 @@ button { font-family: var(--sans); }
   background: linear-gradient(180deg, var(--paper-top) 0%, var(--paper) 100%);
 }
 
+/* Below the design's minimum height (split view, landscape phones) scroll instead of clipping. */
+@media (max-height: 619px) {
+  .screen { overflow-y: auto; }
+}
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -79,9 +85,10 @@ button { font-family: var(--sans); }
   font-weight: 800;
   font-size: 15.5px;
   cursor: pointer;
-  transition: filter .15s ease;
+  transition: filter .15s ease, transform .12s ease;
 }
 .btn-primary:hover { filter: brightness(.92); }
+.btn-primary:active:not(:disabled) { filter: brightness(.88); transform: scale(.96); }
 .btn-primary:disabled, .btn-quiet:disabled { opacity: .5; cursor: default; }
 
 .btn-quiet {
@@ -93,9 +100,10 @@ button { font-family: var(--sans); }
   font-weight: 800;
   font-size: 13px;
   cursor: pointer;
-  transition: background .15s ease;
+  transition: background .15s ease, transform .12s ease;
 }
 .btn-quiet:hover { background: #F6EFDD; }
+.btn-quiet:active:not(:disabled) { background: #F0E7D1; transform: scale(.96); }
 
 .btn-link {
   background: none;
@@ -108,6 +116,10 @@ button { font-family: var(--sans); }
   cursor: pointer;
 }
 .btn-link:hover { color: var(--ink); text-decoration: underline; }
+.btn-link:active { color: var(--ink); }
+
+/* Tap feedback for pressable cards (unit/song cards, setlist picks). */
+.card-press:active { transform: scale(.985); filter: brightness(.98); }
 
 /* Full-screen scrim + centered card, shared by every "gentle interruption". */
 .overlay {
@@ -117,6 +129,7 @@ button { font-family: var(--sans); }
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
   background: rgba(250, 245, 234, .78);
   backdrop-filter: blur(7px);
   animation: fadeUp .4s ease;
@@ -127,7 +140,7 @@ button { font-family: var(--sans); }
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 22px;
-  padding: 38px 54px;
+  padding: clamp(24px, 6vw, 38px) clamp(28px, 7vw, 54px);
   box-shadow: var(--shadow-modal);
   text-align: center;
 }

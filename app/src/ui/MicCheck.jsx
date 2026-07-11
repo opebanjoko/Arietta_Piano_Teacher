@@ -76,7 +76,7 @@ export function MicCheck({ initialClarity = 0.9, initialLowClarity, onDone }) {
   const v = VOICE.micCheck
   return (
     <div class="screen" style="align-items:center;justify-content:center;animation:fadeUp .4s ease;">
-      <div class="card-modal" style="padding:44px 54px;box-shadow:var(--shadow-card);max-width:600px;">
+      <div class="card-modal" style="padding:clamp(28px,6vw,44px) clamp(28px,7vw,54px);box-shadow:var(--shadow-card);max-width:min(600px,92vw);">
         {stage === 'intro' && <>
           <div class="kicker">{v.kicker}</div>
           <div style="font-family:var(--serif);font-weight:600;font-size:34px;margin-top:8px;">{v.title}</div>

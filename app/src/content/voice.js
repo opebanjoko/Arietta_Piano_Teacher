@@ -279,7 +279,9 @@ export const VOICE = {
       leaveLine: 'Progress stays on this iPad; it just stops carrying over.',
       deleteButton: 'Delete family data everywhere',
       deleteLine: 'Removes the family and its progress from home base. iPads keep their local copies.',
-      wrong: 'That code and PIN did not match. Have another look.',
+      wrongJoin: 'That family code and PIN didn’t match. Check the six-character code first, then the PIN.',
+      wrongPin: 'That PIN didn’t match. Have another look.',
+      wrongCreate: 'I couldn’t reach home base just now. Try again in a moment.',
       confirm: 'Yes, delete it everywhere'
     }
   },

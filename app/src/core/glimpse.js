@@ -33,8 +33,10 @@ export function glimpseText({ name, lessons, progress, now = Date.now() }, voice
   for (const l of completed.filter(l => l.kind === 'drill')) {
     for (const s of l.steps ?? []) {
       for (const t of s.targets ?? []) {
-        const L = letter(nameToMidi(t.note))
-        if (!notes.includes(L)) notes.push(L)
+        for (const n of t.notes ?? [t.note]) { // chord targets carry { notes }
+          const L = letter(nameToMidi(n))
+          if (!notes.includes(L)) notes.push(L)
+        }
       }
     }
   }

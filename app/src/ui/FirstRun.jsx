@@ -13,7 +13,7 @@ export function FirstRun({ onCreate, onCancel = null }) {
 
   return (
     <div class="screen" style="align-items:center;justify-content:center;animation:fadeUp .4s ease;">
-      <div class="card-modal" style="padding:44px 54px;box-shadow:var(--shadow-card);max-width:560px;">
+      <div class="card-modal" style="padding:clamp(28px,6vw,44px) clamp(28px,7vw,54px);box-shadow:var(--shadow-card);max-width:min(560px,92vw);">
         <div class="kicker">{v.kicker}</div>
         <div style="font-family:var(--serif);font-weight:600;font-size:34px;margin-top:8px;">{isNew ? v.newProfileTitle : v.title}</div>
         <div style="font-size:15.5px;color:var(--ink-soft);margin-top:10px;text-wrap:pretty;">{isNew ? v.newProfileLine : v.line}</div>

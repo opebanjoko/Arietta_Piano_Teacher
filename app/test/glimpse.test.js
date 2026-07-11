@@ -32,6 +32,13 @@ test('the glimpse names notes met, songs played, recency and the next step — i
   assert.ok(!/\d/.test(text), 'no digits anywhere in the glimpse')
 })
 
+test('a completed chord drill (targets with { notes }) does not crash the glimpse', () => {
+  const now = Date.now()
+  const progress = new Map([row('your-first-chord', { lastPlayedAt: now - 1000 })])
+  const text = glimpseText({ name: 'Ava', lessons: allLessons(), progress, now }).join(' ')
+  assert.match(text, /Ava has met/)
+})
+
 test('played today reads as today', () => {
   const now = Date.now()
   const progress = new Map([row('meet-the-keyboard', { lastPlayedAt: now - 1000 })])
