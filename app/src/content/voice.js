@@ -210,6 +210,29 @@ export const VOICE = {
     midi: 'Hearing your piano through the cable ♪'
   },
 
+  dynamics: {
+    nudge: {
+      soft: 'That was a lion — try a mouse: barely brush the key.',
+      loud: 'That was a mouse — be a lion: let it ring out.'
+    },
+    praise: {
+      soft: 'Soft as a mouse ♪',
+      loud: 'A proper roar ♪'
+    }
+  },
+
+  recital: {
+    pickKicker: 'CHOOSE YOUR PIECES',
+    pickLinePolish: 'Pick three favourites — each one gets a make-it-beautiful pass.',
+    pickLineRecital: 'Pick the three you’ll play today. I’ll introduce each one, then go quiet and just listen.',
+    begin: 'Begin ♪',
+    intro: '{title}. Whenever you’re ready.',
+    next: 'Next piece — {title} →',
+    finishPolish: 'All polished ♪',
+    finishRecital: 'Take a bow ♪',
+    keepsake: '♪ My first recital — {pieces}'
+  },
+
   settings: {
     kicker: 'SETTINGS',
     title: 'A few quiet knobs.',

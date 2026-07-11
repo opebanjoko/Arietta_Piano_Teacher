@@ -13,7 +13,7 @@ import { VOICE } from './content/voice.js'
 import {
   startDrill, drillNote, drillContinue, drillChoice, drillClap, drillAdvance,
   startSong, songNote, acceptLoop, declineLoop, songTargetIndex, lessonStates, pickWarmup,
-  atTempo, harmonyByBeat
+  atTempo, harmonyByBeat, setlistCandidates
 } from './core/engine.js'
 import { letter, nameToMidi } from './core/notes.js'
 import { playTone, playHarmony } from './audio/synth.js'
@@ -38,6 +38,7 @@ import { Lesson } from './ui/Lesson.jsx'
 import { Song } from './ui/Song.jsx'
 import { FreePlay } from './ui/FreePlay.jsx'
 import { Settings, ACCENTS } from './ui/Settings.jsx'
+import { Setlist } from './ui/Setlist.jsx'
 import { Keyboard } from './ui/Keyboard.jsx'
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
@@ -80,6 +81,7 @@ export function App() {
   const [syncState, setSyncState] = useState({ linked: false, code: null, lastSyncAt: null, failing: false })
   const [tempoChoice, setTempoChoice] = useState('full')
   const [midiDevices, setMidiDevices] = useState(0)
+  const [setlistLesson, setSetlistLesson] = useState(null)
 
   const syncRef = useRef(null)
   const lessonRef = useRef(null)
@@ -102,6 +104,7 @@ export function App() {
   const detectorMsRef = useRef(null)
   const micStateRef = useRef('idle')
   const midiRef = useRef(null)
+  const setlistRef = useRef(null) // { lessonId, recital, queue, i } while a setlist runs
 
   const to = (fn, ms) => tos.current.push(setTimeout(fn, ms))
   const clearTos = () => { tos.current.forEach(clearTimeout); tos.current = [] }
@@ -388,6 +391,14 @@ export function App() {
   const openLesson = (idOrLesson) => {
     clearTos()
     const raw = typeof idOrLesson === 'string' ? findLesson(idOrLesson) : idOrLesson
+    if (raw.kind === 'setlist') {
+      setSetlistLesson(raw)
+      setRecap(null)
+      setWarmupOffer(null)
+      setPracticeOffer(null)
+      setScreen('setlist')
+      return
+    }
     const readingSeed = profileSettings.readingSeed ?? 0
     const lesson = resolveReading(raw, readingSeed)
     if (lesson !== raw) patchSettings({ readingSeed: readingSeed + 1 })
@@ -452,6 +463,8 @@ export function App() {
     lessonRef.current = null
     warmupNextRef.current = null
     practiceQueueRef.current = []
+    setlistRef.current = null
+    setSetlistLesson(null)
     setDemo({ on: false, pos: -1 })
     earRef.current = false
     setEarPlaying(false)
@@ -638,6 +651,7 @@ export function App() {
       <div class="screen">
         <Home profileName={active.name} profiles={profiles} activeId={activeId} states={states}
           micEnabled={!!micSettings?.enabled} recap={recap} warmup={warmupOffer} practice={practiceOffer}
+          recital={profileSettings.recital}
           onOpen={openFromHome} onSelectProfile={onSelectProfile}
           onNewProfile={() => setScreen('newprofile')}
           onMicCheck={() => { micReturnRef.current = 'home'; setScreen('miccheck') }}
@@ -702,6 +716,22 @@ export function App() {
     )
   }
 
+  if (screen === 'setlist') {
+    const completedIds = new Set([...progress.values()].filter(r => r.completed).map(r => r.lessonId))
+    return (
+      <div class="screen">
+        <Setlist lesson={setlistLesson} pill={pill}
+          candidates={setlistCandidates(setlistLesson, allLessons(), completedIds)}
+          onHome={goHome}
+          onBegin={(ids) => {
+            setlistRef.current = { lessonId: setlistLesson.id, recital: !!setlistLesson.recital, queue: ids, i: 0 }
+            setSetlistLesson(null)
+            openLesson(ids[0])
+          }} />
+      </div>
+    )
+  }
+
   if (screen === 'freeplay') {
     return (
       <div class="screen">
@@ -730,7 +760,25 @@ export function App() {
 
   const nextAfterWarmup = warmupNextRef.current && findLesson(warmupNextRef.current)
   const nextPractice = lesson.practicePackId ? practiceQueueRef.current[0] : null
-  const doneAction = nextAfterWarmup ? {
+  const setl = setlistRef.current
+  const doneAction = setl ? (
+    setl.i < setl.queue.length - 1 ? {
+      label: fill(VOICE.recital.next, { title: findLesson(setl.queue[setl.i + 1]).title }),
+      go: () => { setl.i += 1; openLesson(setl.queue[setl.i]) }
+    } : {
+      label: setl.recital ? VOICE.recital.finishRecital : VOICE.recital.finishPolish,
+      go: async () => {
+        await markComplete(db, activeId, setl.lessonId)
+        await refreshProgress()
+        if (setl.recital) {
+          patchSettings({ recital: { pieces: setl.queue.map(id => findLesson(id).title), at: Date.now() } })
+        }
+        syncRef.current?.schedule()
+        noteRecap(findLesson(setl.lessonId))
+        goHome()
+      }
+    }
+  ) : nextAfterWarmup ? {
     label: fill(VOICE.warmup.onward, { title: nextAfterWarmup.title }),
     go: () => { warmupNextRef.current = null; openLesson(nextAfterWarmup.id) }
   } : nextPractice ? {
@@ -752,6 +800,7 @@ export function App() {
             onReplayEar={playEar} onReplayPattern={playPattern}
             onNextSong={openLesson} doneAction={doneAction} />
         : <Song lesson={lesson} song={song} demo={demo} overlay={overlay} pill={pill} beat={beat}
+            recital={!!setlistRef.current?.recital}
             accompany={accompany}
             accompanyAvailable={!!lesson.harmony && !!progress.get(lesson.id)?.completed}
             onToggleAccompany={() => setAccompany(a => !a)}

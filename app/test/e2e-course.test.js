@@ -10,7 +10,7 @@ import assert from 'node:assert/strict'
 import { allLessons } from '../src/content/course.js'
 import {
   startDrill, drillNote, drillContinue, drillChoice, drillClap, drillAdvance,
-  startSong, songNote, lessonStates
+  startSong, songNote, lessonStates, setlistCandidates
 } from '../src/core/engine.js'
 import { resolveReading } from '../src/core/reading.js'
 import { beatMs } from '../src/core/timing.js'
@@ -80,6 +80,14 @@ function runCourse(playDrillTarget, playSongTarget) {
       continue
     }
     assert.equal(states.get(lesson.id), 'next', `${lesson.id} should be unlocked in course order`)
+    if (lesson.kind === 'setlist') {
+      // pick and replay N completed songs, as the setlist screen does
+      const picks = setlistCandidates(lesson, lessons, completed).slice(0, lesson.pick)
+      assert.equal(picks.length, lesson.pick, `${lesson.id}: not enough completed songs to pick from`)
+      for (const piece of picks) playSong(piece, playSongTarget)
+      completed.add(lesson.id)
+      continue
+    }
     const resolved = resolveReading(lesson, completed.size) // as the app does at open
     if (resolved.kind === 'drill') playDrill(resolved, playDrillTarget)
     else playSong(resolved, playSongTarget)

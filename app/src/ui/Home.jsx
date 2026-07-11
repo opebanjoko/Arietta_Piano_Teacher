@@ -1,5 +1,5 @@
 /** Home / course map (SR-UI-01): greeting, next best action, path, songs, profiles. */
-import { COURSE, COMING_SOON, allLessons } from '../content/course.js'
+import { COURSE, allLessons } from '../content/course.js'
 import { VOICE } from '../content/voice.js'
 
 const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
@@ -53,7 +53,7 @@ function unitStatus(unit, states, prevUnit) {
   return { text: fill(v.unitLocked, { prev: prevUnit.title }), active: false, complete: false, locked: true }
 }
 
-export function Home({ profileName, profiles, activeId, states, micEnabled, recap, warmup, practice, onOpen, onSelectProfile, onNewProfile, onMicCheck, onSettings, onFreePlay }) {
+export function Home({ profileName, profiles, activeId, states, micEnabled, recap, warmup, practice, recital, onOpen, onSelectProfile, onNewProfile, onMicCheck, onSettings, onFreePlay }) {
   const v = VOICE.home
   const hero = Hero({ states, onOpen })
   const songs = COURSE.units.flatMap(u => u.lessons).filter(l => l.kind === 'song')
@@ -117,6 +117,11 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
             <div class="kicker">{hero.kicker}</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:38px;line-height:1.12;">{greeting(profileName)}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);max-width:560px;text-wrap:pretty;">{hero.line}</div>
+            {recital && (
+              <div style="font-family:var(--serif);font-style:italic;font-size:14px;color:#7A9070;">
+                {fill(VOICE.recital.keepsake, { pieces: recital.pieces.join(', ') })}
+              </div>
+            )}
             <div style="display:flex;align-items:center;gap:18px;margin-top:16px;">
               <button class="btn-primary" onClick={hero.btnGo}>{hero.btnText}</button>
               {hero.altText && <a href="#" onClick={e => { e.preventDefault(); hero.altGo() }} style="font-size:14px;font-weight:700;">{hero.altText}</a>}
@@ -153,19 +158,6 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
             </div>
           )
         })}
-        <div style="background:var(--card-warm);border:1px solid var(--line);border-radius:16px;padding:16px 18px;opacity:.55;">
-          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.6px;color:var(--ink-faint);">{COMING_SOON.tag}</div>
-          <div style="font-family:var(--serif);font-weight:600;font-size:19px;margin:6px 0 10px;">{COMING_SOON.title}</div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            {COMING_SOON.lessons.map(name => (
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="width:7px;height:7px;border-radius:50%;background:var(--todo);"></div>
-                <div style="font-size:13px;color:var(--ink-soft);">{name}</div>
-              </div>
-            ))}
-          </div>
-          <div style="margin-top:12px;font-size:12.5px;font-weight:800;color:var(--ink-faint);">{v.unitComing}</div>
-        </div>
       </div>
 
       <div class="kicker" style="padding:24px 40px 10px;">{v.songsTitle}</div>

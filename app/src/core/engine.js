@@ -97,7 +97,7 @@ const liveWord = (verdict, voice) =>
 export function drillNote(state, lesson, ev, voice = VOICE) {
   if (state.phase !== 'working') return state
   const step = lesson.steps[state.stepIndex]
-  if (step.kind !== 'play' && step.kind !== 'ear-echo') return state
+  if (step.kind !== 'play' && step.kind !== 'ear-echo' && step.kind !== 'dynamics') return state
 
   const entry = step.targets[state.seqPos]
   const r = entryProgress(entry, state.gather, ev, step.match === 'pitch-class')
@@ -116,6 +116,15 @@ export function drillNote(state, lesson, ev, voice = VOICE) {
     return { ...state, gather: r.gather, feedback }
   }
 
+  // dynamics (§9.4 lesson 41): right pitch, judged for loudness in words only;
+  // tap events carry no velocity and pass on pitch alone
+  if (step.kind === 'dynamics' && ev.velocity !== undefined) {
+    const bucket = ev.velocity >= 0.45 ? 'loud' : 'soft'
+    if (bucket !== step.mode) {
+      return { ...state, gather: null, feedback: { kind: 'hint', text: voice.dynamics.nudge[step.mode] } }
+    }
+  }
+
   const tempo = step.timed ? lesson.tempo : null
   const judged = judgeOnset(state, tempo, step.targets[state.seqPos - 1]?.beats, ev.timestamp)
   const verdict = judged?.verdict ?? null
@@ -131,10 +140,20 @@ export function drillNote(state, lesson, ev, voice = VOICE) {
     ...state, ...timed, seqPos, misses: 0, gather: null, phase: 'stepdone',
     feedback: {
       kind: 'good',
-      text: (tempo && timingSummary(verdicts, voice)) || encouragement(lesson, state.encUsed, voice)
+      text: step.kind === 'dynamics' ? voice.dynamics.praise[step.mode]
+        : (tempo && timingSummary(verdicts, voice)) || encouragement(lesson, state.encUsed, voice)
     },
     encUsed: state.encUsed + 1
   }
+}
+
+// ---- setlists (§9.4 lessons 42-43): polish pass and recital day ----
+
+/** Completed songs from the setlist's pool; the whole pool if too few are done. */
+export function setlistCandidates(lesson, lessons, completedIds) {
+  const from = lesson.from.map(id => lessons.find(l => l.id === id)).filter(Boolean)
+  const completed = from.filter(l => completedIds.has(l.id))
+  return completed.length >= lesson.pick ? completed : from
 }
 
 const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])

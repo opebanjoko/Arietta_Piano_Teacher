@@ -30,9 +30,38 @@ test('lesson ids are unique and lessons are complete', () => {
   assert.equal(new Set(ids).size, ids.length)
   for (const l of lessons) {
     assert.ok(l.title, l.id)
-    assert.ok(['drill', 'song'].includes(l.kind), l.id)
+    assert.ok(['drill', 'song', 'setlist'].includes(l.kind), l.id)
     assert.ok(l.done?.title && l.done?.line, `${l.id}: needs a completion celebration`)
   }
+})
+
+test('Course 2 completes the 43-lesson year (§9.4)', () => {
+  assert.equal(lessons.length, 43)
+  assert.equal(new Set(lessons.map(l => l.unitId)).size, 12)
+  assert.deepEqual(lessons.map(l => l.id).slice(21), [
+    'notes-cold', 'steps-and-skips', 'meet-g-position', 'ode-whole-theme',
+    'the-bass-clef', 'walking-down-the-bass', 'merrily-left-hand', 'echo-games',
+    'both-thumbs', 'drone-and-melody', 'au-clair-together', 'twinkle-together',
+    'meet-f-sharp', 'meet-b-flat', 'london-bridge-in-g',
+    'building-the-c-chord', 'c-and-g7', 'f-joins', 'saints-with-chords',
+    'louds-and-softs', 'putting-on-polish', 'recital-day'
+  ])
+  // units that need polyphony declare it (SR-AUD-10 stages a-c)
+  for (const l of lessons.filter(l => ['u9', 'u11'].includes(l.unitId))) {
+    assert.ok(l.poly, `${l.id}: Units 9/11 require polyphonic listening`)
+  }
+})
+
+test('setlist lessons pick from real, resolvable songs', () => {
+  for (const l of lessons.filter(l => l.kind === 'setlist')) {
+    assert.ok(l.pick >= 1, l.id)
+    assert.ok(l.from.length >= l.pick, l.id)
+    for (const id of l.from) {
+      const song = findLesson(id)
+      assert.ok(song && song.kind === 'song', `${l.id}: ${id} is not a song`)
+    }
+  }
+  assert.ok(findLesson('recital-day').recital)
 })
 
 test('Units 1-6 cover the 21-lesson v1 map in course order (§3.2)', () => {
@@ -55,9 +84,10 @@ test('every drill step is well-formed and every target carries a finger', () => 
   for (const l of lessons.filter(l => l.kind === 'drill')) {
     assert.ok(l.steps.length >= 1, l.id)
     for (const [i, s] of l.steps.entries()) {
-      assert.ok(['info', 'play', 'ear-choice', 'ear-echo', 'watch-me', 'rhythm-clap', 'reading-snippet'].includes(s.kind), `${l.id} step ${i}`)
+      assert.ok(['info', 'play', 'ear-choice', 'ear-echo', 'watch-me', 'rhythm-clap', 'reading-snippet', 'dynamics'].includes(s.kind), `${l.id} step ${i}`)
       if (s.kind !== 'reading-snippet') assert.ok(s.prompt, `${l.id} step ${i}`)
-      if (s.kind === 'play' || s.kind === 'ear-echo') {
+      if (s.kind === 'dynamics') assert.ok(['soft', 'loud'].includes(s.mode), `${l.id} step ${i}`)
+      if (s.kind === 'play' || s.kind === 'ear-echo' || s.kind === 'dynamics') {
         assert.ok(s.targets.length >= 1, `${l.id} step ${i}`)
         s.targets.forEach(t => checkTarget(t, `${l.id} step ${i}`))
         if (s.timed) assert.ok(l.tempo, `${l.id} step ${i}: timed steps need a lesson tempo`)

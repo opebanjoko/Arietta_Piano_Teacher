@@ -1534,15 +1534,102 @@ export const COURSE = {
           }
         }
       ]
+    },
+    {
+      id: 'u12',
+      title: 'Your First Recital',
+      tag: 'UNIT 12',
+      lessons: [
+        {
+          id: 'louds-and-softs',
+          title: 'Louds and softs',
+          kind: 'drill',
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Music breathes: sometimes it whispers, sometimes it roars.',
+              sub: 'Same keys, same fingers — the only difference is how gently or boldly they land.'
+            },
+            {
+              kind: 'dynamics',
+              mode: 'soft',
+              prompt: 'Play it like a mouse: C, then G, barely brushing the keys.',
+              sub: 'So quiet you almost wonder if it happened.',
+              targets: [n('C4', 1), n('G4', 5)]
+            },
+            {
+              kind: 'dynamics',
+              mode: 'loud',
+              prompt: 'Now a lion: the same two notes, ringing out.',
+              sub: 'Bold and warm — loud never means harsh.',
+              targets: [n('C4', 1), n('G4', 5)]
+            },
+            {
+              kind: 'dynamics',
+              mode: 'soft',
+              prompt: 'One more mouse: a whisper on E.',
+              sub: 'Tiny. Gentle. Just a breath of a note.',
+              targets: [n('E4', 3)]
+            },
+            {
+              kind: 'dynamics',
+              mode: 'loud',
+              prompt: 'And the lion answers on E.',
+              sub: 'Let it fill the room.',
+              targets: [n('E4', 3)]
+            }
+          ],
+          done: {
+            title: 'Louds and softs — yours.',
+            line: 'A mouse and a lion live in your hands now. That’s called playing with feeling.'
+          },
+          recap: {
+            summary: 'Today you played whispers and roars — dynamics, the musicians call it.',
+            seed: 'Next time you’ll pick three favourites and polish them till they shine.'
+          }
+        },
+        {
+          id: 'putting-on-polish',
+          title: 'Putting on polish',
+          kind: 'setlist',
+          pick: 3,
+          from: [
+            'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune', 'ode-in-time', 'hot-cross-buns',
+            'when-the-saints', 'twinkle', 'ode-whole-theme', 'merrily-left-hand',
+            'au-clair-together', 'twinkle-together', 'saints-with-chords'
+          ],
+          done: {
+            title: 'Polished.',
+            line: 'Three favourites, made more beautiful on purpose. That’s what practising is for.'
+          },
+          recap: {
+            summary: 'Today you gave three favourite pieces a make-it-beautiful pass.',
+            seed: 'Next time is the big one: recital day.'
+          }
+        },
+        {
+          id: 'recital-day',
+          title: 'Recital day',
+          kind: 'setlist',
+          pick: 3,
+          recital: true,
+          from: [
+            'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune', 'ode-in-time', 'hot-cross-buns',
+            'when-the-saints', 'twinkle', 'ode-whole-theme', 'merrily-left-hand',
+            'au-clair-together', 'twinkle-together', 'saints-with-chords'
+          ],
+          done: {
+            title: 'My first recital.',
+            line: 'Three pieces, played for real, start to finish. I kept that set for you — it’s yours forever.'
+          },
+          recap: {
+            summary: 'Today was recital day — three pieces, played all the way through, for real.',
+            seed: 'A whole year of music lives in your hands now. Keep playing.'
+          }
+        }
+      ]
     }
   ]
-}
-
-/** Home-screen teaser for what comes after v1 (REQUIREMENTS §9.4, PLAN Phase 6). */
-export const COMING_SOON = {
-  tag: 'COURSE 2',
-  title: 'Year One continues',
-  lessons: ['Reading the Map', 'The Left Hand Speaks', 'Hands Together', 'First Chords & Recital Day']
 }
 
 /**

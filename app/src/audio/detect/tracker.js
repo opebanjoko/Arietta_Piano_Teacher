@@ -37,7 +37,7 @@ export class NoteTracker {
       this.pending = null;
       const reattack = this.lastRms > 0 && frameRms > this.restrikeFactor * this.lastRms;
       this.lastRms = frameRms;
-      return reattack ? this.emit(midi, detection.clarity, timestampMs) : null;
+      return reattack ? this.emit(midi, detection.clarity, timestampMs, frameRms) : null;
     }
 
     if (!this.pending || this.pending.midi !== midi) {
@@ -49,11 +49,13 @@ export class NoteTracker {
     const { timestamp } = this.pending;
     this.pending = null;
     this.lastRms = frameRms;
-    return this.emit(midi, detection.clarity, timestamp);
+    return this.emit(midi, detection.clarity, timestamp, frameRms);
   }
 
-  emit(pitch, clarity, timestamp) {
+  emit(pitch, clarity, timestamp, frameRms) {
     this.active = pitch;
-    return { pitch, source: 'mic', confidence: Math.min(1, clarity), timestamp };
+    // coarse loudness for the dynamics lesson (§9.4): words-only downstream
+    const velocity = Math.min(1, frameRms * 8);
+    return { pitch, source: 'mic', confidence: Math.min(1, clarity), timestamp, velocity };
   }
 }

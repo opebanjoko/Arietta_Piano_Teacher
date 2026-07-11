@@ -12,7 +12,7 @@ export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContin
   const working = drill.phase !== 'done'
   const pulsing = lesson.tempo && (step.timed || step.kind === 'rhythm-clap')
 
-  const staffNotes = step.kind === 'play'
+  const staffNotes = step.kind === 'play' || step.kind === 'dynamics'
     ? step.targets.map((t, i) => ({
         ...t,
         status: i < drill.seqPos ? 'played'
@@ -42,7 +42,7 @@ export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContin
           </div>
           <div style="font-family:var(--serif);font-weight:600;font-size:28px;text-align:center;max-width:720px;text-wrap:pretty;line-height:1.2;">{step.prompt}</div>
           <div style="font-size:15px;color:var(--ink-soft);text-align:center;max-width:600px;">{step.sub}</div>
-          {step.kind === 'play' && (
+          {(step.kind === 'play' || step.kind === 'dynamics') && (
             <div style="margin-top:8px;">
               <Staff notes={staffNotes} clef={lesson.clef} flats={!!lesson.flats} plain={!!lesson.plain}
                 height={lesson.clef !== 'bass' && staffNotes.some(t => (t.notes ?? [t.note]).some(n => nameToMidi(n) < 60)) ? 196 : 166} />

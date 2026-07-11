@@ -18,7 +18,8 @@ const FLOATS = [
 ]
 
 export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accompanyAvailable,
-  onToggleAccompany, tempoChoice, onTempo, onHome, onHearIt, onReplay, onAcceptLoop, onDeclineLoop, doneAction }) {
+  onToggleAccompany, tempoChoice, onTempo, onHome, onHearIt, onReplay, onAcceptLoop, onDeclineLoop,
+  doneAction, recital = false }) {
   const v = VOICE.song
   const total = lesson.notes.length
   const ti = songTargetIndex(song)
@@ -34,9 +35,12 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
 
   const target = lesson.notes[Math.min(ti, total - 1)]
   const targetText = (target.notes ?? [target.note]).map(n => n.replace(/-?\d/, '')).join(' + ')
-  const lead = song.hint ?? song.say
-    ?? (song.done ? v.leadDone : fill(v.lead, { target: targetText }))
-  const cheer = song.pulse ?? ([...v.cheers].reverse().find(c => song.pos / total >= c.at)?.line ?? '')
+  // recital mode (§9.4 lesson 43): Arietta introduces the piece, then goes
+  // quiet and simply listens - no hints, no cheers, no interruptions
+  const lead = recital
+    ? (song.done ? v.leadDone : song.pos === 0 ? fill(VOICE.recital.intro, { title: lesson.title }) : ' ')
+    : song.hint ?? song.say ?? (song.done ? v.leadDone : fill(v.lead, { target: targetText }))
+  const cheer = recital ? '' : song.pulse ?? ([...v.cheers].reverse().find(c => song.pos / total >= c.at)?.line ?? '')
 
   return (
     <section style="flex:1;min-height:0;display:flex;flex-direction:column;position:relative;animation:fadeUp .4s ease;">
@@ -77,7 +81,7 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
         </div>
       </div>
 
-      {song.trouble && !overlay && (
+      {song.trouble && !overlay && !recital && (
         <div style="position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .4s ease;">
           <div style="background:var(--card);border:1px solid var(--line);border-radius:22px;padding:38px 54px;box-shadow:0 24px 60px rgba(80,60,20,.16);text-align:center;max-width:520px;">
             <div class="kicker">{VOICE.trouble.kicker}</div>
