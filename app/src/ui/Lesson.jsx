@@ -37,7 +37,7 @@ export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContin
             {lesson.steps.map((_, i) => {
               const doneDot = i < drill.stepIndex || (i === drill.stepIndex && drill.phase === 'stepdone')
               const bg = doneDot ? 'var(--sage)' : i === drill.stepIndex ? 'var(--accent-ink)' : 'var(--todo)'
-              return <div style={`width:8px;height:8px;border-radius:50%;background:${bg};transition:background .3s;`}></div>
+              return <div key={i} style={`width:8px;height:8px;border-radius:50%;background:${bg};transition:background .3s;`}></div>
             })}
           </div>
           <div style="font-family:var(--serif);font-weight:600;font-size:28px;text-align:center;max-width:720px;text-wrap:pretty;line-height:1.2;">{step.prompt}</div>
@@ -53,7 +53,7 @@ export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContin
             <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:14px;">
               <div style="display:flex;gap:9px;">
                 {Array.from({ length: step.pattern.length + 1 }, (_, i) => (
-                  <div style={`width:11px;height:11px;border-radius:50%;background:${i < drill.seqPos ? 'var(--sage)' : 'var(--todo)'};transition:background .25s;`}></div>
+                  <div key={i} style={`width:11px;height:11px;border-radius:50%;background:${i < drill.seqPos ? 'var(--sage)' : 'var(--todo)'};transition:background .25s;`}></div>
                 ))}
               </div>
               <button class="btn-quiet" onClick={onReplayPattern} disabled={earPlaying}>{earPlaying ? VOICE.rhythm.listen : VOICE.rhythm.again}</button>
@@ -67,8 +67,8 @@ export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContin
             <div style="display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:14px;">
               <div style="display:flex;gap:14px;">
                 {step.choices.map((c, i) => (
-                  <button class="btn-primary" onClick={() => onChoice(i)} disabled={earPlaying}
-                    style={`padding:15px 34px;font-size:17px;${earPlaying ? 'opacity:.5;cursor:default;' : ''}`}>{c.label}</button>
+                  <button key={i} class="btn-primary" onClick={() => onChoice(i)} disabled={earPlaying}
+                    style="padding:15px 34px;font-size:17px;">{c.label}</button>
                 ))}
               </div>
               <button class="btn-quiet" onClick={onReplayEar} disabled={earPlaying}>{earPlaying ? VOICE.ear.playing : VOICE.ear.again}</button>
@@ -78,13 +78,13 @@ export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContin
             <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:14px;">
               <div style="display:flex;gap:9px;">
                 {step.targets.map((_, i) => (
-                  <div style={`width:11px;height:11px;border-radius:50%;background:${i < drill.seqPos ? 'var(--sage)' : 'var(--todo)'};transition:background .25s;`}></div>
+                  <div key={i} style={`width:11px;height:11px;border-radius:50%;background:${i < drill.seqPos ? 'var(--sage)' : 'var(--todo)'};transition:background .25s;`}></div>
                 ))}
               </div>
               <button class="btn-quiet" onClick={onReplayEar} disabled={earPlaying}>{earPlaying ? VOICE.ear.playing : VOICE.ear.again}</button>
             </div>
           )}
-          <div style={`height:26px;font-size:16px;font-weight:700;text-align:center;color:${feedbackColor};transition:color .2s;`}>{feedback?.text || ' '}</div>
+          <div aria-live="polite" style={`height:26px;font-size:16px;font-weight:700;text-align:center;color:${feedbackColor};transition:color .2s;`}>{feedback?.text || ' '}</div>
         </div>
       )}
 

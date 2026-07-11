@@ -8,8 +8,7 @@ import { createMic } from '../audio/mic.js'
 import { letter } from '../core/notes.js'
 import { VOICE } from '../content/voice.js'
 import { ListeningPill } from './ListeningPill.jsx'
-
-const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
+import { fill } from './util.js'
 
 // slider 0..100 -> clarity threshold: Careful 0.95 .. Eager 0.82
 const toClarity = (v) => 0.95 - (v / 100) * 0.13
@@ -77,7 +76,7 @@ export function MicCheck({ initialClarity = 0.9, initialLowClarity, onDone }) {
   const v = VOICE.micCheck
   return (
     <div class="screen" style="align-items:center;justify-content:center;animation:fadeUp .4s ease;">
-      <div style="background:var(--card);border:1px solid var(--line);border-radius:22px;padding:44px 54px;box-shadow:0 10px 30px rgba(80,60,20,.07);text-align:center;max-width:600px;">
+      <div class="card-modal" style="padding:44px 54px;box-shadow:var(--shadow-card);max-width:600px;">
         {stage === 'intro' && <>
           <div class="kicker">{v.kicker}</div>
           <div style="font-family:var(--serif);font-weight:600;font-size:34px;margin-top:8px;">{v.title}</div>
@@ -101,7 +100,7 @@ export function MicCheck({ initialClarity = 0.9, initialLowClarity, onDone }) {
           <div style="margin-top:20px;font-size:13px;color:var(--ink-mid);text-wrap:pretty;">{v.sensitivity}</div>
           <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px;">
             <span style="font-size:12px;font-weight:700;color:var(--ink-mid);">{v.sensLow}</span>
-            <input type="range" min="0" max="100" value={sens}
+            <input type="range" min="0" max="100" value={sens} aria-label={v.sensitivity}
               onInput={e => { const val = Number(e.currentTarget.value); setSens(val); micRef.current?.setClarity(toClarity(val)) }}
               style="width:220px;accent-color:var(--accent-ink);" />
             <span style="font-size:12px;font-weight:700;color:var(--ink-mid);">{v.sensHigh}</span>

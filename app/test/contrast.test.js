@@ -22,8 +22,8 @@ function ratio(fg, bg) {
 }
 
 const BACKGROUNDS = ['paper', 'paper-top', 'card', 'card-warm']
-const PRIMARY = ['ink', 'ink-soft']          // body text: WCAG AA 4.5:1
-const SECONDARY = ['ink-mid', 'ink-mono', 'ink-faint'] // labels/kickers: 3:1
+const PRIMARY = ['ink', 'ink-soft', 'sage-ink', 'hint', 'cheer'] // body text: WCAG AA 4.5:1
+const SECONDARY = ['ink-mid', 'ink-mono', 'ink-faint', 'sage']   // labels/kickers/graphics: 3:1
 
 for (const fg of PRIMARY) {
   for (const bg of BACKGROUNDS) {

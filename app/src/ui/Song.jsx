@@ -6,8 +6,7 @@ import { Steadiness } from './Steadiness.jsx'
 import { songTargetIndex, TEMPO_CHOICES } from '../core/engine.js'
 import { steadinessPoints } from '../core/timing.js'
 import { VOICE } from '../content/voice.js'
-
-const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
+import { fill } from './util.js'
 
 const FLOATS = [
   { glyph: '♪', left: '16%', top: '64%', size: 26, dur: 2.8, delay: 0 },
@@ -75,15 +74,15 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
         </div>
         <Staff notes={staffNotes} width={1060} height={170}
           clef={lesson.clef} flats={!!lesson.flats} plain={!!lesson.plain} />
-        <div style="display:flex;align-items:center;justify-content:center;gap:26px;height:26px;">
+        <div aria-live="polite" style="display:flex;align-items:center;justify-content:center;gap:26px;height:26px;">
           <div style={`font-size:15.5px;font-weight:800;color:${song.hint ? 'var(--hint)' : 'var(--ink-soft)'};transition:color .2s;`}>{lead}</div>
-          <div style="font-family:var(--serif);font-style:italic;font-size:14.5px;color:#7A9070;">{cheer}</div>
+          <div style="font-family:var(--serif);font-style:italic;font-size:14.5px;color:var(--cheer);">{cheer}</div>
         </div>
       </div>
 
       {song.trouble && !overlay && !recital && (
-        <div style="position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .4s ease;">
-          <div style="background:var(--card);border:1px solid var(--line);border-radius:22px;padding:38px 54px;box-shadow:0 24px 60px rgba(80,60,20,.16);text-align:center;max-width:520px;">
+        <div class="overlay">
+          <div class="card-modal" style="max-width:520px;">
             <div class="kicker">{VOICE.trouble.kicker}</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:30px;margin-top:8px;">{VOICE.trouble.title}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{VOICE.trouble.line}</div>
@@ -96,11 +95,11 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
       )}
 
       {overlay && (
-        <div style="position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .5s ease;">
-          {FLOATS.map(f => (
-            <div style={`position:absolute;left:${f.left};top:${f.top};font-size:${f.size}px;color:var(--accent-ink);opacity:0;animation:floatNote ${f.dur}s ease-in-out ${f.delay}s infinite;`}>{f.glyph}</div>
+        <div class="overlay">
+          {FLOATS.map((f, i) => (
+            <div key={i} style={`position:absolute;left:${f.left};top:${f.top};font-size:${f.size}px;color:var(--accent-ink);opacity:0;animation:floatNote ${f.dur}s ease-in-out ${f.delay}s infinite;`}>{f.glyph}</div>
           ))}
-          <div style="position:relative;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:38px 54px;box-shadow:0 24px 60px rgba(80,60,20,.16);text-align:center;max-width:560px;">
+          <div class="card-modal" style="max-width:560px;">
             <div style="font-size:30px;color:var(--accent-ink);line-height:1;">♫</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:33px;margin-top:8px;">{lesson.done.title}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{lesson.done.line}</div>

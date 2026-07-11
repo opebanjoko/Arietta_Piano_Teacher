@@ -5,17 +5,9 @@
 import { useState, useRef, useEffect } from 'preact/hooks'
 import { VOICE } from '../content/voice.js'
 import { FamilySync } from './FamilySync.jsx'
-
-const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
+import { fill, pressable } from './util.js'
 
 export const ACCENTS = ['#B7813A', '#6F8C5A', '#5E7E9E', '#96608A']
-
-const pressable = (fn) => ({
-  role: 'button',
-  tabIndex: 0,
-  onClick: fn,
-  onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn() } }
-})
 
 function Card({ title, children }) {
   return (

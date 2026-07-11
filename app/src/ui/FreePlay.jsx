@@ -5,8 +5,7 @@
 import { PlayHeader } from './PlayHeader.jsx'
 import { letter } from '../core/notes.js'
 import { VOICE } from '../content/voice.js'
-
-const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
+import { fill } from './util.js'
 
 export function FreePlay({ heard, noteCount, pill, onHome }) {
   const v = VOICE.freePlay
@@ -21,7 +20,7 @@ export function FreePlay({ heard, noteCount, pill, onHome }) {
         <div style={`font-family:var(--serif);font-weight:600;font-size:${heard !== null ? 54 : 24}px;color:${heard !== null ? 'var(--accent-ink)' : 'var(--ink-soft)'};transition:all .2s ease;text-align:center;`}>
           {heard !== null ? fill(v.heard, { note: letter(heard) }) : v.idle}
         </div>
-        <div style="height:26px;font-family:var(--serif);font-style:italic;font-size:15.5px;color:#7A9070;text-align:center;">
+        <div aria-live="polite" style="height:26px;font-family:var(--serif);font-style:italic;font-size:15.5px;color:var(--cheer);text-align:center;">
           {spark ?? ''}
         </div>
       </div>

@@ -6,6 +6,7 @@
  * natural letter with an accidental glyph; `plain` fades the letter labels
  * (Unit 7: reading without training wheels).
  */
+import { Fragment } from 'preact'
 import { nameToMidi, letterIn, staffPos } from '../core/notes.js'
 
 const TOP = 46
@@ -52,7 +53,7 @@ export function Staff({ notes, clef = 'treble', flats = false, plain = false, wi
     <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:8px 26px 0;box-shadow:0 8px 24px rgba(80,60,20,.06);">
       <div style={`position:relative;width:${width}px;max-width:86vw;height:${height}px;`}>
         {[0, 1, 2, 3, 4].map(i => (
-          <div style={`position:absolute;left:0;right:0;height:1.6px;background:rgba(43,36,28,.5);top:${TOP + i * LINE_GAP}px;`}></div>
+          <div key={i} style={`position:absolute;left:0;right:0;height:1.6px;background:rgba(43,36,28,.5);top:${TOP + i * LINE_GAP}px;`}></div>
         ))}
         <div style={`position:absolute;left:14px;top:${clef === 'bass' ? 34 : 20}px;font-family:var(--music);font-size:${clef === 'bass' ? 62 : 78}px;line-height:1;color:var(--ink);`}>{clef === 'bass' ? '𝄢' : '𝄞'}</div>
         {notes.map((n, i) => {
@@ -65,19 +66,19 @@ export function Staff({ notes, clef = 'treble', flats = false, plain = false, wi
           const bottomY = noteY(ms[0].midi, clef, flats)
           const stemTop = topY - 58
           return (
-            <div style={`position:absolute;left:${x}%;top:0;width:0;height:0;`}>
+            <div key={i} style={`position:absolute;left:${x}%;top:0;width:0;height:0;`}>
               {[...new Set(ms.flatMap(m => ledgers(noteY(m.midi, clef, flats))))].map(ly => (
-                <div style={`position:absolute;left:-20px;top:${ly - 1}px;width:40px;height:1.8px;background:rgba(43,36,28,.55);`}></div>
+                <div key={ly} style={`position:absolute;left:-20px;top:${ly - 1}px;width:40px;height:1.8px;background:rgba(43,36,28,.55);`}></div>
               ))}
               <div style={`position:absolute;left:10px;top:${stemTop}px;width:2.4px;height:${bottomY - stemTop}px;border-radius:2px;background:${fill};transition:background .25s;`}></div>
               {ms.map(m => {
                 const y = noteY(m.midi, clef, flats)
                 const acc = staffPos(m.midi, flats).accidental
                 return (
-                  <>
+                  <Fragment key={m.midi}>
                     {acc && <div style={`position:absolute;left:-26px;top:${y - 12}px;font-family:var(--music);font-size:17px;color:${fill};`}>{ACCIDENTAL[acc]}</div>}
                     <div style={`position:absolute;left:-13px;top:${y - 9}px;width:26px;height:18px;border-radius:50%;background:${fill};transform:rotate(-16deg)${n.status === 'demo' ? ' scale(1.22)' : ''};animation:${n.status === 'current' ? 'glowPulse 1.8s ease-in-out infinite' : 'none'};transition:background .25s, transform .2s;`}></div>
-                  </>
+                  </Fragment>
                 )
               })}
               <div style={`position:absolute;left:0;top:${stemTop - 16 + (topY - TOP < 16 ? TOP - topY - 2 : 0)}px;transform:translateX(-50%);font-family:var(--mono);font-size:10px;font-weight:700;color:${label};background:${n.status === 'current' ? 'var(--accent-soft)' : 'transparent'};border-radius:8px;padding:1px 5px;`}>{fingers}</div>

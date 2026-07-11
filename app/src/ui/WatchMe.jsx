@@ -26,7 +26,7 @@ function Hand({ active: activeFingers, side }) {
       {fingers.map(f => {
         const active = activeFingers.includes(f)
         return (
-          <rect x={FINGER_X[f] - 6} y={66 - FINGER_H[f] - (active ? 10 : 0)}
+          <rect key={f} x={FINGER_X[f] - 6} y={66 - FINGER_H[f] - (active ? 10 : 0)}
             width="13" height={FINGER_H[f] + 18 + (active ? 10 : 0)} rx="6.5"
             fill={active ? 'var(--accent)' : 'var(--accent-soft)'}
             stroke={active ? 'var(--accent-ink)' : 'var(--line-strong)'} stroke-width="1.5"
@@ -76,14 +76,14 @@ export function WatchMe({ anim }) {
           {whites.map(m => {
             const pressed = pressedMidis.includes(m)
             return (
-              <div style={`flex:1;position:relative;border:1px solid #D9CBB4;border-top:none;border-radius:0 0 6px 6px;background:${pressed ? 'linear-gradient(180deg,#F1E3BE,#EAD9AC)' : 'linear-gradient(180deg,#FFFDF6,#F4ECD9)'};box-shadow:${pressed ? 'inset 0 3px 8px rgba(90,60,20,.28)' : 'inset 0 -5px 0 rgba(214,198,166,.5)'};display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;transition:background .15s ease;`}>
+              <div key={m} style={`flex:1;position:relative;border:1px solid #D9CBB4;border-top:none;border-radius:0 0 6px 6px;background:${pressed ? 'linear-gradient(180deg,#F1E3BE,#EAD9AC)' : 'linear-gradient(180deg,#FFFDF6,#F4ECD9)'};box-shadow:${pressed ? 'inset 0 3px 8px rgba(90,60,20,.28)' : 'inset 0 -5px 0 rgba(214,198,166,.5)'};display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;transition:background .15s ease;`}>
                 <div style={`font-weight:800;font-size:11px;color:${pressed ? 'var(--accent-ink)' : 'var(--ink-faint)'};`}>{letter(m)}</div>
               </div>
             )
           })}
         </div>
         {whites.slice(0, -1).map((m, i) => isBlack(m + 1) && (
-          <div style={`position:absolute;top:0;left:${(i + 1) * keyPct - keyPct * 0.28}%;width:${keyPct * 0.56}%;height:56px;background:linear-gradient(180deg,#423526,#241B12);border-radius:0 0 4px 4px;z-index:1;`}></div>
+          <div key={m} style={`position:absolute;top:0;left:${(i + 1) * keyPct - keyPct * 0.28}%;width:${keyPct * 0.56}%;height:56px;background:linear-gradient(180deg,#423526,#241B12);border-radius:0 0 4px 4px;z-index:1;`}></div>
         ))}
       </div>
       <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--ink-soft);">

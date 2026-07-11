@@ -40,6 +40,7 @@ import { FreePlay } from './ui/FreePlay.jsx'
 import { Settings, ACCENTS } from './ui/Settings.jsx'
 import { Setlist } from './ui/Setlist.jsx'
 import { Keyboard } from './ui/Keyboard.jsx'
+import { fill } from './ui/util.js'
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 
@@ -48,8 +49,6 @@ const SONG_DONE_PAUSE = 500
 const HEARD_HOLD = 1600
 const DEMO_STEP = 430
 const EAR_STEP = 650
-
-const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
 const session = {
   get: (k) => sessionStorage.getItem(`arietta:${k}`) === '1',
   set: (k) => sessionStorage.setItem(`arietta:${k}`, '1')

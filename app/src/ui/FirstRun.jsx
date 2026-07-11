@@ -13,7 +13,7 @@ export function FirstRun({ onCreate, onCancel = null }) {
 
   return (
     <div class="screen" style="align-items:center;justify-content:center;animation:fadeUp .4s ease;">
-      <div style="background:var(--card);border:1px solid var(--line);border-radius:22px;padding:44px 54px;box-shadow:0 10px 30px rgba(80,60,20,.07);text-align:center;max-width:560px;">
+      <div class="card-modal" style="padding:44px 54px;box-shadow:var(--shadow-card);max-width:560px;">
         <div class="kicker">{v.kicker}</div>
         <div style="font-family:var(--serif);font-weight:600;font-size:34px;margin-top:8px;">{isNew ? v.newProfileTitle : v.title}</div>
         <div style="font-size:15.5px;color:var(--ink-soft);margin-top:10px;text-wrap:pretty;">{isNew ? v.newProfileLine : v.line}</div>
@@ -22,10 +22,11 @@ export function FirstRun({ onCreate, onCancel = null }) {
             value={name}
             onInput={e => setName(e.currentTarget.value)}
             placeholder={v.placeholder}
+            aria-label={v.placeholder}
             autofocus
             style="font-family:var(--sans);font-size:17px;font-weight:700;color:var(--ink);background:var(--card-warm);border:1.5px solid var(--btn-border);border-radius:999px;padding:12px 22px;width:200px;text-align:center;"
           />
-          <button type="submit" class="btn-primary" disabled={!name.trim()} style={name.trim() ? '' : 'opacity:.5;cursor:default;'}>
+          <button type="submit" class="btn-primary" disabled={!name.trim()}>
             {isNew ? v.newProfileButton : v.button}
           </button>
         </form>

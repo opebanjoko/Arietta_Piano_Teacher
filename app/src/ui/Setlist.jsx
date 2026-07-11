@@ -38,9 +38,7 @@ export function Setlist({ lesson, candidates, pill, onBegin, onHome }) {
             )
           })}
         </div>
-        <button class="btn-primary" disabled={picked.length < lesson.pick}
-          onClick={() => onBegin(picked)}
-          style={picked.length < lesson.pick ? 'opacity:.45;cursor:default;' : ''}>
+        <button class="btn-primary" disabled={picked.length < lesson.pick} onClick={() => onBegin(picked)}>
           {v.begin}
         </button>
       </div>

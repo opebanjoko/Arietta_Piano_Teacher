@@ -1,8 +1,8 @@
 /** Family sync settings card (SR-STO-04, SR-BCK-02 interim code+PIN). */
 import { useState } from 'preact/hooks'
 import { VOICE } from '../content/voice.js'
+import { fill } from './util.js'
 
-const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
 const PIN_RE = /^\d{4,8}$/
 
 export function FamilySync({ sync, onCreate, onJoin, onLeave, onDeleteEverywhere, onSyncNow }) {

@@ -1,8 +1,7 @@
 /** Home / course map (SR-UI-01): greeting, next best action, path, songs, profiles. */
 import { COURSE, allLessons } from '../content/course.js'
 import { VOICE } from '../content/voice.js'
-
-const fill = (t, vals) => t.replace(/\{(\w+)\}/g, (_, k) => vals[k])
+import { fill, pressable } from './util.js'
 
 function greeting(name) {
   const h = new Date().getHours()
@@ -33,12 +32,11 @@ function Hero({ states, onOpen }) {
   }
 }
 
-const pressable = (fn) => ({
-  role: 'button',
-  tabIndex: 0,
-  onClick: fn,
-  onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn() } }
-})
+/** One letter normally; two when another player's name starts the same (touch has no tooltips). */
+function monogram(p, profiles) {
+  const clash = profiles.some(o => o.id !== p.id && o.name[0].toUpperCase() === p.name[0].toUpperCase())
+  return clash ? p.name[0].toUpperCase() + (p.name[1] ?? '').toLowerCase() : p.name[0].toUpperCase()
+}
 
 function unitStatus(unit, states, prevUnit) {
   const v = VOICE.home
@@ -60,12 +58,12 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
 
   return (
     <section style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;animation:fadeUp .4s ease;position:relative;">
-      <header style="display:flex;align-items:center;justify-content:space-between;padding:20px 36px 6px;">
+      <header style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;padding:20px 36px 6px;">
         <div style="display:flex;align-items:baseline;gap:12px;">
           <div style="font-family:var(--serif);font-weight:700;font-size:25px;letter-spacing:.2px;">Arietta</div>
           <div style="font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--ink-mid);">a gentle piano teacher</div>
         </div>
-        <div style="display:flex;align-items:center;gap:22px;">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:12px 22px;">
           <button class="btn-quiet hit" onClick={onFreePlay} style="padding:8px 16px;">{v.freePlay}</button>
           <button class="btn-quiet hit" onClick={onSettings} style="padding:8px 16px;">{v.settings}</button>
           <div style="display:flex;align-items:center;gap:8px;">
@@ -82,9 +80,9 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
               {profiles.map(p => {
                 const active = p.id === activeId
                 return (
-                  <div key={p.id} {...pressable(() => onSelectProfile(p.id))} class="hit" title={p.name} aria-pressed={active}
+                  <div key={p.id} {...pressable(() => onSelectProfile(p.id))} class="hit" title={p.name} aria-label={p.name} aria-pressed={active}
                     style={`width:37px;height:37px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14.5px;cursor:pointer;background:${active ? 'var(--accent-ink)' : '#F1E8D5'};color:${active ? '#FFF9EC' : 'var(--ink-mono)'};box-shadow:${active ? '0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent)' : 'inset 0 0 0 1px var(--line-soft)'};transition:all .2s ease;`}>
-                    {p.name[0].toUpperCase()}
+                    {monogram(p, profiles)}
                   </div>
                 )
               })}
@@ -108,9 +106,9 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
       )}
 
       <div style="padding:18px 36px 4px;">
-        <div style="position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:30px 38px 32px;box-shadow:0 10px 30px rgba(80,60,20,.07);">
+        <div style="position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:30px 38px 32px;box-shadow:var(--shadow-card);">
           {[26, 39, 52, 65, 78].map(b => (
-            <div style={`position:absolute;left:0;right:0;bottom:${b}px;height:1.4px;background:rgba(43,36,28,.1);`}></div>
+            <div key={b} style={`position:absolute;left:0;right:0;bottom:${b}px;height:1.4px;background:rgba(43,36,28,.1);`}></div>
           ))}
           <div style="position:absolute;right:46px;top:-38px;font-family:var(--music);font-size:200px;line-height:1;color:var(--ink);opacity:.06;pointer-events:none;">𝄞</div>
           <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;">
@@ -118,20 +116,20 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
             <div style="font-family:var(--serif);font-weight:600;font-size:38px;line-height:1.12;">{greeting(profileName)}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);max-width:560px;text-wrap:pretty;">{hero.line}</div>
             {recital && (
-              <div style="font-family:var(--serif);font-style:italic;font-size:14px;color:#7A9070;">
+              <div style="font-family:var(--serif);font-style:italic;font-size:14px;color:var(--cheer);">
                 {fill(VOICE.recital.keepsake, { pieces: recital.pieces.join(', ') })}
               </div>
             )}
             <div style="display:flex;align-items:center;gap:18px;margin-top:16px;">
               <button class="btn-primary" onClick={hero.btnGo}>{hero.btnText}</button>
-              {hero.altText && <a href="#" onClick={e => { e.preventDefault(); hero.altGo() }} style="font-size:14px;font-weight:700;">{hero.altText}</a>}
+              {hero.altText && <button class="btn-link" onClick={hero.altGo}>{hero.altText}</button>}
             </div>
           </div>
         </div>
       </div>
 
       <div class="kicker" style="padding:22px 40px 10px;">{v.pathTitle}</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:0 36px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;padding:0 36px;">
         {COURSE.units.map((u, ui) => {
           const st = unitStatus(u, states, COURSE.units[ui - 1] ?? u)
           const openable = st.active || st.complete
@@ -146,7 +144,7 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
                   const s = states.get(l.id)
                   const dot = s === 'complete' ? 'var(--sage)' : s === 'next' ? 'var(--accent-ink)' : 'var(--todo)'
                   return (
-                    <div style="display:flex;align-items:center;gap:8px;">
+                    <div key={l.id} style="display:flex;align-items:center;gap:8px;">
                       <div style={`width:7px;height:7px;border-radius:50%;background:${dot};`}></div>
                       <div style={`font-size:13px;color:var(--ink-soft);${s === 'coming-soon' ? 'opacity:.6;' : ''}`}>{l.title}</div>
                       {s === 'coming-soon' && <div style="font-family:var(--mono);font-size:8.5px;letter-spacing:1px;color:var(--ink-faint);border:1px dashed var(--line-soft);border-radius:5px;padding:1px 5px;">SOON</div>}
@@ -161,7 +159,7 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
       </div>
 
       <div class="kicker" style="padding:24px 40px 10px;">{v.songsTitle}</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:0 36px 30px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;padding:0 36px 30px;">
         {songs.map(song => {
           const s = states.get(song.id)
           const playable = s !== 'locked'
@@ -180,8 +178,8 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
       </div>
 
       {warmup && (
-        <div style="position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .4s ease;">
-          <div style="background:var(--card);border:1px solid var(--line);border-radius:22px;padding:38px 54px;box-shadow:0 24px 60px rgba(80,60,20,.16);text-align:center;max-width:520px;">
+        <div class="overlay">
+          <div class="card-modal" style="max-width:520px;">
             <div class="kicker">{VOICE.warmup.kicker}</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:30px;margin-top:8px;">{VOICE.warmup.title}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{fill(VOICE.warmup.line, { title: warmup.lesson.title })}</div>
@@ -194,8 +192,8 @@ export function Home({ profileName, profiles, activeId, states, micEnabled, reca
       )}
 
       {practice && !warmup && (
-        <div style="position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:rgba(250,245,234,.78);backdrop-filter:blur(7px);animation:fadeUp .4s ease;">
-          <div style="background:var(--card);border:1px solid var(--line);border-radius:22px;padding:38px 54px;box-shadow:0 24px 60px rgba(80,60,20,.16);text-align:center;max-width:560px;">
+        <div class="overlay">
+          <div class="card-modal" style="max-width:560px;">
             <div class="kicker">{VOICE.practice.kicker}</div>
             <div style="font-family:var(--serif);font-weight:600;font-size:30px;margin-top:8px;">{VOICE.practice.title}</div>
             <div style="font-size:15.5px;color:var(--ink-soft);margin-top:8px;text-wrap:pretty;">{fill(VOICE.practice.line, { titles: practice.session.entries.map(e => e.title).join(', ') })}</div>

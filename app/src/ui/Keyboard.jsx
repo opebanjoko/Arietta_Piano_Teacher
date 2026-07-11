@@ -43,7 +43,7 @@ export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = fal
   const w = 100 / whites.length
 
   return (
-    <section style="flex:none;padding:2px 28px 18px;">
+    <section style="flex:none;padding:2px 28px max(18px, env(safe-area-inset-bottom));">
       <div style="border:1px solid var(--line-soft);border-radius:16px;overflow:hidden;background:var(--card-warm);box-shadow:0 10px 30px rgba(80,60,20,.09);">
         <div style="display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px dashed var(--line-soft);">
           <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.4px;color:var(--ink-mono);border:1px dashed #B9A87F;border-radius:6px;padding:3px 8px;background:var(--card);">MIC&nbsp;SIMULATOR</div>

@@ -16,7 +16,7 @@ export function ListeningPill({ text, active = false }) {
           <div style={`width:3px;height:${b.h}px;border-radius:2px;background:var(--accent);transform-origin:center;animation:eq ${b.dur}s ease-in-out ${b.delay}s infinite;`}></div>
         ))}
       </div>
-      <div style={`font-size:13px;font-weight:800;min-width:92px;color:${active ? 'var(--accent-ink)' : 'var(--ink-soft)'};transition:color .2s;`}>{text}</div>
+      <div role="status" aria-live="polite" style={`font-size:13px;font-weight:800;min-width:92px;color:${active ? 'var(--accent-ink)' : 'var(--ink-soft)'};transition:color .2s;`}>{text}</div>
     </div>
   )
 }
