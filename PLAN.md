@@ -153,6 +153,28 @@ more than two more units of content would.
   Units 9/11; native-shell decision + MIDI adapter (SR-MID-01/02); Course 2 content
   (Units 7–12, lessons 22–43) authored by BO across the whole phase.
 - Polyphony gets its own mini-spike gate, like Phase 0 — same fail-fast discipline.
+- **Build status (2026-07-11): complete; piano-hardware checks open.** The
+  polyphony mini-spike ran first and passed synthetically (winner: FFT
+  harmonic sieve + delta-spectrum onset tracking; detection 0.95–1.00, false
+  0.0/10 min, latency 109–120 ms mean across dyads, held-bass with octave
+  masking, triads, hands-together and a 60 s noise soak —
+  `spike/POLY_GATE_RUNBOOK.md` records metrics, tuning and the recorded
+  constraint: no simultaneous unison/octave doubles between hands). Production
+  polyphony ships behind the worker seam (`NoteSetEvent`, per-lesson `poly`
+  flag, higher acceptance bar, set-aware self-hearing gate) with chord gather
+  grading source-agnostic across mic sets, taps and MIDI. Lesson 21 is open
+  and browser-verified. The Web MIDI adapter prefers a connected piano over
+  the mic (SR-MID-01); the native shell is decided (Capacitor when needed,
+  not built — `docs/decisions/2026-07-10-native-shell.md`). Course 2 is
+  complete as pure data: Units 7–12, lessons 22–43, with bass-clef staff,
+  accidentals + black-target hints, label-fade reading, dynamics (words
+  only), and setlist/recital mode saving "My first recital" to the profile.
+  Full 43-lesson tap E2E green in four scenarios plus a NoteSetEvent run;
+  recital flow browser-verified end to end with the backend unreachable.
+  Open (release blockers alongside the Phase 0 runbook): the poly gate's
+  human piano validation (P1–P3 in `spike/POLY_GATE_RUNBOOK.md`), MIDI on
+  real hardware, dynamics loudness thresholds at a real piano, and BO voice
+  review of all new student-facing strings.
 
 ## 3. Workstream ownership
 

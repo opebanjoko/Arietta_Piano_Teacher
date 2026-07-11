@@ -1,7 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { yin, mpm } from '../src/audio/detect/pitch.js'
-import { pianoTone } from './signals.js'
+import { PolyTracker } from '../src/audio/detect/poly.js'
+import { pianoTone, mix } from './signals.js'
 
 const SR = 48000
 const FRAME = 2048
@@ -27,3 +28,18 @@ for (const [name, detect] of [['mpm', mpm], ['yin', yin]]) {
     assert.ok(avg < BUDGET_MS, `${name} avg ${avg.toFixed(2)}ms exceeds ${BUDGET_MS}ms (frame is ${FRAME_MS.toFixed(1)}ms of audio)`)
   })
 }
+
+test(`poly tracker stays under ${BUDGET_MS}ms per fed frame (SR-AUD-10 latency budget)`, () => {
+  const chord = mix(
+    pianoTone(261.63, SR, FRAME + HOP * (N - 1), 0.3),
+    pianoTone(329.63, SR, FRAME + HOP * (N - 1), 0.3),
+    pianoTone(392.0, SR, FRAME + HOP * (N - 1), 0.3)
+  )
+  const chordFrames = Array.from({ length: N }, (_, i) => chord.subarray(i * HOP, i * HOP + FRAME))
+  const tracker = new PolyTracker({ sampleRate: SR })
+  for (const f of chordFrames.slice(0, 20)) tracker.feed(f, 0)
+  const t0 = performance.now()
+  for (const [i, f] of chordFrames.entries()) tracker.feed(f, i * (HOP / SR) * 1000)
+  const avg = (performance.now() - t0) / chordFrames.length
+  assert.ok(avg < BUDGET_MS, `poly avg ${avg.toFixed(2)}ms exceeds ${BUDGET_MS}ms per frame`)
+})

@@ -38,9 +38,19 @@ the repo and running `railway up --service <name> --ci` from there
 
 ## Layout
 
-    src/core/      NoteEvent model, note math, course engine (pure logic)
+    src/core/      NoteEvent/NoteSetEvent model, note math, course engine (pure logic)
     src/content/   course data (units, lessons, songs) and voice strings (pure data)
     src/store/     IndexedDB progress store, versioned schema
-    src/audio/     Web Audio synth voice
+    src/audio/     mic pipeline (mono + poly detectors), MIDI adapter, synth voice
     src/ui/        Preact components and screens
     test/          node --test suites (no browser needed)
+
+## Input paths (Phase 6)
+
+Chord lessons (`poly: true` in course data) switch the detection worker to a
+delta-spectrum multi-F0 sieve emitting `NoteSetEvent`s; mono lessons keep the
+v1 pitch trackers untouched. A connected Web MIDI piano is preferred over the
+mic automatically (SR-MID-01) — absent Web MIDI (iPad Safari) costs nothing.
+The tap keyboard grades chords too: members gather across taps inside the
+engine's chord window. Polyphony's human piano validation is tracked in
+`spike/POLY_GATE_RUNBOOK.md` and blocks release, Phase 0 style.
