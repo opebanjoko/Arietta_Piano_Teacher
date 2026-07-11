@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arietta gate runner</title>
+<style>
+  :root {
+    --bg: #F1E9D8; --card: #FDF8EC; --ink: #2B241C; --ink-soft: #6B5F4E;
+    --line: #E3D7BC; --accent: #B7813A; --accent-ink: #8C5E22;
+    --good: #6F8C5A; --bad: #A4453C;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 16px/1.45 Georgia, 'Times New Roman', serif; min-height: 100vh; }
+  main { max-width: 820px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .kicker { font: 700 10.5px/1 monospace; letter-spacing: 1.6px; color: var(--ink-soft); text-transform: uppercase; margin: 18px 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; margin: 12px 0; box-shadow: 0 8px 24px rgba(80,60,20,.06); }
+  .prompt { font-size: 21px; margin: 6px 0 10px; text-wrap: pretty; }
+  .heard { font-size: 18px; margin: 10px 0; }
+  .ok { color: var(--good); font-weight: 700; }
+  .no { color: var(--bad); font-weight: 700; }
+  button { font: 700 15px Georgia, serif; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 12px 22px; cursor: pointer; margin: 4px 8px 4px 0; min-height: 44px; }
+  button.quiet { background: transparent; color: var(--accent-ink); border: 1px solid var(--line); }
+  button:disabled { opacity: .45; cursor: default; }
+  input, select { font: 15px Georgia, serif; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; margin: 4px 8px 4px 0; }
+  .muted { color: var(--ink-soft); font-size: 14px; }
+  .big { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+  td, th { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<main id="app"><div class="card">Loading…</div></main>
+<script type="module" src="./gate.js"></script>
+</body>
+</html>
