@@ -85,3 +85,23 @@ export function polyCorpusTasks({ piano, distance }) {
 
 /** Noise soak (G2/P3): count note events with nobody playing. */
 export const SOAK = { minutes: 10, passMax: 1 };
+
+/**
+ * Recorded noise clips (GATE_RUNBOOK Session 1, feeds corpus G2 scoring).
+ * Nobody touches the piano during these; quiet is a pass.
+ */
+export function noiseTasks() {
+  const mk = (what, recordSec, say) => ({
+    id: `noise-${what}`,
+    mode: 'noise',
+    prompt: say,
+    recordSec,
+    filename: `noise-${what}-1.wav`
+  });
+  return [
+    mk('speech', 120, 'Two people talk right next to the piano for two minutes. Nobody touches the keys.'),
+    mk('tv', 120, 'TV audible from the next room for two minutes. Nobody touches the keys.'),
+    mk('household', 120, 'Normal household clatter for two minutes: kitchen sounds, footsteps, a door. No piano.'),
+    mk('singing', 60, 'Someone hums or sings near the iPad for one minute — pitched non-piano sound is the hardest case. No piano.')
+  ];
+}

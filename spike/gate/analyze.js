@@ -11,6 +11,14 @@ const sameSet = (a, b) => a.length === b.length && a.every((m, i) => m === b[i])
 const sorted = (a) => [...a].sort((x, y) => x - y);
 
 export function analyzeTake(samples, sampleRate, task) {
+  if (task.mode === 'noise') {
+    const { events } = processBuffer(samples, sampleRate, {});
+    const heard = events.length
+      ? `${events.length} note event${events.length === 1 ? '' : 's'}: ${events.map(e => midiName(e.pitch)).join(', ')}`
+      : 'nothing at all';
+    return { heard, match: events.length === 0, events };
+  }
+
   if (task.mode === 'mono') {
     const { events } = processBuffer(samples, sampleRate, {});
     const pitches = [...new Set(events.map(e => e.pitch))];

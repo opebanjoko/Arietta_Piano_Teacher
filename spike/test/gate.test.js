@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { encodeWav } from '../gate/wav.js';
 import { encodeZip, crc32 } from '../gate/zip.js';
-import { monoCorpusTasks, polyCorpusTasks, SOAK } from '../gate/tasks.js';
+import { monoCorpusTasks, polyCorpusTasks, noiseTasks, SOAK } from '../gate/tasks.js';
 import { analyzeTake } from '../gate/analyze.js';
 import { renderPerformance } from '../lib/pipeline.js';
 
@@ -73,6 +73,25 @@ test('poly corpus stays in range with distinct pitch classes per chord', () => {
   }
   assert.ok(tasks.some(t => t.expectSeq && t.recordSec >= 8));
   assert.ok(SOAK.minutes === 10 && SOAK.passMax === 1);
+});
+
+test('noise takes follow the runbook clip list and filenames', () => {
+  const tasks = noiseTasks();
+  assert.deepEqual(tasks.map(t => t.id), ['noise-speech', 'noise-tv', 'noise-household', 'noise-singing']);
+  for (const t of tasks) {
+    assert.equal(t.mode, 'noise');
+    assert.ok(t.recordSec >= 60, t.id);
+    assert.ok(/^noise-[a-z]+-1\.wav$/.test(t.filename), t.filename);
+  }
+});
+
+test('analyzeTake: noise clips match when quiet, report events when not', () => {
+  const noise = { mode: 'noise' };
+  const quiet = analyzeTake(new Float32Array(48000), 48000, noise);
+  assert.equal(quiet.match, true);
+  const loud = analyzeTake(take([{ midi: 60, atMs: 300, durMs: 900 }]), 48000, noise);
+  assert.equal(loud.match, false);
+  assert.ok(loud.heard.includes('C4'));
 });
 
 test('analyzeTake: mono right, mono wrong, silence', () => {

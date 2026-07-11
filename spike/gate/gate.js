@@ -6,7 +6,7 @@
  * Attestations persist in localStorage; WAV bytes live only in this page
  * session (each take also downloads the moment it is attested).
  */
-import { monoCorpusTasks, polyCorpusTasks, midiName, SOAK } from './tasks.js';
+import { monoCorpusTasks, polyCorpusTasks, noiseTasks, midiName, SOAK } from './tasks.js';
 import { analyzeTake } from './analyze.js';
 import { createCapture } from './capture.js';
 import { encodeWav } from './wav.js';
@@ -21,6 +21,7 @@ const state = load() ?? {
   sessions: {
     mono: { attested: [], humanErrors: 0 },
     poly: { attested: [], humanErrors: 0 },
+    noise: { attested: [], humanErrors: 0 },
     live: { right: 0, wrong: 0 },
     soak: { events: 0, seconds: 0, mode: 'mono' }
   }
@@ -29,6 +30,8 @@ const state = load() ?? {
 function load() {
   try { return JSON.parse(localStorage.getItem(STORE)); } catch { return null; }
 }
+// sessions added after a state was saved start empty instead of crashing
+state.sessions.noise ??= { attested: [], humanErrors: 0 };
 function save() {
   localStorage.setItem(STORE, JSON.stringify(state));
 }
@@ -68,20 +71,21 @@ function renderSetup() {
       <label>Piano <input id="piano" value="${esc(c.piano)}" size="12"></label>
       <label>iPad distance
         <select id="distance">
-          ${['near', 'stand', 'far'].map(d => `<option ${d === c.distance ? 'selected' : ''}>${d}</option>`).join('')}
+          ${['stand', '1m', 'far'].map(d => `<option ${d === c.distance ? 'selected' : ''}>${d}</option>`).join('')}
         </select>
       </label>
     </div>
     <div class="kicker">Sessions</div>
     <div class="card">
       <div class="row">
-        <button id="go-mono">Mono corpus (${state.sessions.mono.attested.length}/37)</button>
-        <button id="go-poly">Chord corpus (${state.sessions.poly.attested.length}/10)</button>
+        <button id="go-mono">Mono corpus (${doneCount('mono')}/37)</button>
+        <button id="go-poly">Chord corpus (${doneCount('poly')}/10)</button>
+        <button id="go-noise">Noise takes (${doneCount('noise')}/4)</button>
         <button id="go-live">Live check</button>
         <button id="go-soak">Noise soak</button>
         <button id="go-results" class="quiet">Results and exports</button>
       </div>
-      <div class="muted" style="margin-top:10px;">Mono corpus is the Phase 0 chromatic run (C3–C6). Chord corpus is POLY_GATE_RUNBOOK Session P1. Run each once per piano and distance.</div>
+      <div class="muted" style="margin-top:10px;">Mono corpus is the Phase 0 chromatic run (C3–C6). Chord corpus is POLY_GATE_RUNBOOK Session P1. Noise takes are the recorded clips that feed corpus G2 scoring. Follow spike/GATE_DAY.md for the full afternoon.</div>
     </div>
     <div class="card row">
       <button id="reset" class="quiet">Start over (clears attestations)</button>
@@ -94,6 +98,7 @@ function renderSetup() {
   };
   on('go-mono', () => { readCfg(); renderCorpus('mono'); });
   on('go-poly', () => { readCfg(); renderCorpus('poly'); });
+  on('go-noise', () => { readCfg(); renderCorpus('noise'); });
   on('go-live', () => { readCfg(); renderLive(); });
   on('go-soak', () => { readCfg(); renderSoak(); });
   on('go-results', () => { readCfg(); renderResults(); });
@@ -107,21 +112,35 @@ function renderSetup() {
 // ---- corpus (mono and poly share the flow) ----
 
 function corpusTasks(kind) {
+  if (kind === 'noise') return noiseTasks();
   return kind === 'mono'
     ? monoCorpusTasks({ instrument: state.config.piano, distance: state.config.distance })
     : polyCorpusTasks({ piano: state.config.piano, distance: state.config.distance });
 }
 
+const CORPUS_TITLES = {
+  mono: 'Mono corpus · Phase 0',
+  poly: 'Chord corpus · P1',
+  noise: 'Noise takes · feeds G2'
+};
+
+// progress is per filename, so a new piano or distance starts a fresh pass
+// while completed passes stay on record
+function doneCount(kind) {
+  const done = new Set(state.sessions[kind].attested.map(a => a.filename));
+  return corpusTasks(kind).filter(t => done.has(t.filename)).length;
+}
+
 function renderCorpus(kind) {
   const tasks = corpusTasks(kind);
   const session = state.sessions[kind];
-  const doneIds = new Set(session.attested.map(a => a.id));
-  const task = tasks.find(t => !doneIds.has(t.id));
-  if (!task) return renderResults(`${kind === 'mono' ? 'Mono' : 'Chord'} corpus complete — every take attested.`);
+  const done = new Set(session.attested.map(a => a.filename));
+  const task = tasks.find(t => !done.has(t.filename));
+  if (!task) return renderResults(`${CORPUS_TITLES[kind]} complete for this piano and distance — every take attested.`);
 
-  const k = session.attested.length + 1;
+  const k = doneCount(kind) + 1;
   app.innerHTML = `
-    <div class="kicker">${kind === 'mono' ? 'Mono corpus · Phase 0' : 'Chord corpus · P1'} — take ${k} of ${tasks.length}</div>
+    <div class="kicker">${CORPUS_TITLES[kind]} — take ${k} of ${tasks.length}</div>
     <div class="card">
       <div class="prompt">${esc(task.prompt)}</div>
       <div class="muted">Recording lasts ${task.recordSec}s and starts the moment you press the button. File: ${esc(task.filename)}</div>
@@ -151,25 +170,30 @@ function renderCorpus(kind) {
     const samples = await cap.record(task.recordSec);
     clearInterval(tick);
     const verdict = analyzeTake(samples, cap.sampleRate, task);
+    const noise = task.mode === 'noise';
+    const verdictLine = noise
+      ? `<span class="${verdict.match ? 'ok' : 'no'}">${verdict.match ? 'quiet, as it should be' : 'those count against G2 — save it anyway, that is the point'}</span>`
+      : `<span class="${verdict.match ? 'ok' : 'no'}">${verdict.match ? 'that matches' : 'that does not match what I asked for'}</span>`;
     stage.innerHTML = `
-      <div class="heard">I heard: <b>${esc(verdict.heard)}</b> —
-        <span class="${verdict.match ? 'ok' : 'no'}">${verdict.match ? 'that matches' : 'that does not match what I asked for'}</span></div>
+      <div class="heard">I heard: <b>${esc(verdict.heard)}</b> — ${verdictLine}</div>
       <div class="row">
-        <button id="yes">Yes — that is what I played</button>
+        <button id="yes">${noise ? 'Save this take' : 'Yes — that is what I played'}</button>
         <button id="retake" class="quiet">Retake</button>
-        <button id="human" class="quiet">I played something else</button>
+        ${noise ? '' : '<button id="human" class="quiet">I played something else</button>'}
       </div>
-      <div class="muted" style="margin-top:8px;">"Yes" saves the take (right or wrong — a miss counts against the detector) and downloads the WAV. "I played something else" is a human slip: nothing is counted, just retake.</div>`;
+      <div class="muted" style="margin-top:8px;">${noise
+        ? 'The clip saves whatever was heard — noise clips exist to catch false positives honestly.'
+        : '"Yes" saves the take (right or wrong — a miss counts against the detector) and downloads the WAV. "I played something else" is a human slip: nothing is counted, just retake.'}</div>`;
     on('yes', () => {
       const bytes = encodeWav(samples, cap.sampleRate);
       wavs.set(task.filename, bytes);
       download(task.filename, bytes, 'audio/wav');
-      session.attested.push({ id: task.id, filename: task.filename, match: verdict.match, heard: verdict.heard });
+      session.attested.push({ id: task.id, filename: task.filename, match: verdict.match, heard: verdict.heard, events: verdict.events.length });
       save();
       renderCorpus(kind);
     });
     on('retake', () => renderCorpus(kind));
-    on('human', () => { session.humanErrors += 1; save(); renderCorpus(kind); });
+    if (!noise) on('human', () => { session.humanErrors += 1; save(); renderCorpus(kind); });
   });
 }
 
@@ -275,6 +299,13 @@ function tally(kind) {
   return { total: a.length, good, pct: a.length ? Math.round((good / a.length) * 100) : null };
 }
 
+function noiseStanding() {
+  const n = state.sessions.noise.attested;
+  if (!n.length) return 'not started';
+  const events = n.reduce((s, a) => s + (a.events ?? 0), 0);
+  return `${n.length}/4 clips recorded, ${events} note event${events === 1 ? '' : 's'} heard`;
+}
+
 function recordMarkdown() {
   const m = tally('mono');
   const p = tally('poly');
@@ -289,6 +320,7 @@ Config: piano=${state.config.piano}, distance=${state.config.distance}
 |---|---|
 | Phase 0 mono corpus, attested (G1) | ${line(m)} |
 | Poly corpus P1, attested (G1) | ${line(p)} |
+| Noise takes (feeds corpus G2) | ${noiseStanding()} |
 | Live check | ${liveTotal ? `${live.right}/${liveTotal} right` : 'not run'} |
 | Noise soak (${soak.mode}) (G2) | ${soak.seconds ? `${soak.events} false events in ${Math.round(soak.seconds / 60)} min (pass: <= ${SOAK.passMax}/10 min)` : 'not run'} |
 
@@ -310,6 +342,7 @@ function renderResults(note = '') {
         <tr><th>Session</th><th>Standing</th></tr>
         <tr><td>Mono corpus (37 takes)</td><td>${m.total ? `${m.good}/${m.total} correct (${m.pct}%)` : 'not started'}</td></tr>
         <tr><td>Chord corpus (10 takes)</td><td>${p.total ? `${p.good}/${p.total} correct (${p.pct}%)` : 'not started'}</td></tr>
+        <tr><td>Noise takes (4 clips)</td><td>${noiseStanding()}</td></tr>
         <tr><td>Live check</td><td>${live.right + live.wrong ? `${live.right} right, ${live.wrong} wrong` : 'not run'}</td></tr>
         <tr><td>Noise soak</td><td>${soak.seconds ? `${soak.events} false events in ${Math.round(soak.seconds / 60)} min (${soak.mode})` : 'not run'}</td></tr>
       </table>

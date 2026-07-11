@@ -38,28 +38,31 @@ below is complete.
 
 ## Human validation sessions (deferred, release blocker)
 
-**Easiest path: the gate app** at
-https://gate-production-3bd2.up.railway.app/gate/ (throwaway Railway service
-`gate`). It walks every take below: prompts what to play, records, shows what
-the detector heard (same math as CI scoring), you attest, and the WAV
-downloads itself with the corpus filename. The results screen exports the
-gate-record rows and a zip of the session's takes. Sessions P1–P3 map to its
-Chord corpus, offline scoring, and Live check + Noise soak screens.
+> **When you are ready to run this: start with `GATE_DAY.md`** — one
+> checklist covering this gate AND the Phase 0 gate in a single guided
+> afternoon, driven by the gate app
+> (https://gate-production-3bd2.up.railway.app/gate/). The app walks every
+> take below (prompt, record, verdict via the CI scoring math, attest, WAV
+> auto-named and downloaded) and exports the record rows for the table
+> here. This file stays the authority for the gate rules and the record.
 
 Prereqs: the gate app (or the harness corpus tab, `GATE_RUNBOOK.md`
 Session 0), both team pianos, iPad on the music stand.
 
 ### Session P1 - record the chord corpus
-Record at 3 distances (near/stand/far), both pianos, quiet room:
+Record at up to 3 distances (stand/1m/far — stand matters most), both
+pianos, quiet room:
 - C, F, G major root-position triads at C3, C4 roots (left and right hand).
 - Dyads: C4+E4, E4+G4, C3+E3, C3 held + C4/D4/E4/F4/G4 melody.
 - Stage c: C3-E3-G3 held under D4-F4-A4-F4-D4 melody.
 Name files `poly-<piano>-<chord>-<distance>-<take>.wav`.
 
 ### Session P2 - offline scoring
-Run each recording through `processBufferPoly` (sieve) and score with
-`scoreSets` against the scripted truth. Record per-suite metrics in the gate
-record table below.
+Drop the recorded `poly-*.wav` files into `spike/corpus/` (gitignored) and
+run `cd app && npm test` — the `recorded poly corpus meets the gate` suite
+scores them through the production PolyTracker and prints detection rate
+and false events per 10 minutes. Record the numbers in the gate record
+table below.
 
 ### Session P3 - live chords + noise soak
 - Live: play lesson 21 and one Unit 9 song on the real piano; every chord

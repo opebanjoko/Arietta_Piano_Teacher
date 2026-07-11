@@ -5,6 +5,12 @@
 > before v1 release: the `release-gate` CI workflow fails any `v*` tag until
 > the Decision section below is filled in.
 
+> **When you are ready to run this: start with `GATE_DAY.md`** — one
+> checklist covering this gate AND the polyphony gate in a single guided
+> afternoon, driven by the gate app
+> (https://gate-production-3bd2.up.railway.app/gate/). This file stays the
+> authority for pass criteria and holds the record tables you fill in.
+
 A step-by-step guide for one person to complete the listening-spike gate
 (PLAN.md Phase 0). Four sessions, roughly an afternoon in total. Fill in the
 result tables at the bottom as you go — they become the gate record.

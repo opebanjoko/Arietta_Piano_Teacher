@@ -20,7 +20,7 @@ const HOP = 1024
 
 function listWavs() {
   try {
-    return readdirSync(CORPUS_DIR).filter(f => f.endsWith('.wav'))
+    return readdirSync(CORPUS_DIR).filter(f => f.endsWith('.wav') && !f.startsWith('poly-'))
   } catch {
     return []
   }
@@ -34,11 +34,15 @@ function decodeWav(buf) {
   return { sampleRate, samples }
 }
 
-/** filename: <instrument>-<note>-<distance>-<take>.wav or noise-<what>-<take>.wav */
+/**
+ * filename: <instrument>-<note>-<distance>-<take>.wav or noise-<what>-<take>.wav
+ * The gate app spells sharps filesystem-safe (Cs4 for C#4); accept both.
+ * poly-*.wav clips belong to poly-corpus.test.js, not this scorer.
+ */
 function expectedMidi(name) {
   const seg = name.split('-')
   if (seg[0] === 'noise') return null
-  return nameToMidi(seg[1])
+  return nameToMidi(seg[1].replace(/^([A-G])s(\d)$/, '$1#$2'))
 }
 
 function runClip(detect, { sampleRate, samples }) {
