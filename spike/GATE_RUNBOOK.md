@@ -57,6 +57,14 @@ Checks before you start:
 
 ## Session 1 — Record the corpus (BO hat, 60–90 min)
 
+> **Easier path: the gate app** at
+> https://gate-production-3bd2.up.railway.app/gate/ (throwaway Railway
+> service `gate`) walks the whole chromatic run take by take: it prompts the
+> note, records, shows what the detector heard, you attest, and the WAV
+> downloads itself already named for the scorer. Its Live check and Noise
+> soak screens cover Session 3 the same way. Session 4 (strike-to-pixel,
+> camera) stays manual either way.
+
 Open the **Record** tab on the iPad. Each clip is one strike of one key that
 rings into silence (the default seconds per clip is fine). Clips download as
 WAV files — on iPad they land in Files → Downloads; AirDrop the batch to your

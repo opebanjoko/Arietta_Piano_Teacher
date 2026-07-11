@@ -38,8 +38,16 @@ below is complete.
 
 ## Human validation sessions (deferred, release blocker)
 
-Prereqs: the harness corpus tab (see `GATE_RUNBOOK.md` Session 0), both team
-pianos, iPad on the music stand.
+**Easiest path: the gate app** at
+https://gate-production-3bd2.up.railway.app/gate/ (throwaway Railway service
+`gate`). It walks every take below: prompts what to play, records, shows what
+the detector heard (same math as CI scoring), you attest, and the WAV
+downloads itself with the corpus filename. The results screen exports the
+gate-record rows and a zip of the session's takes. Sessions P1–P3 map to its
+Chord corpus, offline scoring, and Live check + Noise soak screens.
+
+Prereqs: the gate app (or the harness corpus tab, `GATE_RUNBOOK.md`
+Session 0), both team pianos, iPad on the music stand.
 
 ### Session P1 - record the chord corpus
 Record at 3 distances (near/stand/far), both pianos, quiet room:
