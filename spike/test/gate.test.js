@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import { encodeWav } from '../gate/wav.js';
 import { encodeZip, crc32 } from '../gate/zip.js';
 import { monoCorpusTasks, polyCorpusTasks, SOAK } from '../gate/tasks.js';
+import { analyzeTake } from '../gate/analyze.js';
+import { renderPerformance } from '../lib/pipeline.js';
+
+const take = (notes) => renderPerformance(notes, 48000).samples;
 
 test('encodeWav writes a valid 16-bit mono RIFF header and PCM data', () => {
   const samples = Float32Array.from([0, 0.5, -0.5, 1, -1]);
@@ -69,4 +73,35 @@ test('poly corpus stays in range with distinct pitch classes per chord', () => {
   }
   assert.ok(tasks.some(t => t.expectSeq && t.recordSec >= 8));
   assert.ok(SOAK.minutes === 10 && SOAK.passMax === 1);
+});
+
+test('analyzeTake: mono right, mono wrong, silence', () => {
+  const mono = { mode: 'mono', expect: { midi: 60 } };
+  const right = analyzeTake(take([{ midi: 60, atMs: 300, durMs: 900 }]), 48000, mono);
+  assert.equal(right.match, true);
+  assert.equal(right.heard, 'C4');
+  const wrong = analyzeTake(take([{ midi: 62, atMs: 300, durMs: 900 }]), 48000, mono);
+  assert.equal(wrong.match, false);
+  assert.ok(wrong.heard.includes('D4'));
+  const quiet = analyzeTake(new Float32Array(48000), 48000, mono);
+  assert.equal(quiet.match, false);
+  assert.ok(quiet.heard.length > 0, 'silence still gets a human-readable heard text');
+});
+
+test('analyzeTake: chord set and onset sequence', () => {
+  const chord = { mode: 'poly', expect: { midis: [60, 64, 67] } };
+  const cv = analyzeTake(take([{ midis: [60, 64, 67], atMs: 300, durMs: 1200 }]), 48000, chord);
+  assert.equal(cv.match, true);
+  assert.ok(cv.heard.includes('C4') && cv.heard.includes('G4'));
+  const missing = analyzeTake(take([{ midis: [60, 64], atMs: 300, durMs: 1200 }]), 48000, chord);
+  assert.equal(missing.match, false);
+
+  const seq = { mode: 'poly', expectSeq: [[48], [60], [62]] };
+  const sv = analyzeTake(take([
+    { midis: [48], atMs: 200, durMs: 3200 },
+    { midis: [60], atMs: 1100, durMs: 600 },
+    { midis: [62], atMs: 2000, durMs: 600 }
+  ]), 48000, seq);
+  assert.equal(sv.match, true, sv.heard);
+  assert.ok(sv.heard.includes('|'));
 });
