@@ -33,6 +33,16 @@ Open http://localhost:5199 with Playwright. No mic in automation: choose
   overlay ("tricky part for everyone") → accept → corner twice → rejoin.
 
 ## Gotchas
+- A profile with the mic already enabled auto-listens when a lesson starts,
+  and Chromium's fake audio device is a ~440 Hz tone the detector hears as
+  wrong "A"s — misses pile up and hints/trouble offers fire by themselves.
+  Before opening a lesson on such a profile, evaluate
+  `navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException('denied','NotAllowedError'))`
+  — the tap keyboard still drives everything.
+- To observe synth output (backing, harmony), patch
+  `OscillatorNode.prototype.start` to log `frequency.value` + timestamp:
+  1750 Hz bursts are metronome clicks; each melody/harmony voice logs its
+  pitch and its 2× overtone partner.
 - sessionStorage flags (`arietta:warmupOffered`, `arietta:recapShown`) make
   the warm-up/recap fire once per tab session; reload keeps them.
 - The listening pill says "Listening…" even in tap-key mode.
