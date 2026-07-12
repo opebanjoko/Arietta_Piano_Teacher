@@ -25,8 +25,9 @@ test('novelty: new clef relabels; known material labels nothing', () => {
   const fs = noveltyFor(findLesson('meet-f-sharp'))
   assert.ok(fs.has(nameToMidi('F#4')))
   assert.ok(!fs.has(nameToMidi('G4')))
-  // London Bridge (after meet-f-sharp) is pure notation
-  assert.equal(noveltyFor(findLesson('london-bridge-in-g')).size, 0)
+  // London Bridge's only genuinely-new note is E5 — everything else is pure notation
+  const lb = noveltyFor(findLesson('london-bridge-in-g'))
+  assert.deepEqual([...lb], [nameToMidi('E5')])
 })
 
 test('reading warm-ups read cold; practice inherits its source unit', () => {
@@ -47,7 +48,7 @@ test('letterMidis maps the three-way setting', () => {
   assert.equal(letterMidis(undefined, u3), 'all')
   assert.equal(letterMidis('auto', u3), 'all')
   const set = letterMidis(undefined, u10)
-  assert.ok(set instanceof Set && set.size === 0)
+  assert.ok(set instanceof Set && set.size === 1 && set.has(nameToMidi('E5')))
   // free play (no lesson): letters on unless always-off
   assert.equal(letterMidis(undefined, null), 'all')
   assert.equal(letterMidis(false, null), 'none')
