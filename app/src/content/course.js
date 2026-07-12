@@ -371,6 +371,31 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today you played Au clair de la lune, calm as moonlight.',
+            seed: 'Next time: a song from home — under the orange tree.'
+          }
+        },
+        {
+          id: 'labe-igi-orombo',
+          title: 'L’ábẹ́ igi ọ́rọ́mbọ́',
+          kind: 'song',
+          card: 'Under the orange tree — a song from home, played where everyone gathers. Gentle steps, C up to G.',
+          notes: [
+            // L'á-bẹ́ i-gi ọ́-rọ́m-bọ́
+            n('C4', 1), n('E4', 3), n('E4', 3), n('D4', 2), n('E4', 3), n('G4', 5), n('G4', 5),
+            // ní-bẹ̀ la gbé ń ṣe-ré wa
+            n('G4', 5), n('F4', 4), n('F4', 4), n('E4', 3), n('E4', 3), n('D4', 2), n('D4', 2),
+            // i-nú wa dùn a-ra wa yá
+            n('C4', 1), n('E4', 3), n('E4', 3), n('D4', 2), n('E4', 3), n('F4', 4), n('E4', 3), n('D4', 2),
+            // l'á-bẹ́ i-gi ọ́-rọ́m-bọ́
+            n('E4', 3), n('D4', 2), n('D4', 2), n('C4', 1), n('D4', 2), n('C4', 1), n('C4', 1)
+          ],
+          harmony: { 0: ['C3', 'G3'], 7: ['G3', 'B3'], 14: ['F3', 'A3'], 22: ['C3', 'G3'] },
+          done: {
+            title: 'You played L’ábẹ́ igi ọ́rọ́mbọ́.',
+            line: 'Under the orange tree, start to finish — a song from home under your own fingers.'
+          },
+          recap: {
+            summary: 'Today you played L’ábẹ́ igi ọ́rọ́mbọ́ — the orange-tree song, note by note.',
             seed: 'Next time the metronome starts ticking — rhythm joins in.'
           }
         }
@@ -510,6 +535,35 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today Hot Cross Buns came out of the oven perfectly steady.',
+            seed: 'Next time your shoes make music: bàtà mi a dún kò kò kà.'
+          }
+        },
+        {
+          id: 'bata-mi',
+          title: 'Bàtà mi a dún kòkòkà',
+          kind: 'song',
+          tempo: 72,
+          card: 'The school-shoes song — ko ko ka! Every step lands right on the pulse.',
+          notes: [
+            // Bà-tà mi a dún kò-kò-kà
+            n('E4', 3, 1), n('E4', 3, 1), n('E4', 3, 1), n('D4', 2, 1),
+            n('C4', 1, 0.5), n('C4', 1, 0.5), n('E4', 3, 2),
+            // Bà-tà mi a dún kò-kò-kà
+            n('E4', 3, 1), n('E4', 3, 1), n('E4', 3, 1), n('D4', 2, 1),
+            n('C4', 1, 0.5), n('C4', 1, 0.5), n('E4', 3, 2),
+            // tí m bá kà-wé mi
+            n('G4', 5, 1), n('G4', 5, 1), n('F4', 4, 1), n('F4', 4, 1), n('E4', 3, 1), n('E4', 3, 1),
+            // bà-tà mi a dún kò-kò-kà
+            n('E4', 3, 1), n('E4', 3, 1), n('E4', 3, 1), n('D4', 2, 1),
+            n('C4', 1, 0.5), n('C4', 1, 0.5), n('C4', 1, 2)
+          ],
+          harmony: { 0: ['C3', 'G3'], 7: ['C3', 'G3'], 14: ['G3', 'B3'], 20: ['C3', 'G3'] },
+          done: {
+            title: 'You played Bàtà mi a dún kòkòkà.',
+            line: 'Ko ko ka, right in time — those shoes have never sounded smarter.'
+          },
+          recap: {
+            summary: 'Today your shoes made music — Bàtà mi, steady with the pulse.',
             seed: 'Next time the hand stretches — two brand-new notes are waiting.'
           }
         }
@@ -655,6 +709,35 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today Twinkle twinkled — the whole song, with A shining at the top.',
+            seed: 'Next time: Ìṣẹ́ Olúwa — a song from home that flows like water.'
+          }
+        },
+        {
+          id: 'ise-oluwa',
+          title: 'Ìṣẹ́ Olúwa',
+          kind: 'song',
+          card: 'The work of the Lord cannot be destroyed — a flowing song from home, patient and sure, reaching up to your new note A.',
+          notes: [
+            // Ì-ṣẹ́ O-lú-wa
+            n('E4', 3), n('G4', 5), n('G4', 5), n('A4', 5), n('G4', 5),
+            // kò lè bà-jẹ́ o
+            n('G4', 5), n('E4', 3), n('D4', 2), n('E4', 3), n('C4', 1),
+            // Ì-ṣẹ́ O-lú-wa
+            n('E4', 3), n('G4', 5), n('G4', 5), n('A4', 5), n('G4', 5),
+            // kò lè bà-jẹ́ o
+            n('G4', 5), n('E4', 3), n('D4', 2), n('E4', 3), n('C4', 1),
+            // kò lè bà-jẹ́ o
+            n('G4', 5), n('G4', 5), n('E4', 3), n('D4', 2), n('C4', 1),
+            // kò lè bà-jẹ́ o
+            n('D4', 2), n('E4', 3), n('D4', 2), n('C4', 1), n('C4', 1)
+          ],
+          harmony: { 0: ['C3', 'G3'], 5: ['F3', 'A3'], 10: ['C3', 'G3'], 15: ['F3', 'A3'], 20: ['G3', 'B3'], 25: ['C3', 'G3'] },
+          done: {
+            title: 'You played Ìṣẹ́ Olúwa.',
+            line: 'Kò lè bàjẹ́ — sung by your hands now, patient and true.'
+          },
+          recap: {
+            summary: 'Today you played Ìṣẹ́ Olúwa — flowing, patient, unbreakable.',
             seed: 'Next time your left hand finally gets to say hello.'
           }
         }
@@ -812,6 +895,32 @@ export const COURSE = {
           },
           recap: {
             summary: 'You played the C chord — C, E and G, together.',
+            seed: 'Next time the hands hold a little conversation: Tòlótòló.'
+          }
+        },
+        {
+          id: 'tolotolo',
+          title: 'Tòlótòló',
+          kind: 'song',
+          low: true,
+          card: 'The turkey song — the right hand calls, the left hand answers, just like taking turns.',
+          notes: [
+            // call (right hand): Tò-ló-tò-ló ì-wo ló j'ẹ-ran
+            n('G4', 5), n('E4', 3), n('G4', 5), n('E4', 3), n('D4', 2), n('E4', 3), n('D4', 2), n('C4', 1),
+            // answer (left hand, an octave below)
+            n('G3', 1), n('E3', 3), n('G3', 1), n('E3', 3), n('D3', 4), n('E3', 3), n('D3', 4), n('C3', 5),
+            // short call
+            n('E4', 3), n('E4', 3), n('D4', 2), n('C4', 1),
+            // short answer
+            n('E3', 3), n('E3', 3), n('D3', 4), n('C3', 5)
+          ],
+          harmony: { 0: ['C3', 'G3'], 8: ['C3', 'G3'], 16: ['G3', 'B3'], 20: ['C3', 'G3'] },
+          done: {
+            title: 'You played Tòlótòló.',
+            line: 'Call and answer, both hands in the conversation — the turkey has nothing on you.'
+          },
+          recap: {
+            summary: 'Today Tòlótòló strutted in — one hand calling, the other answering.',
             seed: 'Course 2 is open now: new maps to read, and the left hand finds its voice.'
           }
         }
