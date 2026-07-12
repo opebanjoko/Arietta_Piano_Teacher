@@ -13,7 +13,7 @@ import { VOICE } from './content/voice.js'
 import {
   startDrill, drillNote, drillContinue, drillChoice, drillClap, drillAdvance,
   startSong, songNote, acceptLoop, declineLoop, songTargetIndex, lessonStates, pickWarmup,
-  atTempo, harmonyByBeat, setlistCandidates
+  atTempo, harmonyByBeat, beatOfNote, setlistCandidates
 } from './core/engine.js'
 import { letter, nameToMidi } from './core/notes.js'
 import { letterMidis } from './core/wean.js'
@@ -235,6 +235,7 @@ export function App() {
     setBeat(b => !b)
     const backing = backingRef.current
     if (!backing || !accompanyRef.current) return
+    if (songRef.current?.loop) return // mini-loop underway: hold the backing at the corner (SR-CRS-07)
     backing.count += 1
     const h = backing.byBeat.get(backing.count)
     if (h) playHarmony(h.map(nameToMidi), { gain: 0.55 })
@@ -543,6 +544,10 @@ export function App() {
       const prev = songRef.current
       const next = songNote(prev, lesson, ev)
       commitSong(next)
+      // Mini-loop over: rejoin the backing where the student rejoined the song (SR-OUT-05).
+      if (prev.loop && !next.loop && backingRef.current) {
+        backingRef.current.count = beatOfNote(lesson, next.pos) - 1
+      }
       // "Play with me": a soft voicing under each correct melody note (SR-OUT-03).
       // Timed pieces get grid-based backing instead (SR-OUT-05, the pulse effect above).
       const advanced = next.pos > prev.pos ||

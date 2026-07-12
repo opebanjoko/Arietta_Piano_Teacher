@@ -435,6 +435,16 @@ export function lessonStates(lessons, completedIds) {
  * index to the beat where that note starts, so playback can follow the
  * metronome grid instead of reacting to the student.
  */
+/**
+ * Beat on which the note at `index` starts. Lets the in-time backing resync
+ * to the student after a mini-loop detour (SR-OUT-05 meets SR-CRS-07).
+ */
+export function beatOfNote(lesson, index) {
+  let beat = 0
+  for (let i = 0; i < index && i < lesson.notes.length; i++) beat += lesson.notes[i].beats ?? 1
+  return Math.round(beat)
+}
+
 export function harmonyByBeat(lesson) {
   const map = new Map()
   if (!lesson.harmony) return map

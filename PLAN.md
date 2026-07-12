@@ -144,9 +144,11 @@ more than two more units of content would.
   both ways, delete-everywhere with quiet 401 auto-unlink); `web` redeployed
   with the api URL baked in and a live create/delete verified from the
   production origin. Open: low-note calibration on the beta pianos;
-  backing-track behavior during trouble-spot loops (known desync, verify at
-  the piano); reset-while-linked semantics (a linked reset is re-merged back
-  on the next pull — product decision deferred).
+  reset-while-linked semantics (a linked reset is re-merged back
+  on the next pull — product decision deferred). Fixed (2026-07-12): the
+  backing-track desync during trouble-spot loops — the backing now holds
+  while a mini-loop runs and resyncs to the rejoin note's beat
+  (`beatOfNote`); confirm feel at the piano alongside the other checks.
 
 ### Phase 6 — Polyphony, MIDI, Course 2 (wave 2) — sized at Phase 5 exit
 - Scope: polyphonic detection stages a→c (SR-AUD-10, SR-EVT-03) unlocking lesson 21 and

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { startDrill, drillNote, startSong, songNote, TEMPO_CHOICES, atTempo, harmonyByBeat } from '../src/core/engine.js'
+import { startDrill, drillNote, startSong, songNote, TEMPO_CHOICES, atTempo, harmonyByBeat, beatOfNote } from '../src/core/engine.js'
 import { steadinessPoints } from '../src/core/timing.js'
 import { nameToMidi } from '../src/core/notes.js'
 import { noteEvent } from '../src/core/events.js'
@@ -172,4 +172,19 @@ test('harmonyByBeat places voicings at cumulative note beats', () => {
   assert.deepEqual(m.get(3), ['G3', 'B3']) // note 2 starts after beats 1+2
   assert.deepEqual(m.get(4), ['C3', 'G3'])
   assert.equal(harmonyByBeat({ notes: [] }).size, 0)
+})
+
+test('beatOfNote gives the start beat of each note, for backing resync after a mini-loop', () => {
+  const lesson = {
+    tempo: 90,
+    notes: [{ note: 'C4', beats: 1 }, { note: 'D4', beats: 2 }, { note: 'E4' }, { note: 'F4', beats: 1 }]
+  }
+  assert.equal(beatOfNote(lesson, 0), 0)
+  assert.equal(beatOfNote(lesson, 1), 1)
+  assert.equal(beatOfNote(lesson, 2), 3) // after 1 + 2 beats
+  assert.equal(beatOfNote(lesson, 3), 4) // beat-less note defaults to 1
+  // agrees with harmonyByBeat's placement for every note
+  const withHarmony = { ...lesson, harmony: { 0: ['C3'], 2: ['G3'], 3: ['C3'] } }
+  const m = harmonyByBeat(withHarmony)
+  for (const i of [0, 2, 3]) assert.deepEqual(m.get(beatOfNote(lesson, i)), withHarmony.harmony[i])
 })
