@@ -7,3 +7,4 @@ app/dev-dist/
 /*.jpeg
 *.pem
 spike/corpus/
+.serena/
