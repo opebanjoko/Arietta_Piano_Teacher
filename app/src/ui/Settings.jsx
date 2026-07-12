@@ -27,7 +27,7 @@ export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
   const copiedTO = useRef(null)
   useEffect(() => () => clearTimeout(copiedTO.current), [])
   const accent = settings.accent ?? ACCENTS[0]
-  const labels = settings.labels !== false
+  const labels = settings.labels ?? 'auto'
 
   return (
     <section style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;animation:fadeUp .4s ease;">
@@ -57,9 +57,17 @@ export function Settings({ profile, micEnabled, settings, glimpse, diagInfo,
               ))}
             </div>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
             <div style="font-size:14px;color:var(--ink-soft);">{v.labelsLine}</div>
-            <button class="btn-quiet" onClick={() => onLabels(!labels)}>{labels ? v.labelsOn : v.labelsOff}</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" role="group" aria-label={v.labelsLine}>
+              {[['auto', v.labelsAuto], [true, v.labelsOn], [false, v.labelsOff]].map(([val, text]) => (
+                <button key={String(val)} class="btn-quiet" onClick={() => onLabels(val)}
+                  aria-pressed={labels === val}
+                  style={labels === val ? 'background:var(--accent-soft);border-color:var(--line-strong);' : ''}>
+                  {text}
+                </button>
+              ))}
+            </div>
           </div>
         </Card>
 
