@@ -35,10 +35,10 @@ test('lesson ids are unique and lessons are complete', () => {
   }
 })
 
-test('Course 2 completes the 43-lesson year (§9.4)', () => {
-  assert.equal(lessons.length, 43)
+test('the course completes the 47-lesson year (§9.4 + Yoruba tunes)', () => {
+  assert.equal(lessons.length, 47)
   assert.equal(new Set(lessons.map(l => l.unitId)).size, 12)
-  assert.deepEqual(lessons.map(l => l.id).slice(21), [
+  assert.deepEqual(lessons.map(l => l.id).slice(25), [
     'notes-cold', 'steps-and-skips', 'meet-g-position', 'ode-whole-theme',
     'the-bass-clef', 'walking-down-the-bass', 'merrily-left-hand', 'echo-games',
     'both-thumbs', 'drone-and-melody', 'au-clair-together', 'twinkle-together',
@@ -64,14 +64,14 @@ test('setlist lessons pick from real, resolvable songs', () => {
   assert.ok(findLesson('recital-day').recital)
 })
 
-test('Units 1-6 cover the 21-lesson v1 map in course order (§3.2)', () => {
-  assert.deepEqual(lessons.map(l => l.id).slice(0, 21), [
+test('Units 1-6 cover the v1 map plus Yoruba tunes in course order (§3.2)', () => {
+  assert.deepEqual(lessons.map(l => l.id).slice(0, 25), [
     'meet-the-keyboard', 'finding-middle-c', 'hands-say-hello',
     'middle-c-again', 'meet-d', 'meet-e', 'meet-f-and-g',
-    'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune',
-    'long-and-short', 'playing-with-the-pulse', 'ode-in-time', 'hot-cross-buns',
-    'meet-a-and-b', 'up-to-high-c', 'when-the-saints', 'twinkle',
-    'left-hand-home', 'taking-turns', 'your-first-chord'
+    'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune', 'labe-igi-orombo',
+    'long-and-short', 'playing-with-the-pulse', 'ode-in-time', 'hot-cross-buns', 'bata-mi',
+    'meet-a-and-b', 'up-to-high-c', 'when-the-saints', 'twinkle', 'ise-oluwa',
+    'left-hand-home', 'taking-turns', 'your-first-chord', 'tolotolo'
   ])
   // lesson 21 opened with the polyphony gate (SR-AUD-10, spike/POLY_GATE_RUNBOOK.md)
   const chord = findLesson('your-first-chord')
@@ -163,5 +163,24 @@ test('voice pools are populated and repeat-safe', () => {
   }
   for (const k of ['kicker', 'title', 'line', 'accept', 'skip', 'next', 'done']) {
     assert.ok(VOICE.practice[k], `practice.${k}`)
+  }
+})
+
+test('Yoruba tunes stay within the notes their unit has taught', () => {
+  const TAUGHT = {
+    'labe-igi-orombo': ['C4', 'D4', 'E4', 'F4', 'G4'],
+    'bata-mi': ['C4', 'D4', 'E4', 'F4', 'G4'],
+    'ise-oluwa': ['C4', 'D4', 'E4', 'F4', 'G4', 'A4'],
+    'tolotolo': ['C3', 'D3', 'E3', 'F3', 'G3', 'C4', 'D4', 'E4', 'F4', 'G4']
+  }
+  for (const [id, allowed] of Object.entries(TAUGHT)) {
+    const song = findLesson(id)
+    assert.ok(song?.kind === 'song', `${id} exists as a song`)
+    const midis = new Set(allowed.map(nameToMidi))
+    for (const t of song.notes) {
+      for (const name of (t.notes ?? [t.note])) {
+        assert.ok(midis.has(nameToMidi(name)), `${id}: ${name} not taught by its unit`)
+      }
+    }
   }
 })
