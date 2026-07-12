@@ -176,6 +176,12 @@ existing lessons (the 21-lesson map is unchanged):
   onward, short reading snippets (3–5 notes assembled from learned material) appear in
   warm-ups and occasional steps: "Here's a little tune nobody has ever played before."
   Always sight-read cold, always short, always celebrated like a discovery.
+- **Letters wean as reading grows.** Note letters (staff labels and tap-key labels)
+  are training wheels: fully on through Unit 6, then from Unit 7 a letter appears
+  only where a (clef, pitch) pair is genuinely new — in the lesson that introduces
+  it. Two misses on the current note reveal its letter until it is played. Derived
+  from course order, never hand-tagged. A per-player setting overrides: auto
+  (default), always shown, hidden.
 
 ## 4. Listening (the microphone) — v1
 
@@ -351,7 +357,7 @@ Picks up after lesson 21. Same lesson anatomy (§3.3), same voice, linear unlock
 continues. Where a unit needs §9.1 or §9.3 capability, it says so.
 
 **Unit 7 — Reading the Map** *(staff reading stands on its own)*
-22. *Notes without training wheels* — letter labels fade on known notes; read C–G cold.
+22. *Notes without training wheels* — letter labels fade on known notes; read C–G cold; the derived letter-weaning rule takes over from here.
 23. *Steps and skips* — reading by interval: neighbors move by step, gaps skip a line.
 24. *Meet G position* — the hand moves: G4–D5; familiar shapes in a new place.
 25. *Ode to Joy — the whole theme* — both phrases, read from a cleaner score.
