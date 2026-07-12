@@ -217,3 +217,18 @@ test('five wrong-pin deletes lock the household out; other household unaffected'
   assert.equal((await s.call('DELETE', '/households', { pin: '4321' }, other.token)).status, 204)
   await s.close()
 })
+
+test('push is atomic: a failing doc rolls back the tombstones in the same request', async () => {
+  const s = await start()
+  const { token } = await (await s.call('POST', '/households', { pin: '4321' })).json()
+  const doc = (id) => ({ profileId: id, name: id, createdAt: 1, lessons: {}, settings: {}, updatedAt: 5 })
+  await s.call('PUT', '/sync', { docs: [doc('p1'), doc('p2')], deleted: [] }, token)
+  // profileId as an object cannot bind as a SQL parameter — the request dies
+  // after the tombstone statement; atomicity must roll that tombstone back
+  const res = await s.call('PUT', '/sync', { docs: [{ profileId: { bad: true }, updatedAt: 9 }], deleted: ['p1'] }, token)
+  assert.equal(res.ok, false)
+  const state = await (await s.call('GET', '/sync', undefined, token)).json()
+  assert.deepEqual(state.deleted, [])
+  assert.ok(state.docs.some(d => d.profileId === 'p1'), 'p1 survives the failed request')
+  await s.close()
+})

@@ -25,6 +25,15 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
   const getCfg = async () => (await db.get('app', 'sync'))?.value ?? null
   const putCfg = (value) => db.put('app', { key: 'sync', value })
 
+  // read-modify-writes of the config are serialized: a tombstone noted while
+  // a sync's writeback runs must never be clobbered by the older read
+  let cfgChain = Promise.resolve()
+  function updateCfg(fn) {
+    const p = cfgChain.then(async () => fn(await getCfg()))
+    cfgChain = p.then(() => {}, () => {})
+    return p
+  }
+
   async function call(method, path, body, token) {
     const res = await fetchFn(url + path, {
       method,
@@ -89,6 +98,8 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
     if (!cfg?.token) return 'off'
     try {
       const remote = await call('GET', '/sync', undefined, cfg.token)
+      // left (or re-joined) during the GET: this response is not ours to apply
+      if ((await getCfg())?.token !== cfg.token) return 'off'
       const local = await buildDocs()
       const byId = new Map(local.map(d => [d.profileId, d]))
       const merged = []
@@ -98,15 +109,18 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
       const keep = merged.filter(d => !deleted.includes(d.profileId))
       for (const d of keep) await applyDoc(d)
       const pushed = await call('PUT', '/sync', { docs: keep, deleted }, cfg.token)
+      // left during the PUT: leave keeps local data — never apply the stale response
+      if ((await getCfg())?.token !== cfg.token) return 'off'
       for (const d of pushed.docs) await applyDoc(d)
       for (const pid of pushed.deleted ?? []) await removeLocal(pid)
       failStreak = 0
-      // re-read cfg: leave() during the round trips must stay left, and
-      // tombstones queued mid-sync must survive for the next push
-      const fresh = await getCfg()
-      if (fresh?.token === cfg.token) {
-        await putCfg({ ...fresh, deleted: (fresh.deleted ?? []).filter(p => !deleted.includes(p)), lastSyncAt: now() })
-      }
+      // re-read cfg under the update lock: leave() during the round trips must
+      // stay left, and tombstones queued mid-sync must survive for the next push
+      await updateCfg(async (fresh) => {
+        if (fresh?.token === cfg.token) {
+          await putCfg({ ...fresh, deleted: (fresh.deleted ?? []).filter(p => !deleted.includes(p)), lastSyncAt: now() })
+        }
+      })
       onChange()
       return 'ok'
     } catch (err) {
@@ -117,8 +131,9 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
         clearTimeout(timer)
         // like the success writeback: a leave+re-join during this round trip
         // means the 401 belonged to the stale token — never unlink the new one
-        const fresh = await getCfg()
-        if (fresh?.token === cfg.token) await db.delete('app', 'sync')
+        await updateCfg(async (fresh) => {
+          if (fresh?.token === cfg.token) await db.delete('app', 'sync')
+        })
         failStreak = 0
         onChange()
         return 'off'
@@ -169,10 +184,11 @@ export function createSyncClient({ db, url, fetchFn = (...a) => globalThis.fetch
       await call('DELETE', '/households', { pin }, cfg.token)
       await leave()
     },
-    async noteProfileDeleted(profileId) {
-      const cfg = await getCfg()
-      if (!cfg?.token) return
-      await putCfg({ ...cfg, deleted: [...(cfg.deleted ?? []), profileId] })
+    noteProfileDeleted(profileId) {
+      return updateCfg(async (cfg) => {
+        if (!cfg?.token) return
+        await putCfg({ ...cfg, deleted: [...(cfg.deleted ?? []), profileId] })
+      })
     },
     schedule() {
       clearTimeout(timer)

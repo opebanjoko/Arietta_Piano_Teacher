@@ -114,16 +114,20 @@ export function pushSync({ db, now }, { token, body }) {
     ON CONFLICT (household_id, profile_id) DO UPDATE SET doc = excluded.doc, deleted_at = excluded.deleted_at, updated_at = excluded.updated_at`)
   const get = db.prepare(`SELECT doc, deleted_at FROM progress_docs WHERE household_id = ? AND profile_id = ?`)
 
-  for (const pid of Array.isArray(body?.deleted) ? body.deleted : []) {
-    upsert.run(hid, String(pid), null, now, now)
-  }
-  for (const incoming of Array.isArray(body?.docs) ? body.docs : []) {
-    if (!incoming?.profileId) continue
-    const row = get.get(hid, incoming.profileId)
-    if (row?.deleted_at != null && !((incoming.updatedAt ?? 0) > row.deleted_at)) continue // tombstone holds
-    const merged = mergeDocs(row?.doc ? JSON.parse(row.doc) : null, incoming)
-    upsert.run(hid, incoming.profileId, JSON.stringify(merged), null, now)
-  }
+  // one request, one transaction: a failure mid-push must not leave
+  // tombstones without their sibling doc updates (or vice versa)
+  db.transaction(() => {
+    for (const pid of Array.isArray(body?.deleted) ? body.deleted : []) {
+      upsert.run(hid, String(pid), null, now, now)
+    }
+    for (const incoming of Array.isArray(body?.docs) ? body.docs : []) {
+      if (!incoming?.profileId) continue
+      const row = get.get(hid, incoming.profileId)
+      if (row?.deleted_at != null && !((incoming.updatedAt ?? 0) > row.deleted_at)) continue // tombstone holds
+      const merged = mergeDocs(row?.doc ? JSON.parse(row.doc) : null, incoming)
+      upsert.run(hid, incoming.profileId, JSON.stringify(merged), null, now)
+    }
+  })()
   return { status: 200, body: householdState(db, hid) }
 }
 

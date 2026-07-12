@@ -178,7 +178,7 @@ test('leave during an in-flight sync stays left: the success writeback is skippe
   const p = c.syncNow()
   await c.leave()
   gated.release()
-  assert.equal(await p, 'ok')
+  assert.equal(await p, 'off') // the run aborts rather than applying stale data
   assert.equal((await c.getState()).linked, false)
   assert.equal(await db.get('app', 'sync'), undefined)
 })
@@ -281,4 +281,51 @@ test('401 from GET or PUT /sync auto-unlinks (no backoff), keeping local data in
   assert.deepEqual(await c.getState(), { linked: false, code: null, lastSyncAt: null, failing: false })
   assert.deepEqual(await db.get('profiles', 'p1'), { id: 'p1', name: 'Maya', createdAt: 1 })
   assert.deepEqual(await db.get('progress', ['p1', 'l1']), { profileId: 'p1', lessonId: 'l1', completed: true, lastPlayedAt: 5 })
+})
+
+test('leave during the GET aborts the run: no remote data is applied, no push happens', async () => {
+  const db = fakeDb()
+  await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  const srv = fakeServer()
+  srv.docs.set('pOld', { profileId: 'pOld', name: 'Old', createdAt: 1, lessons: {}, settings: {}, updatedAt: 9 })
+  const gated = gatedFetch(srv.fetchFn)
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: gated.fetchFn })
+  const p = c.syncNow()
+  await c.leave()
+  gated.release()
+  assert.equal(await p, 'off')
+  assert.equal(await db.get('profiles', 'pOld'), undefined) // old household never lands locally
+  assert.deepEqual(srv.calls.map(c => c.method), ['GET']) // and nothing was pushed after leaving
+})
+
+/** Like gatedFetch but blocks the Nth call instead of the first. */
+function gatedFetchAt(fetchFn, blockCall) {
+  let release
+  const gate = new Promise(r => { release = r })
+  let n = 0
+  return { release, fetchFn: async (url, opts) => { if (++n === blockCall) await gate; return fetchFn(url, opts) } }
+}
+
+test('leave during the PUT leaves local data untouched by the response', async () => {
+  const db = fakeDb()
+  await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  await db.put('profiles', { id: 'pDead', name: 'Kept', createdAt: 1 })
+  const srv = fakeServer()
+  srv.tombstones.set('pDead', 99) // another device deleted pDead; tombstone holds
+  const gated = gatedFetchAt(srv.fetchFn, 2)
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: gated.fetchFn })
+  const p = c.syncNow()
+  await c.leave()
+  gated.release()
+  assert.equal(await p, 'off')
+  // leave keeps local data: the stale PUT response must not delete pDead here
+  assert.deepEqual(await db.get('profiles', 'pDead'), { id: 'pDead', name: 'Kept', createdAt: 1 })
+})
+
+test('two concurrent noteProfileDeleted calls both keep their tombstones', async () => {
+  const db = fakeDb()
+  await db.put('app', { key: 'sync', value: { token: 't0ken', code: 'ABCDEF', deleted: [], lastSyncAt: null } })
+  const c = createSyncClient({ db, url: 'https://api.test', fetchFn: fakeServer().fetchFn })
+  await Promise.all([c.noteProfileDeleted('p1'), c.noteProfileDeleted('p2')])
+  assert.deepEqual((await db.get('app', 'sync')).value.deleted.sort(), ['p1', 'p2'])
 })
