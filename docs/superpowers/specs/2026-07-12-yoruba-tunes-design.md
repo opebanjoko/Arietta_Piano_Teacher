@@ -14,7 +14,7 @@ warm-up rotation, "Play it with me", recital eligibility.
 
 | Tune | Meaning / character | Unit | Treatment |
 |---|---|---|---|
-| L'ábẹ́ igi ọ́rọ́mbọ́ | "Under the orange tree" — gentle children's classic | 3 — First Songs | Wait-mode song, C position |
+| L'ábẹ́ igi ọ́rọ́mbọ́ | "Under the orange tree" — gentle children's classic | 5 — More Notes, New Places | Wait-mode song; climbs the new octave (A, high C) |
 | Bàtà mi a dún kòkòkà | "My shoes go ko-ko-ka" — school-days rhythm song | 4 — Rhythm Joins In | Timed piece, `tempo` ~72 BPM |
 | Ìṣẹ́ Olúwa | "The work of the Lord (cannot be destroyed)" — flowing, patient | 5 — More Notes, New Places | Wait-mode song with harmony voicings |
 | Tòlótòló | Turkey song — playful call-and-response | 6 — Both Hands Say Hello | Wait-mode song; phrases pass between positions |
@@ -61,6 +61,9 @@ A tune is not done until its audition passes.
 Adding a song to a completed unit flips it to "Continue — n of n+1 done" with the new
 song immediately playable (existing `lessonStates` logic). This is the intended
 experience: new music waiting in familiar places. No migration needed.
+Edge: a song appended at the exact frontier of the student's furthest completion (e.g.
+Tòlótòló for a player who finished exactly units 1–6) starts locked and becomes next as
+the earlier insertions are played — the path self-heals in order.
 
 ## Testing
 

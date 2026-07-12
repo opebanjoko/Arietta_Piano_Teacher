@@ -406,7 +406,9 @@ export function pickWarmup(lessons, progress) {
 export function lessonStates(lessons, completedIds) {
   // lessons inserted below a student's furthest completion (e.g. new songs added
   // to finished units) are already earned — playable, never re-locked
-  const highWater = lessons.reduce((hw, l, i) => completedIds.has(l.id) ? i : hw, -1)
+  // Sneak peeks don't count — completing the advertised peek must not un-gate the path (SR-CRS-04).
+  const highWater = lessons.reduce((hw, l, i) =>
+    completedIds.has(l.id) && !l.sneakPeek ? i : hw, -1)
   const states = new Map()
   let nextFound = false
   lessons.forEach((l, i) => {

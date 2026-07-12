@@ -174,6 +174,16 @@ test('a lesson inserted below the high-water mark stays playable, not locked', (
   assert.equal(two.get('e'), 'locked')
 })
 
+test('a completed sneak peek does not raise the high-water mark (SR-CRS-04)', () => {
+  // curiosity is rewarded, not gated — and it must not un-gate anything either
+  const lessons = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'peek', sneakPeek: true }, { id: 'd' }]
+  const states = lessonStates(lessons, new Set(['a', 'peek']))
+  assert.equal(states.get('b'), 'next', 'the real path resumes at b')
+  assert.equal(states.get('c'), 'locked', 'peek completion unlocks nothing')
+  assert.equal(states.get('peek'), 'complete')
+  assert.equal(states.get('d'), 'locked')
+})
+
 test('a coming-soon lesson never unlocks and never blocks the path', () => {
   // synthetic: no real lesson is gated since the polyphony gate opened lesson 21
   const lessons = [{ id: 'a' }, { id: 'gated', comingSoon: true }, { id: 'b' }]
