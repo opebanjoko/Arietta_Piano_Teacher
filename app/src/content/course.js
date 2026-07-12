@@ -1705,7 +1705,8 @@ export const COURSE = {
           from: [
             'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune', 'ode-in-time', 'hot-cross-buns',
             'when-the-saints', 'twinkle', 'ode-whole-theme', 'merrily-left-hand',
-            'au-clair-together', 'twinkle-together', 'saints-with-chords'
+            'au-clair-together', 'twinkle-together', 'saints-with-chords',
+            'labe-igi-orombo', 'bata-mi', 'ise-oluwa', 'tolotolo'
           ],
           done: {
             title: 'Polished.',
@@ -1725,7 +1726,8 @@ export const COURSE = {
           from: [
             'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune', 'ode-in-time', 'hot-cross-buns',
             'when-the-saints', 'twinkle', 'ode-whole-theme', 'merrily-left-hand',
-            'au-clair-together', 'twinkle-together', 'saints-with-chords'
+            'au-clair-together', 'twinkle-together', 'saints-with-chords',
+            'labe-igi-orombo', 'bata-mi', 'ise-oluwa', 'tolotolo'
           ],
           done: {
             title: 'My first recital.',

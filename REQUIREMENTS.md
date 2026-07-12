@@ -71,7 +71,8 @@ never in a hurry. Everything below follows from a few principles.
 Linear unlocking: completing a lesson unlocks the next; completing a unit unlocks the
 next unit. Completed lessons are always replayable. Each unit also exposes one
 **sneak-peek song** playable early (as prototyped with Ode to Joy) so curiosity is
-rewarded, not gated.
+rewarded, not gated. Yoruba songs from home are first-class repertoire throughout —
+the family is Nigerian first.
 
 **Unit 1 — Sitting at the Piano** *(mostly guided watch-and-do; light mic use)*
 1. *Meet the keyboard* — black-key groups of 2 and 3; find any C. Mic verifies: play any C.
@@ -90,6 +91,8 @@ rewarded, not gated.
 8. *Ode to Joy — first phrase* (E E F G G F E D C C D E E D D) — already prototyped.
 9. *Lightly Row* — G E E, F D D pattern; introduces starting on a note other than C.
 10. *Au clair de la lune* — C C C D E D, C E D D C; long notes held with patience.
+10a. *L'ábẹ́ igi ọ́rọ́mbọ́* — "under the orange tree"; a song from home, stepwise in
+    C position.
 
 **Unit 4 — Rhythm Joins In** *(introduces the metronome and gentle tempo feedback)*
 11. *Long notes and short notes* — quarter, half, whole; clap-then-play with the
@@ -98,12 +101,16 @@ rewarded, not gated.
     pulse / a little early / a little late," never a score.
 13. *Ode to Joy — in time* — the Unit 3 phrase again, now with the metronome.
 14. *Hot Cross Buns, steady* — E D C rhythm piece played fully in time.
+14a. *Bàtà mi a dún kòkòkà* — the school-shoes rhythm song, played fully in time
+    (~72 BPM).
 
 **Unit 5 — More Notes, New Places**
 15. *Meet A and B* — A4, B4; the right hand stretches beyond five fingers.
 16. *Up to high C* — C5; the full C-to-C octave walk.
 17. *When the Saints Go Marching In* — first phrase; uses the new upper notes.
 18. *Twinkle, Twinkle* — full song in C position with octave-aware playing.
+18a. *Ìṣẹ́ Olúwa* — a flowing song from home reaching the new note A; gains soft
+    voicings.
 
 **Unit 6 — Both Hands Say Hello** *(left hand alone is v1; hands-together is gated —
 see §4 non-goals)*
@@ -113,6 +120,7 @@ see §4 non-goals)*
 21. *Your first chord* — C major chord, left hand. **Phase 2**: requires chord detection
     (§9.1); lesson is designed and visible on the map, marked "coming soon," and unit
     completion for v1 is lessons 19–20.
+21a. *Tòlótòló* — call-and-response between the hands, one hand sounding at a time.
 
 ### 3.3 Lesson anatomy
 
