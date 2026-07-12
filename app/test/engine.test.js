@@ -161,6 +161,19 @@ test('linear unlocking: next after last complete; sneak peek playable early (SR-
   }
 })
 
+test('a lesson inserted below the high-water mark stays playable, not locked', () => {
+  // a student who completed c and d earned past b; a mid-course insertion must not re-gate them
+  const lessons = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }]
+  const states = lessonStates(lessons, new Set(['a', 'c', 'd']))
+  assert.equal(states.get('b'), 'next', 'first incomplete is the suggested next')
+  assert.equal(states.get('e'), 'locked', 'beyond the high-water mark stays gated')
+  // two insertions below the mark: both playable
+  const two = lessonStates(lessons, new Set(['a', 'd']))
+  assert.equal(two.get('b'), 'next')
+  assert.equal(two.get('c'), 'next', 'also below the mark — already earned')
+  assert.equal(two.get('e'), 'locked')
+})
+
 test('a coming-soon lesson never unlocks and never blocks the path', () => {
   // synthetic: no real lesson is gated since the polyphony gate opened lesson 21
   const lessons = [{ id: 'a' }, { id: 'gated', comingSoon: true }, { id: 'b' }]

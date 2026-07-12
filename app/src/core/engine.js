@@ -404,9 +404,12 @@ export function pickWarmup(lessons, progress) {
  * visible on the map but never unlock and never block the path.
  */
 export function lessonStates(lessons, completedIds) {
+  // lessons inserted below a student's furthest completion (e.g. new songs added
+  // to finished units) are already earned — playable, never re-locked
+  const highWater = lessons.reduce((hw, l, i) => completedIds.has(l.id) ? i : hw, -1)
   const states = new Map()
   let nextFound = false
-  for (const l of lessons) {
+  lessons.forEach((l, i) => {
     if (l.comingSoon) {
       states.set(l.id, 'coming-soon')
     } else if (completedIds.has(l.id)) {
@@ -414,10 +417,12 @@ export function lessonStates(lessons, completedIds) {
     } else if (!nextFound) {
       states.set(l.id, 'next')
       nextFound = true
+    } else if (i < highWater) {
+      states.set(l.id, 'next')
     } else {
       states.set(l.id, l.sneakPeek ? 'peek' : 'locked')
     }
-  }
+  })
   return states
 }
 
