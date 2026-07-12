@@ -953,7 +953,6 @@ export const COURSE = {
           id: 'notes-cold',
           title: 'Notes without training wheels',
           kind: 'drill',
-          plain: true,
           steps: [
             {
               kind: 'info',
@@ -996,7 +995,6 @@ export const COURSE = {
           id: 'steps-and-skips',
           title: 'Steps and skips',
           kind: 'drill',
-          plain: true,
           steps: [
             {
               kind: 'info',
@@ -1086,7 +1084,6 @@ export const COURSE = {
           id: 'ode-whole-theme',
           title: 'Ode to Joy — the whole theme',
           kind: 'song',
-          plain: true,
           card: 'Both phrases this time, read from a clean score — the tune that started everything.',
           notes: [
             n('E4', 3), n('E4', 3), n('F4', 4), n('G4', 5), n('G4', 5), n('F4', 4), n('E4', 3), n('D4', 2),

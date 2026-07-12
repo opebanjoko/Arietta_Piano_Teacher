@@ -16,6 +16,7 @@ import {
   atTempo, harmonyByBeat, setlistCandidates
 } from './core/engine.js'
 import { letter, nameToMidi } from './core/notes.js'
+import { letterMidis } from './core/wean.js'
 import { playTone, playHarmony } from './audio/synth.js'
 import { startMetronome, playClap } from './audio/metronome.js'
 import { createMic } from './audio/mic.js'
@@ -747,7 +748,7 @@ export function App() {
     return (
       <div class="screen">
         <FreePlay heard={heard} noteCount={freeCount} pill={pill} onHome={goHome} />
-        <Keyboard onNote={onNote} glowMidi={null} showLabels={profileSettings.labels !== false} />
+        <Keyboard onNote={onNote} glowMidi={null} labels={letterMidis(profileSettings.labels, null)} />
       </div>
     )
   }
@@ -768,6 +769,7 @@ export function App() {
     ? (drill.phase === 'working' && drill.misses >= 2 && ['play', 'ear-echo'].includes(lesson.steps[drill.stepIndex].kind)
         ? glowFor(lesson.steps[drill.stepIndex].targets[drill.seqPos], drill.gather) : null)
     : (!song.done && song.misses >= 2 ? glowFor(lesson.notes[songTargetIndex(song)], song.gather) : null)
+  const letters = letterMidis(profileSettings.labels, lesson)
 
   const nextAfterWarmup = warmupNextRef.current && findLesson(warmupNextRef.current)
   const nextPractice = lesson.practicePackId ? practiceQueueRef.current[0] : null
@@ -806,11 +808,11 @@ export function App() {
   return (
     <div class="screen">
       {lesson.kind === 'drill'
-        ? <Lesson lesson={lesson} drill={drill} pill={pill} earPlaying={earPlaying} beat={beat}
+        ? <Lesson lesson={lesson} drill={drill} pill={pill} earPlaying={earPlaying} beat={beat} letters={letters}
             onHome={goHome} onContinue={onContinue} onChoice={onChoice}
             onReplayEar={playEar} onReplayPattern={playPattern}
             onNextSong={openLesson} doneAction={doneAction} />
-        : <Song lesson={lesson} song={song} demo={demo} overlay={overlay} pill={pill} beat={beat}
+        : <Song lesson={lesson} song={song} demo={demo} overlay={overlay} pill={pill} beat={beat} letters={letters}
             recital={!!setlistRef.current?.recital}
             accompany={accompany}
             accompanyAvailable={!!lesson.harmony && !!progress.get(lesson.id)?.completed}
@@ -820,7 +822,7 @@ export function App() {
             onAcceptLoop={onAcceptLoop} onDeclineLoop={onDeclineLoop}
             doneAction={doneAction} />}
       <Keyboard onNote={onNote} glowMidi={glowMidi} low={lessonLow} high={lessonHigh} flats={!!lesson.flats}
-        showLabels={profileSettings.labels !== false && !lesson.plain} />
+        labels={letters} />
     </div>
   )
 }

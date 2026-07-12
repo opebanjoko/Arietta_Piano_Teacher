@@ -5,6 +5,7 @@ import { Pulse } from './Pulse.jsx'
 import { Steadiness } from './Steadiness.jsx'
 import { songTargetIndex, TEMPO_CHOICES } from '../core/engine.js'
 import { steadinessPoints } from '../core/timing.js'
+import { nameToMidi } from '../core/notes.js'
 import { VOICE } from '../content/voice.js'
 import { fill } from './util.js'
 import { Overlay } from './Overlay.jsx'
@@ -17,7 +18,7 @@ const FLOATS = [
   { glyph: '♫', left: '50%', top: '78%', size: 22, dur: 3.2, delay: 1.2 }
 ]
 
-export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accompanyAvailable,
+export function Song({ lesson, song, demo, overlay, pill, beat, letters, accompany, accompanyAvailable,
   onToggleAccompany, tempoChoice, onTempo, onHome, onHearIt, onReplay, onAcceptLoop, onDeclineLoop,
   doneAction, recital = false }) {
   const v = VOICE.song
@@ -30,7 +31,11 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
     else if (song.loop) status = i === ti ? 'current' : (i >= song.loop.from && i < ti ? 'played' : 'up')
     else if (i < song.pos) status = 'played'
     else if (i === song.pos && !song.done && !demo.on) status = 'current'
-    return { ...t, status }
+    const midis = (t.notes ?? [t.note]).map(nameToMidi)
+    const letter = letters === 'all' ||
+      (letters !== 'none' && (midis.some(m => letters.has(m)) ||
+        (status === 'current' && song.misses >= 2)))
+    return { ...t, status, letter }
   })
 
   const target = lesson.notes[Math.min(ti, total - 1)]
@@ -74,7 +79,7 @@ export function Song({ lesson, song, demo, overlay, pill, beat, accompany, accom
           {lesson.tempo && !song.done && <Pulse beat={beat} />}
         </div>
         <Staff notes={staffNotes} width={1060} height={170}
-          clef={lesson.clef} flats={!!lesson.flats} plain={!!lesson.plain} />
+          clef={lesson.clef} flats={!!lesson.flats} />
         <div aria-live="polite" style="display:flex;align-items:center;justify-content:center;gap:26px;height:26px;">
           <div style={`font-size:15.5px;font-weight:800;color:${song.hint ? 'var(--hint)' : 'var(--ink-soft)'};transition:color .2s;`}>{lead}</div>
           <div style="font-family:var(--serif);font-style:italic;font-size:14.5px;color:var(--cheer);">{cheer}</div>

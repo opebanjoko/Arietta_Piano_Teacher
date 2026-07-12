@@ -3,8 +3,8 @@
  * Treble is anchored at C4 (its ledger line); bass (Unit 8) puts A3 on the
  * top line so the C3 position sits inside the staff. Entries may be chords
  * ({ notes, fingers }) drawn as one stacked column; black keys sit on their
- * natural letter with an accidental glyph; `plain` fades the letter labels
- * (Unit 7: reading without training wheels).
+ * natural letter with an accidental glyph; each entry carries `letter`
+ * (Unit 7: reading without training wheels weans letters note by note).
  */
 import { Fragment } from 'preact'
 import { nameToMidi, letterIn, staffPos } from '../core/notes.js'
@@ -44,7 +44,7 @@ const members = (n) =>
  * notes: [{ note, finger, status } | { notes, fingers, status }]
  * status 'played' | 'current' | 'demo' | 'up'
  */
-export function Staff({ notes, clef = 'treble', flats = false, plain = false, width = 620, height = 166 }) {
+export function Staff({ notes, clef = 'treble', flats = false, width = 620, height = 166 }) {
   const k = notes.length
   const step = k > 1 ? Math.min(120, (width - 200) / (k - 1)) : 0
   const start = width / 2 - ((k - 1) * step) / 2 + 30
@@ -82,7 +82,7 @@ export function Staff({ notes, clef = 'treble', flats = false, plain = false, wi
                 )
               })}
               <div style={`position:absolute;left:0;top:${stemTop - 16 + (topY - TOP < 16 ? TOP - topY - 2 : 0)}px;transform:translateX(-50%);font-family:var(--mono);font-size:10px;font-weight:700;color:${label};background:${n.status === 'current' ? 'var(--accent-soft)' : 'transparent'};border-radius:8px;padding:1px 5px;`}>{fingers}</div>
-              {!plain && (
+              {n.letter && (
                 <div style={`position:absolute;left:0;top:${Math.max(bottomY + 14, 140)}px;transform:translateX(-50%);font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.5px;color:${label};`}>{letters}</div>
               )}
             </div>

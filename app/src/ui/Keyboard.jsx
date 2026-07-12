@@ -33,7 +33,7 @@ function layout(low, high) {
   return { whites, blacks }
 }
 
-export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = false, high = false, flats = false }) {
+export function Keyboard({ onNote, glowMidi = null, labels = 'all', low = false, high = false, flats = false }) {
   const [pressed, setPressed] = useState(() => new Set())
   const pressTOs = useRef(new Map())
   useEffect(() => () => { for (const t of pressTOs.current.values()) clearTimeout(t) }, [])
@@ -69,8 +69,10 @@ export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = fal
         <div role="group" aria-label="Piano keys — tap to play" style="position:relative;height:168px;background:#241B12;">
           <div style="display:flex;height:100%;">
             {whites.map(name => {
+              const midi = nameToMidi(name)
               const isPressed = pressed.has(name)
-              const glow = glowMidi === nameToMidi(name)
+              const glow = glowMidi === midi
+              const showL = labels === 'all' || (labels !== 'none' && (labels.has(midi) || glow))
               const bg = isPressed ? 'linear-gradient(180deg,#F1E3BE,#EAD9AC)'
                 : glow ? 'linear-gradient(180deg,#FFF8E2,#F8ECC8)'
                 : 'linear-gradient(180deg,#FFFDF6,#F4ECD9)'
@@ -79,7 +81,7 @@ export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = fal
                   role="button" tabIndex={0} aria-label={keyLabel(name, flats)} onKeyDown={keyPress(name)}
                   style={`flex:1;position:relative;z-index:1;border:1px solid #D9CBB4;border-top:none;border-radius:0 0 8px 8px;background:${bg};box-shadow:${isPressed ? 'inset 0 3px 10px rgba(90,60,20,.28)' : 'inset 0 -7px 0 rgba(214,198,166,.5)'};animation:${glow ? 'glowPulse 1.5s ease-in-out infinite' : 'none'};cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:9px;transition:background .12s ease;touch-action:none;`}>
                   {name === 'C4' && <div style="position:absolute;top:110px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;letter-spacing:.8px;color:rgba(43,36,28,.42);white-space:nowrap;">middle&nbsp;C</div>}
-                  <div style={`font-weight:800;font-size:14px;color:${glow ? 'var(--accent-ink)' : 'var(--ink-mid)'};opacity:${showLabels ? 1 : 0};`}>{letter(nameToMidi(name))}</div>
+                  <div style={`font-weight:800;font-size:14px;color:${glow ? 'var(--accent-ink)' : 'var(--ink-mid)'};opacity:${showL ? 1 : 0};`}>{letter(midi)}</div>
                 </div>
               )
             })}
@@ -91,7 +93,7 @@ export function Keyboard({ onNote, glowMidi = null, showLabels = true, low = fal
               <div key={b.note} onPointerDown={() => tap(b.note)}
                 role="button" tabIndex={0} aria-label={keyLabel(b.note, flats)} onKeyDown={keyPress(b.note)}
                 style={`position:absolute;top:0;left:${(b.after + 1) * w - blackW / 2}%;width:${blackW}%;height:104px;background:${pressed.has(b.note) ? 'linear-gradient(180deg,#6B5840,#4A3A28)' : glow ? 'linear-gradient(180deg,#5C4A32,#3A2C1C)' : 'linear-gradient(180deg,#423526,#241B12)'};border-radius:0 0 7px 7px;box-shadow:0 4px 8px rgba(20,12,4,.4);cursor:pointer;z-index:2;transition:background .12s ease;touch-action:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:7px;animation:${glow ? 'glowPulse 1.5s ease-in-out infinite' : 'none'};`}>
-                {showLabels && glow && <div style="font-weight:800;font-size:11px;color:#EFE3C4;">{letterIn(midi, flats)}</div>}
+                {labels !== 'none' && glow && <div style="font-weight:800;font-size:11px;color:#EFE3C4;">{letterIn(midi, flats)}</div>}
               </div>
             )
           })}

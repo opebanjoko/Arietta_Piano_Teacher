@@ -6,18 +6,22 @@ import { Pulse } from './Pulse.jsx'
 import { nameToMidi } from '../core/notes.js'
 import { VOICE } from '../content/voice.js'
 
-export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContinue, onChoice,
+export function Lesson({ lesson, drill, pill, earPlaying, beat, letters, onHome, onContinue, onChoice,
   onReplayEar, onReplayPattern, onNextSong, doneAction }) {
   const step = lesson.steps[Math.min(drill.stepIndex, lesson.steps.length - 1)]
   const working = drill.phase !== 'done'
   const pulsing = lesson.tempo && (step.timed || step.kind === 'rhythm-clap')
 
   const staffNotes = step.kind === 'play' || step.kind === 'dynamics'
-    ? step.targets.map((t, i) => ({
-        ...t,
-        status: i < drill.seqPos ? 'played'
+    ? step.targets.map((t, i) => {
+        const status = i < drill.seqPos ? 'played'
           : (i === drill.seqPos && drill.phase === 'working') ? 'current' : 'up'
-      }))
+        const midis = (t.notes ?? [t.note]).map(nameToMidi)
+        const letter = letters === 'all' ||
+          (letters !== 'none' && (midis.some(m => letters.has(m)) ||
+            (status === 'current' && drill.misses >= 2))) // struggle reveal, same threshold as the key glow
+        return { ...t, status, letter }
+      })
     : []
 
   const feedback = drill.feedback
@@ -44,7 +48,7 @@ export function Lesson({ lesson, drill, pill, earPlaying, beat, onHome, onContin
           <div style="font-size:15px;color:var(--ink-soft);text-align:center;max-width:600px;">{step.sub}</div>
           {(step.kind === 'play' || step.kind === 'dynamics') && (
             <div style="margin-top:8px;">
-              <Staff notes={staffNotes} clef={lesson.clef} flats={!!lesson.flats} plain={!!lesson.plain}
+              <Staff notes={staffNotes} clef={lesson.clef} flats={!!lesson.flats}
                 height={lesson.clef !== 'bass' && staffNotes.some(t => (t.notes ?? [t.note]).some(n => nameToMidi(n) < 60)) ? 196 : 166} />
             </div>
           )}
