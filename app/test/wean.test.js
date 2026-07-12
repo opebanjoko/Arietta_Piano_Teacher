@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { letterPolicy, noveltyFor, letterMidis } from '../src/core/wean.js'
+import { letterPolicy, noveltyFor, letterMidis, entryLetters } from '../src/core/wean.js'
 import { findLesson, READING_POOL } from '../src/content/course.js'
 import { readingWarmup } from '../src/core/reading.js'
 import { practiceLesson } from '../src/core/practice.js'
@@ -52,4 +52,18 @@ test('letterMidis maps the three-way setting', () => {
   // free play (no lesson): letters on unless always-off
   assert.equal(letterMidis(undefined, null), 'all')
   assert.equal(letterMidis(false, null), 'none')
+})
+
+test('entryLetters labels only the novel pitches of a mixed chord', () => {
+  const A3 = nameToMidi('A3'), F4 = nameToMidi('F4')
+  // novel-only: a chord mixing a new pitch with a known one labels just the new one
+  assert.deepEqual(entryLetters(new Set([A3]), [A3, F4]), [A3])
+  // no novel members: no label at all (not an empty label)
+  assert.equal(entryLetters(new Set(), [A3, F4]), false)
+  // three-way passthrough
+  assert.equal(entryLetters('all', [A3, F4]), true)
+  assert.equal(entryLetters('none', [A3, F4]), false)
+  // the struggle reveal shows the whole target, but never when letters are off
+  assert.equal(entryLetters(new Set(), [A3, F4], true), true)
+  assert.equal(entryLetters('none', [A3, F4], true), false)
 })

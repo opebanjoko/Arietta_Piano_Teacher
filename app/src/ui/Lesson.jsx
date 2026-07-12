@@ -4,6 +4,7 @@ import { Staff } from './Staff.jsx'
 import { WatchMe } from './WatchMe.jsx'
 import { Pulse } from './Pulse.jsx'
 import { nameToMidi } from '../core/notes.js'
+import { entryLetters } from '../core/wean.js'
 import { VOICE } from '../content/voice.js'
 
 export function Lesson({ lesson, drill, pill, earPlaying, beat, letters, onHome, onContinue, onChoice,
@@ -17,9 +18,8 @@ export function Lesson({ lesson, drill, pill, earPlaying, beat, letters, onHome,
         const status = i < drill.seqPos ? 'played'
           : (i === drill.seqPos && drill.phase === 'working') ? 'current' : 'up'
         const midis = (t.notes ?? [t.note]).map(nameToMidi)
-        const letter = letters === 'all' ||
-          (letters !== 'none' && (midis.some(m => letters.has(m)) ||
-            (status === 'current' && drill.misses >= 2))) // struggle reveal, same threshold as the key glow
+        // struggle reveal at the same threshold as the key glow
+        const letter = entryLetters(letters, midis, status === 'current' && drill.misses >= 2)
         return { ...t, status, letter }
       })
     : []

@@ -3,8 +3,9 @@
  * Treble is anchored at C4 (its ledger line); bass (Unit 8) puts A3 on the
  * top line so the C3 position sits inside the staff. Entries may be chords
  * ({ notes, fingers }) drawn as one stacked column; black keys sit on their
- * natural letter with an accidental glyph; each entry carries `letter`
- * (Unit 7: reading without training wheels weans letters note by note).
+ * natural letter with an accidental glyph; each entry carries `letter` —
+ * true, false, or the midis to label, so a weaned mixed chord labels only
+ * its new notes (Unit 7: reading without training wheels, §3.5).
  */
 import { Fragment } from 'preact'
 import { nameToMidi, letterIn, staffPos } from '../core/notes.js'
@@ -60,7 +61,9 @@ export function Staff({ notes, clef = 'treble', flats = false, width = 620, heig
           const ms = members(n)
           const x = ((start + i * step) / width * 100).toFixed(2)
           const fill = FILL[n.status], label = LABEL[n.status]
-          const letters = ms.map(m => letterIn(m.midi, flats)).join('·')
+          const letters = ms
+            .filter(m => n.letter === true || (Array.isArray(n.letter) && n.letter.includes(m.midi)))
+            .map(m => letterIn(m.midi, flats)).join('·')
           const fingers = ms.map(m => m.finger).filter(f => f !== undefined).join('·')
           const topY = noteY(ms.at(-1).midi, clef, flats)
           const bottomY = noteY(ms[0].midi, clef, flats)

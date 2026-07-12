@@ -65,3 +65,16 @@ export function letterMidis(labelsSetting, lesson) {
   if (labelsSetting === true || !lesson) return 'all'
   return letterPolicy(lesson) === 'all' ? 'all' : noveltyFor(lesson)
 }
+
+/**
+ * Staff label for one entry given letterMidis' verdict and the entry's midis:
+ * true (label every chord member), an array of midis (label just those — a
+ * mixed chord only labels its new notes), or false (no label). `reveal` is
+ * the struggle reveal: at 2+ misses the whole target labels to help.
+ */
+export function entryLetters(letters, midis, reveal = false) {
+  if (letters === 'none') return false
+  if (letters === 'all' || reveal) return true
+  const novel = midis.filter(m => letters.has(m))
+  return novel.length ? novel : false
+}

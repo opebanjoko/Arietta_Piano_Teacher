@@ -6,6 +6,7 @@ import { Steadiness } from './Steadiness.jsx'
 import { songTargetIndex, TEMPO_CHOICES } from '../core/engine.js'
 import { steadinessPoints } from '../core/timing.js'
 import { nameToMidi } from '../core/notes.js'
+import { entryLetters } from '../core/wean.js'
 import { VOICE } from '../content/voice.js'
 import { fill } from './util.js'
 import { Overlay } from './Overlay.jsx'
@@ -32,9 +33,7 @@ export function Song({ lesson, song, demo, overlay, pill, beat, letters, accompa
     else if (i < song.pos) status = 'played'
     else if (i === song.pos && !song.done && !demo.on) status = 'current'
     const midis = (t.notes ?? [t.note]).map(nameToMidi)
-    const letter = letters === 'all' ||
-      (letters !== 'none' && (midis.some(m => letters.has(m)) ||
-        (status === 'current' && song.misses >= 2)))
+    const letter = entryLetters(letters, midis, status === 'current' && song.misses >= 2)
     return { ...t, status, letter }
   })
 
