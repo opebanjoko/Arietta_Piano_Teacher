@@ -371,31 +371,6 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today you played Au clair de la lune, calm as moonlight.',
-            seed: 'Next time: a song from home — under the orange tree.'
-          }
-        },
-        {
-          id: 'labe-igi-orombo',
-          title: 'L’ábẹ́ igi ọ́rọ́mbọ́',
-          kind: 'song',
-          card: 'Under the orange tree — a song from home, played where everyone gathers. Gentle steps, C up to G.',
-          notes: [
-            // L'á-bẹ́ i-gi ọ́-rọ́m-bọ́
-            n('C4', 1), n('E4', 3), n('E4', 3), n('D4', 2), n('E4', 3), n('G4', 5), n('G4', 5),
-            // ní-bẹ̀ la gbé ń ṣe-ré wa
-            n('G4', 5), n('F4', 4), n('F4', 4), n('E4', 3), n('E4', 3), n('D4', 2), n('D4', 2),
-            // i-nú wa dùn a-ra wa yá
-            n('C4', 1), n('E4', 3), n('E4', 3), n('D4', 2), n('E4', 3), n('F4', 4), n('E4', 3), n('D4', 2),
-            // l'á-bẹ́ i-gi ọ́-rọ́m-bọ́
-            n('E4', 3), n('D4', 2), n('D4', 2), n('C4', 1), n('D4', 2), n('C4', 1), n('C4', 1)
-          ],
-          harmony: { 0: ['C3', 'G3'], 7: ['G3', 'B3'], 14: ['F3', 'A3'], 22: ['C3', 'G3'] },
-          done: {
-            title: 'You played L’ábẹ́ igi ọ́rọ́mbọ́.',
-            line: 'Under the orange tree, start to finish — a song from home under your own fingers.'
-          },
-          recap: {
-            summary: 'Today you played L’ábẹ́ igi ọ́rọ́mbọ́ — the orange-tree song, note by note.',
             seed: 'Next time the metronome starts ticking — rhythm joins in.'
           }
         }
@@ -669,6 +644,49 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today you climbed the whole octave, thumb tucking under like a pro.',
+            seed: 'Next time your new high C leads a song from home — under the orange tree.'
+          }
+        },
+        {
+          id: 'labe-igi-orombo',
+          title: 'L’ábẹ́ igi ọ́rọ́mbọ́',
+          kind: 'song',
+          card: 'Under the orange tree — a song from home. It climbs your whole new octave, refrain and all.',
+          notes: [
+            // L'á-bẹ́ i-gi (♪ from the Beth's Notes notation, family-auditioned)
+            n('C4', 1), n('C4', 1), n('E4', 3), n('G4', 5),
+            // ọ́-rọ́m-bọ́
+            n('E4', 3), n('D4', 2), n('C4', 1),
+            // ní-bẹ̀ la gbé
+            n('C4', 1), n('C4', 1), n('E4', 3), n('G4', 5),
+            // ń ṣe-ré wa
+            n('F4', 4), n('E4', 3), n('D4', 2),
+            // i-nú wa dùn,
+            n('C5', 5), n('C5', 5), n('C5', 5), n('G4', 5),
+            // a-ra wa yá
+            n('A4', 5), n('A4', 5), n('A4', 5), n('G4', 5),
+            // l'á-bẹ́ i-gi
+            n('C4', 1), n('C4', 1), n('E4', 3), n('G4', 5),
+            // ọ́-rọ́m-bọ́
+            n('E4', 3), n('D4', 2), n('C4', 1),
+            // ọ́-rọ́m-bọ́, ọ́-rọ́m-bọ́,
+            n('E4', 3), n('D4', 2), n('C4', 1), n('G4', 5), n('E4', 3), n('G4', 5),
+            // ọ́-rọ́m-bọ́, ọ́-rọ́m-bọ́,
+            n('E4', 3), n('D4', 2), n('C4', 1), n('G4', 5), n('E4', 3), n('G4', 5),
+            // ọ́-rọ́m-bọ́
+            n('E4', 3), n('D4', 2), n('C4', 1)
+          ],
+          harmony: {
+            0: ['C3', 'G3'], 7: ['C3', 'G3'], 11: ['G3', 'B3'], 14: ['C3', 'G3'],
+            18: ['F3', 'A3'], 22: ['C3', 'G3'], 26: ['G3', 'B3'],
+            29: ['C3', 'G3'], 35: ['C3', 'G3'], 41: ['C3', 'G3']
+          },
+          done: {
+            title: 'You played L’ábẹ́ igi ọ́rọ́mbọ́.',
+            line: 'Under the orange tree, start to finish — a song from home under your own fingers.'
+          },
+          recap: {
+            summary: 'Today you played L’ábẹ́ igi ọ́rọ́mbọ́ — the orange-tree song, refrain and all.',
             seed: 'Next time the saints come marching through those keys.'
           }
         },

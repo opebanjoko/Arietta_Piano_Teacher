@@ -68,9 +68,9 @@ test('Units 1-6 cover the v1 map plus Yoruba tunes in course order (§3.2)', () 
   assert.deepEqual(lessons.map(l => l.id).slice(0, 25), [
     'meet-the-keyboard', 'finding-middle-c', 'hands-say-hello',
     'middle-c-again', 'meet-d', 'meet-e', 'meet-f-and-g',
-    'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune', 'labe-igi-orombo',
+    'ode-to-joy', 'lightly-row', 'au-clair-de-la-lune',
     'long-and-short', 'playing-with-the-pulse', 'ode-in-time', 'hot-cross-buns', 'bata-mi',
-    'meet-a-and-b', 'up-to-high-c', 'when-the-saints', 'twinkle', 'ise-oluwa',
+    'meet-a-and-b', 'up-to-high-c', 'labe-igi-orombo', 'when-the-saints', 'twinkle', 'ise-oluwa',
     'left-hand-home', 'taking-turns', 'your-first-chord', 'tolotolo'
   ])
   // lesson 21 opened with the polyphony gate (SR-AUD-10, spike/POLY_GATE_RUNBOOK.md)
@@ -168,7 +168,7 @@ test('voice pools are populated and repeat-safe', () => {
 
 test('Yoruba tunes stay within the notes their unit has taught', () => {
   const TAUGHT = {
-    'labe-igi-orombo': ['C4', 'D4', 'E4', 'F4', 'G4'],
+    'labe-igi-orombo': ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'C5'],
     'bata-mi': ['C4', 'D4', 'E4', 'F4', 'G4'],
     'ise-oluwa': ['C4', 'D4', 'E4', 'F4', 'G4', 'A4'],
     'tolotolo': ['C3', 'D3', 'E3', 'F3', 'G3', 'C4', 'D4', 'E4', 'F4', 'G4']

@@ -91,8 +91,6 @@ the family is Nigerian first.
 8. *Ode to Joy — first phrase* (E E F G G F E D C C D E E D D) — already prototyped.
 9. *Lightly Row* — G E E, F D D pattern; introduces starting on a note other than C.
 10. *Au clair de la lune* — C C C D E D, C E D D C; long notes held with patience.
-10a. *L'ábẹ́ igi ọ́rọ́mbọ́* — "under the orange tree"; a song from home, stepwise in
-    C position.
 
 **Unit 4 — Rhythm Joins In** *(introduces the metronome and gentle tempo feedback)*
 11. *Long notes and short notes* — quarter, half, whole; clap-then-play with the
@@ -107,6 +105,8 @@ the family is Nigerian first.
 **Unit 5 — More Notes, New Places**
 15. *Meet A and B* — A4, B4; the right hand stretches beyond five fingers.
 16. *Up to high C* — C5; the full C-to-C octave walk.
+16a. *L'ábẹ́ igi ọ́rọ́mbọ́* — "under the orange tree"; a song from home that climbs the
+    new octave, refrain and all.
 17. *When the Saints Go Marching In* — first phrase; uses the new upper notes.
 18. *Twinkle, Twinkle* — full song in C position with octave-aware playing.
 18a. *Ìṣẹ́ Olúwa* — a flowing song from home reaching the new note A; gains soft
