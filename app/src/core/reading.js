@@ -59,6 +59,7 @@ export function readingWarmup(pool, seed, voice = VOICE) {
     title: voice.reading.warmupTitle,
     kind: 'drill',
     ephemeral: true, // never persisted — it exists only for this hello
+    readCold: true, // never show letters — fresh reading is the point (§3.5)
     steps: [{ kind: 'reading-snippet', pool }],
     done: { title: voice.reading.doneTitle, line: voice.reading.doneLine }
   }, seed, voice)

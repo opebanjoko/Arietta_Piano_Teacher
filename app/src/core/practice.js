@@ -39,6 +39,7 @@ export function practiceLesson(pack) {
     id: pack.id,
     practicePackId: pack.id,
     ephemeral: true,
+    unitId: pack.unitId,
     unitTag: 'PRACTICE',
     unitTitle: pack.unitTitle
   }
