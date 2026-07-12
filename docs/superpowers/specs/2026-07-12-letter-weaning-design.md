@@ -92,7 +92,8 @@ Auto.
 1. A Unit 3 student sees exactly today's experience.
 2. In "The bass clef" (Unit 8), bass notes are labeled; in "Merrily — left hand",
    nothing is.
-3. "Meet F♯" labels only F♯; "London Bridge in G" is pure notation.
+3. "Meet F♯" labels only F♯; "London Bridge in G" labels only E5 (its one genuinely
+   new note — first sighting in the course) and nothing else.
 4. Missing the same note twice in a plain song reveals that note's letter until played.
 5. Settings Auto/Always on/Always off behave as specified; profiles that explicitly
    chose on (`true`) or off (`false`) keep that choice; everyone else moves to Auto —

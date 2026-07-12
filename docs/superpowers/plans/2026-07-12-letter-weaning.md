@@ -62,8 +62,9 @@ test('novelty: new clef relabels; known material labels nothing', () => {
   const fs = noveltyFor(findLesson('meet-f-sharp'))
   assert.ok(fs.has(nameToMidi('F#4')))
   assert.ok(!fs.has(nameToMidi('G4')))
-  // London Bridge (after meet-f-sharp) is pure notation
-  assert.equal(noveltyFor(findLesson('london-bridge-in-g')).size, 0)
+  // London Bridge's only genuinely-new note is E5 — everything else is pure notation
+  const lb = noveltyFor(findLesson('london-bridge-in-g'))
+  assert.deepEqual([...lb], [nameToMidi('E5')])
 })
 
 test('reading warm-ups read cold; practice inherits its source unit', () => {
@@ -84,7 +85,7 @@ test('letterMidis maps the three-way setting', () => {
   assert.equal(letterMidis(undefined, u3), 'all')
   assert.equal(letterMidis('auto', u3), 'all')
   const set = letterMidis(undefined, u10)
-  assert.ok(set instanceof Set && set.size === 0)
+  assert.ok(set instanceof Set && set.size === 1 && set.has(nameToMidi('E5')))
   // free play (no lesson): letters on unless always-off
   assert.equal(letterMidis(undefined, null), 'all')
   assert.equal(letterMidis(false, null), 'none')
@@ -444,7 +445,7 @@ Run `cd app && npx vite --port 5199 --strictPort` (background), then verify:
 1. Unit 3 song (Ode to Joy): all staff letters + all key labels visible (acceptance 1).
 2. `the-bass-clef` drill: staff letters visible on its bass notes (acceptance 2a).
 3. `merrily-left-hand`: no staff letters, no key labels (acceptance 2b).
-4. `london-bridge-in-g`: no letters (acceptance 3); `meet-f-sharp`: F♯ labeled.
+4. `london-bridge-in-g`: only E5 labeled (its first sighting); `meet-f-sharp`: F♯ labeled.
 5. In Merrily, miss the current note twice (tap a wrong key twice): current note's letter appears on the staff and the glowing key shows its letter; play it right — letter disappears (acceptance 4).
 6. Settings: switch to "Always shown" → Merrily shows all letters; "Hidden" → Unit 3 shows none; back to Auto (acceptance 5).
 
