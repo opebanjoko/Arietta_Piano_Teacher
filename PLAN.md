@@ -101,13 +101,6 @@ more than two more units of content would.
   "via mic on a real piano" exit joins the deferred hardware validation
   (`spike/GATE_RUNBOOK.md`); flag for that session: onset-detector thresholds vs.
   metronome click bleed through the iPad speaker/mic loop.
-  Left-hand expansion (2026-07-14): six lessons added in place — Unit 8
-  gains a five-finger warm-up and Lightly Row (left hand alone); Unit 9
-  gains keep-the-beat, a walking bass, and Ode to Joy / Lightly Row
-  hands-together. Content only, tests green. Open: BO voice review of the
-  new student-facing strings, and the four new Unit 9 lessons ride the
-  deferred poly gate (spike/POLY_GATE_RUNBOOK.md) like all hands-together
-  content.
 
 ### Phase 4 — Hardening, beta, v1 release — ~2–3 wks
 **Goal**: ship something a family actually keeps using.
@@ -178,12 +171,19 @@ more than two more units of content would.
   complete as pure data: Units 7–12, lessons 22–49, with bass-clef staff,
   accidentals + black-target hints, label-fade reading, dynamics (words
   only), and setlist/recital mode saving "My first recital" to the profile.
-  Full 43-lesson tap E2E green in four scenarios plus a NoteSetEvent run;
+  Full-course tap E2E green in four scenarios plus a NoteSetEvent run;
   recital flow browser-verified end to end with the backend unreachable.
   Open (release blockers alongside the Phase 0 runbook): the poly gate's
   human piano validation (P1–P3 in `spike/POLY_GATE_RUNBOOK.md`), MIDI on
   real hardware, dynamics loudness thresholds at a real piano, and BO voice
   review of all new student-facing strings.
+- **Left-hand expansion (2026-07-14):** six Course 2 lessons added in place —
+  Unit 8 gains a five-finger warm-up and Lightly Row (left hand alone); Unit 9
+  gains keep-the-beat, a walking bass, and Ode to Joy / Lightly Row
+  hands-together (53 lessons total). Content only, tests green. Open: BO voice
+  review of the new student-facing strings, and the four new Unit 9 lessons
+  ride the deferred poly gate (`spike/POLY_GATE_RUNBOOK.md`) like all
+  hands-together content.
 
 ## 3. Workstream ownership
 
