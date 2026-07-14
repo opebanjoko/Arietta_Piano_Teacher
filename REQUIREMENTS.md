@@ -351,7 +351,7 @@ Precise underneath, wordy on the surface — never numeric.
 - Platform note: iPad Safari does not ship Web MIDI; this requirement may force a thin
   native shell (e.g. Capacitor). Decide at Phase 2 planning, not before.
 
-### 9.4 Course 2 — Year One continues (Units 7–12, lessons 22–43)
+### 9.4 Course 2 — Year One continues (Units 7–12, lessons 22–49)
 
 Picks up after lesson 21. Same lesson anatomy (§3.3), same voice, linear unlocking
 continues. Where a unit needs §9.1 or §9.3 capability, it says so.
@@ -364,33 +364,39 @@ continues. Where a unit needs §9.1 or §9.3 capability, it says so.
 
 **Unit 8 — The Left Hand Speaks** *(bass clef; hands alternate — v1 listening suffices)*
 26. *The bass clef* — the left hand gets its own map; bass-clef C3 position.
-27. *Walking down the bass* — C3–G3 melodies read from the bass clef.
-28. *Merrily We Roll Along — left hand* — the full melody, left hand alone.
-29. *Echo games* — the right hand plays a phrase, the left answers; one hand at a time.
+27. *The left hand warms up* — a five-finger warm-up in bass C3 position, up, down, and skipping.
+28. *Walking down the bass* — C3–G3 melodies read from the bass clef.
+29. *Merrily We Roll Along — left hand* — the full melody, left hand alone.
+30. *Lightly Row — left hand* — a second left-hand-alone song, in bass C3 position.
+31. *Echo games* — the right hand plays a phrase, the left answers; one hand at a time.
 
 **Unit 9 — Hands Together** *(requires §9.1 stages a–b)*
-30. *Both thumbs share middle C* — one held left-hand note under a right-hand melody.
-31. *Drone and melody* — the left sustains C while the right walks the five-finger hill.
-32. *Au clair de la lune — together* — long left-hand notes under the melody.
-33. *Twinkle — together* — the left hand changes notes beneath the tune.
+32. *Both thumbs share middle C* — one held left-hand note under a right-hand melody.
+33. *Two hands keep the beat* — both hands strike on the same instant; no independent movement yet.
+34. *Drone and melody* — the left sustains C while the right walks the five-finger hill.
+35. *A walking bass* — the left hand steps between two notes under a held right-hand note.
+36. *Au clair de la lune — together* — long left-hand notes under the melody.
+37. *Ode to Joy — together* — a deep left-hand note anchors each phrase of the melody.
+38. *Twinkle — together* — the left hand changes notes beneath the tune.
+39. *Lightly Row — together* — melody on top, a left-hand note beneath; consolidates coordination.
 
 **Unit 10 — Black Keys Join In**
-34. *Meet F sharp* — G position earns its sharp; five-finger patterns in G.
-35. *Meet B flat* — F position; the same tune starting somewhere new (first transposing).
-36. *London Bridge in G* — a full song in the new position, sharp and all.
+40. *Meet F sharp* — G position earns its sharp; five-finger patterns in G.
+41. *Meet B flat* — F position; the same tune starting somewhere new (first transposing).
+42. *London Bridge in G* — a full song in the new position, sharp and all.
 
 **Unit 11 — First Chords** *(requires §9.1 stage b)*
-37. *Building the C chord* — C–E–G together; roll it gently, then land it as one.
-38. *C and G7 take turns* — two-chord switching, slow and smooth.
-39. *F joins the family* — three chords; the I–IV–V neighborhood.
-40. *When the Saints — with chords* — melody in the right, block chords in the left.
+43. *Building the C chord* — C–E–G together; roll it gently, then land it as one.
+44. *C and G7 take turns* — two-chord switching, slow and smooth.
+45. *F joins the family* — three chords; the I–IV–V neighborhood.
+46. *When the Saints — with chords* — melody in the right, block chords in the left.
 
 **Unit 12 — Your First Recital**
-41. *Louds and softs* — dynamics: play it like a mouse, play it like a lion. Assessed
+47. *Louds and softs* — dynamics: play it like a mouse, play it like a lion. Assessed
     via MIDI velocity (§9.3) or coarse mic loudness; feedback in words, as always.
-42. *Putting on polish* — the student picks three favorite pieces; each gets a
+48. *Putting on polish* — the student picks three favorite pieces; each gets a
     "make it beautiful" pass — dynamics, steadiness, confidence.
-43. *Recital day* — recital mode: Arietta introduces each piece, then goes quiet and
+49. *Recital day* — recital mode: Arietta introduces each piece, then goes quiet and
     simply listens — no hints, no interruptions. Afterward, the warmest celebration in
     the app, and the set is saved to the profile as "My first recital."
 

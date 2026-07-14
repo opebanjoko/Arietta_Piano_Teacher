@@ -101,6 +101,13 @@ more than two more units of content would.
   "via mic on a real piano" exit joins the deferred hardware validation
   (`spike/GATE_RUNBOOK.md`); flag for that session: onset-detector thresholds vs.
   metronome click bleed through the iPad speaker/mic loop.
+  Left-hand expansion (2026-07-14): six lessons added in place — Unit 8
+  gains a five-finger warm-up and Lightly Row (left hand alone); Unit 9
+  gains keep-the-beat, a walking bass, and Ode to Joy / Lightly Row
+  hands-together. Content only, tests green. Open: BO voice review of the
+  new student-facing strings, and the four new Unit 9 lessons ride the
+  deferred poly gate (spike/POLY_GATE_RUNBOOK.md) like all hands-together
+  content.
 
 ### Phase 4 — Hardening, beta, v1 release — ~2–3 wks
 **Goal**: ship something a family actually keeps using.
