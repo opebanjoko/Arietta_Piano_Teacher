@@ -35,18 +35,17 @@ test('lesson ids are unique and lessons are complete', () => {
   }
 })
 
-test('the course completes the 47-lesson year (§9.4 + Yoruba tunes)', () => {
-  assert.equal(lessons.length, 47)
+test('the course completes the year (§9.4 + Yoruba tunes + left-hand expansion)', () => {
+  assert.equal(lessons.length, 49)
   assert.equal(new Set(lessons.map(l => l.unitId)).size, 12)
   assert.deepEqual(lessons.map(l => l.id).slice(25), [
     'notes-cold', 'steps-and-skips', 'meet-g-position', 'ode-whole-theme',
-    'the-bass-clef', 'walking-down-the-bass', 'merrily-left-hand', 'echo-games',
+    'the-bass-clef', 'left-hand-warmup', 'walking-down-the-bass', 'merrily-left-hand', 'lightly-row-left-hand', 'echo-games',
     'both-thumbs', 'drone-and-melody', 'au-clair-together', 'twinkle-together',
     'meet-f-sharp', 'meet-b-flat', 'london-bridge-in-g',
     'building-the-c-chord', 'c-and-g7', 'f-joins', 'saints-with-chords',
     'louds-and-softs', 'putting-on-polish', 'recital-day'
   ])
-  // units that need polyphony declare it (SR-AUD-10 stages a-c)
   for (const l of lessons.filter(l => ['u9', 'u11'].includes(l.unitId))) {
     assert.ok(l.poly, `${l.id}: Units 9/11 require polyphonic listening`)
   }

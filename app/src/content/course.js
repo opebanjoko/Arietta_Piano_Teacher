@@ -1149,6 +1149,52 @@ export const COURSE = {
           }
         },
         {
+          id: 'left-hand-warmup',
+          title: 'The left hand warms up',
+          kind: 'drill',
+          clef: 'bass',
+          low: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Before the hands ever play together, the left hand does its own warm-up.',
+              sub: 'Five deep fingers, five deep notes — pinky to thumb, C up to G.'
+            },
+            {
+              kind: 'watch-me',
+              prompt: 'Watch the left hand climb: pinky first, up to the thumb.',
+              sub: 'C, D, E, F, G — fingers 5, 4, 3, 2, 1.',
+              anim: { keys: ['C3', 'D3', 'E3', 'F3', 'G3'], fingers: [5, 4, 3, 2, 1], hand: 'left' }
+            },
+            {
+              kind: 'play',
+              prompt: 'Climb the five deep notes: C, D, E, F, G.',
+              sub: 'Pinky to thumb — 5, 4, 3, 2, 1.',
+              targets: [n('C3', 5), n('D3', 4), n('E3', 3), n('F3', 2), n('G3', 1)]
+            },
+            {
+              kind: 'play',
+              prompt: 'And back down: G, F, E, D, C.',
+              sub: 'Thumb to pinky — 1, 2, 3, 4, 5.',
+              targets: [n('G3', 1), n('F3', 2), n('E3', 3), n('D3', 4), n('C3', 5)]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now skip about, and the left hand gets nimble.',
+              sub: 'C, E, D, F, E, G — little hops between the deep notes.',
+              targets: [n('C3', 5), n('E3', 3), n('D3', 4), n('F3', 2), n('E3', 3), n('G3', 1)]
+            }
+          ],
+          done: {
+            title: 'The left hand is warm.',
+            line: 'Five fingers, five deep notes — up, down, and skipping. Ready for anything.'
+          },
+          recap: {
+            summary: 'Today the left hand warmed up its five deep fingers, on its own.',
+            seed: 'Next time it walks down the bass clef, reading little melodies.'
+          }
+        },
+        {
           id: 'walking-down-the-bass',
           title: 'Walking down the bass',
           kind: 'drill',
@@ -1205,6 +1251,25 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today your left hand carried Merrily We Roll Along by itself.',
+            seed: 'Next time the left hand rows a second song of its own: Lightly Row.'
+          }
+        },
+        {
+          id: 'lightly-row-left-hand',
+          title: 'Lightly Row — left hand',
+          kind: 'song',
+          clef: 'bass',
+          card: 'The little boat song, rowed by the left hand alone — deep and warm.',
+          notes: [
+            n('G3', 1), n('E3', 3), n('E3', 3), n('F3', 2), n('D3', 4), n('D3', 4), n('C3', 5),
+            n('D3', 4), n('E3', 3), n('F3', 2), n('G3', 1), n('G3', 1), n('G3', 1)
+          ],
+          done: {
+            title: 'The left hand rowed the whole boat.',
+            line: 'Lightly Row, all the way through, deep and low — no right hand needed.'
+          },
+          recap: {
+            summary: 'Today your left hand carried Lightly Row by itself.',
             seed: 'Next time the hands play echo games — one asks, the other answers.'
           }
         },
