@@ -1145,7 +1145,7 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today you met the bass clef — the left hand’s own map.',
-            seed: 'Next time you’ll walk down it, note by note.'
+            seed: 'Next time the left hand warms up its five deep fingers.'
           }
         },
         {
