@@ -197,12 +197,33 @@ the camera number is the authoritative one, per SR-VER-05.)
 
 ### Corpus scores (Session 2)
 
+Automated run 2026-07-14 over the first recorded corpus
+(`gate-corpus-acoustic-stand-3/`: 37 chromatic notes C3–C6 + 4 noise clips),
+scored through the production pipeline by `app/test/corpus.test.js`:
+
 | Detector | Note clips | Detected | Detection rate | False events | False / 10 min | Pass |
 |---|---|---|---|---|---|---|
-| YIN |  |  |  |  |  |  |
-| MPM |  |  |  |  |  |  |
+| YIN | 37 | 36 | 97.3% | 290 | 339.5 | No (G2) |
+| MPM | 37 | 37 | 100% | 288 | 337.2 | No (G2) |
 
-Clarity threshold used: ______ · Instruments recorded: ______ · Distances: ______
+Clarity threshold used: 0.90 (default) · Instruments recorded: acoustic (1) ·
+Distances: stand (1 take)
+
+**Finding (2026-07-14): G1 passes, G2 fails hard, and threshold tuning does not
+close it.** Detection is excellent. But almost all false events come from the
+noise clips of **human voice** — singing alone fired 180 events in 60 s, speech
+64 in 120 s (TV 8, household 28); the note clips add only 8, all duplicate
+same-pitch re-triggers on a sustained strike. A minClarity × stableFrames sweep
+(0.90–0.98 × 2–6) found **no configuration** meeting G1 ≥ 95% and G2 ≤ 1/10 min
+at once: cutting voice false-positives collapses detection long before the rate
+approaches the gate (best low-false point sf=4/clar=0.98 = 11.7/10 min at 68%
+detection). Raw monophonic pitch + a clarity gate cannot separate sung/spoken
+voice from piano in the C3–C6 band. This is risk R2 and is a design/BO
+decision, not a tuning fix — options include an onset/timbre discriminator on
+top of the clarity gate, leaning on the live mic's distance/AGC (the offline
+clips are close-mic worst case — Session 3's live soak is the real test), or
+the MIDI-first path. Corpus is also still partial: 1 instrument, stand only,
+no second piano. Open item for the human gate; no Go/No-Go recorded here.
 
 ### Live session (Session 3)
 

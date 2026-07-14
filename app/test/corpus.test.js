@@ -18,9 +18,15 @@ const CORPUS_DIR = fileURLToPath(new URL('../../spike/corpus/', import.meta.url)
 const FRAME = 2048
 const HOP = 1024
 
+const baseName = (f) => f.split(/[\\/]/).pop()
+
+// The gate app packages each session as its own folder under spike/corpus/
+// (e.g. gate-corpus-acoustic-stand-3/), so scan recursively. Paths are
+// returned relative to CORPUS_DIR; poly-*.wav belong to poly-corpus.test.js.
 function listWavs() {
   try {
-    return readdirSync(CORPUS_DIR).filter(f => f.endsWith('.wav') && !f.startsWith('poly-'))
+    return readdirSync(CORPUS_DIR, { recursive: true })
+      .filter(f => f.endsWith('.wav') && !baseName(f).startsWith('poly-'))
   } catch {
     return []
   }
@@ -39,8 +45,8 @@ function decodeWav(buf) {
  * The gate app spells sharps filesystem-safe (Cs4 for C#4); accept both.
  * poly-*.wav clips belong to poly-corpus.test.js, not this scorer.
  */
-function expectedMidi(name) {
-  const seg = name.split('-')
+function expectedMidi(path) {
+  const seg = baseName(path).split('-')
   if (seg[0] === 'noise') return null
   return nameToMidi(seg[1].replace(/^([A-G])s(\d)$/, '$1#$2'))
 }

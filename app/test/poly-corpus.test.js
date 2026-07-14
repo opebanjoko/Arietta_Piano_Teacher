@@ -29,9 +29,14 @@ const SEQS = {
   together: [[48, 52, 55], [62], [65], [69], [65], [62]]
 }
 
+const baseName = (f) => f.split(/[\\/]/).pop()
+
+// Scan session folders recursively (see corpus.test.js); poly clips are the
+// poly-*.wav ones, wherever the gate app filed them.
 function listWavs() {
   try {
-    return readdirSync(CORPUS_DIR).filter(f => f.startsWith('poly-') && f.endsWith('.wav'))
+    return readdirSync(CORPUS_DIR, { recursive: true })
+      .filter(f => baseName(f).startsWith('poly-') && f.endsWith('.wav'))
   } catch {
     return []
   }
@@ -65,7 +70,7 @@ test('recorded poly corpus meets the gate (SR-AUD-10)', { skip: wavs.length === 
   let falseEvents = 0
   let totalMs = 0
   for (const f of wavs) {
-    const label = f.split('-')[2]
+    const label = baseName(f).split('-')[2]
     const chord = CHORDS[label]
     const seq = SEQS[label]
     assert.ok(chord || seq, `${f}: unknown chord label '${label}'`)

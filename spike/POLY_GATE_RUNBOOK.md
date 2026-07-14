@@ -79,11 +79,16 @@ table below.
 
 | Check | Result | Date | Notes |
 |---|---|---|---|
-| P2 corpus detection (G1) | | | |
-| P2 corpus false rate (G2) | | | |
+| P2 corpus detection (G1) | 3/3 (100%) | 2026-07-14 | Partial corpus: C3/F3/G3 maj triads, stand, 1 take. Exact pitch set each. |
+| P2 corpus false rate (G2) | 0.0 / 10 min | 2026-07-14 | Zero phantom sets on the 3 clips (no noise clips scored under poly yet). |
 | P3 live chords (G1/G3) | | | |
 | P3 noise soak (G2) | | | |
 | Decision (Go / No-Go) | | | |
+
+> P2 note (2026-07-14): the first 3 recorded chords score perfectly through the
+> production PolyTracker, but this is only 3 of the P1 chord set (C4/F4 triads,
+> the dyads, and the held-bass sequences are not yet recorded). Full P1 corpus
+> plus the P3 live soak still needed before a poly Go/No-Go.
 
 **No-Go path**: polyphonic lessons stay gated (lesson 21 reverts to
 `comingSoon`, Units 9/11 hidden behind it); MIDI input (SR-MID-01) becomes
