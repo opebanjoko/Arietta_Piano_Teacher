@@ -1362,7 +1362,47 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today both thumbs landed together and the hands played at once.',
-            seed: 'Next time the left hand holds one long drone while the right sings.'
+            seed: 'Next time both hands keep a steady beat together.'
+          }
+        },
+        {
+          id: 'hands-keep-the-beat',
+          title: 'Two hands keep the beat',
+          kind: 'drill',
+          poly: true,
+          low: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'Now both hands strike at the very same instant — like two feet landing together.',
+              sub: 'No walking yet. Just land together, lift together.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Land them together: deep C and the E above.',
+              sub: 'Left pinky, right middle finger — one press, one sound.',
+              targets: [c(['C3', 'E4'], [5, 3])]
+            },
+            {
+              kind: 'play',
+              prompt: 'Two together-hits in a row: low C with E, then G with D.',
+              sub: 'Both hands move as one — land, lift, land.',
+              targets: [c(['C3', 'E4'], [5, 3]), c(['G3', 'D4'], [1, 2])]
+            },
+            {
+              kind: 'play',
+              prompt: 'Keep the beat: C-with-E, G-with-D, C-with-E.',
+              sub: 'Steady as a heartbeat — both hands together every time.',
+              targets: [c(['C3', 'E4'], [5, 3]), c(['G3', 'D4'], [1, 2]), c(['C3', 'E4'], [5, 3])]
+            }
+          ],
+          done: {
+            title: 'Both hands, one beat.',
+            line: 'Landing together is its own skill — and you just found it.'
+          },
+          recap: {
+            summary: 'Today both hands learned to strike at the very same instant.',
+            seed: 'Next time the left hand holds one long drone while the right sings above it.'
           }
         },
         {
@@ -1396,6 +1436,40 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today the left hand held a drone while the right walked the whole hill.',
+            seed: 'Next time the left hand walks a bass while the right hand sings.'
+          }
+        },
+        {
+          id: 'walking-bass',
+          title: 'A walking bass',
+          kind: 'drill',
+          poly: true,
+          low: true,
+          steps: [
+            {
+              kind: 'info',
+              prompt: 'A walking bass: the left hand steps between two notes while the right hand sings above.',
+              sub: 'This is the big one — the left hand moves on its own now, not just holding still.'
+            },
+            {
+              kind: 'play',
+              prompt: 'Right hand holds E. Left hand steps: deep C, then G.',
+              sub: 'Left pinky, then left thumb — the right hand stays put on E.',
+              targets: [c(['C3', 'E4'], [5, 3]), c(['G3', 'E4'], [1, 3])]
+            },
+            {
+              kind: 'play',
+              prompt: 'Now walk it: C, G, C, G — right hand still singing E.',
+              sub: 'Left hand steps back and forth, steady and low.',
+              targets: [c(['C3', 'E4'], [5, 3]), c(['G3', 'E4'], [1, 3]), c(['C3', 'E4'], [5, 3]), c(['G3', 'E4'], [1, 3])]
+            }
+          ],
+          done: {
+            title: 'The left hand walks on its own.',
+            line: 'A moving bass under a steady tune — the hands are truly independent now.'
+          },
+          recap: {
+            summary: 'Today the left hand walked between two notes while the right hand held its own.',
             seed: 'Next time: Au clair de la lune, hands together.'
           }
         },
@@ -1417,7 +1491,27 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today Au clair de la lune got its left-hand glow — hands together.',
-            seed: 'Next time Twinkle comes back, with the left hand changing beneath the tune.'
+            seed: 'Next time Ode to Joy returns — both hands together.'
+          }
+        },
+        {
+          id: 'ode-together',
+          title: 'Ode to Joy — together',
+          kind: 'song',
+          poly: true,
+          low: true,
+          card: 'The tune that started it all — now both hands, a deep note holding the ground beneath the melody.',
+          notes: [
+            c(['C3', 'E4'], [5, 3]), n('E4', 3), n('F4', 4), n('G4', 5), n('G4', 5), n('F4', 4), n('E4', 3),
+            c(['G3', 'D4'], [1, 2]), n('C4', 1), n('C4', 1), n('D4', 2), n('E4', 3), n('E4', 3), n('D4', 2), n('D4', 2)
+          ],
+          done: {
+            title: 'Ode to Joy, hands together.',
+            line: 'The very first tune you learned — now with its own ground underneath. Both hands, one music.'
+          },
+          recap: {
+            summary: 'Today Ode to Joy came back with a deep left-hand note under every phrase.',
+            seed: 'Next time Twinkle returns, with the left hand moving beneath the tune.'
           }
         },
         {
@@ -1439,6 +1533,26 @@ export const COURSE = {
           },
           recap: {
             summary: 'Today Twinkle twinkled over a left hand that moved beneath it.',
+            seed: 'Next time Lightly Row comes back, both hands aboard.'
+          }
+        },
+        {
+          id: 'lightly-row-together',
+          title: 'Lightly Row — together',
+          kind: 'song',
+          poly: true,
+          low: true,
+          card: 'The little boat song, both hands aboard now.',
+          notes: [
+            c(['C3', 'G4'], [5, 5]), n('E4', 3), n('E4', 3), n('F4', 4), n('D4', 2), n('D4', 2),
+            c(['F3', 'C4'], [2, 1]), n('D4', 2), n('E4', 3), n('F4', 4), n('G4', 5), n('G4', 5), n('G4', 5)
+          ],
+          done: {
+            title: 'Lightly Row, both hands aboard.',
+            line: 'The boat you rowed left-hand-alone, now with the melody singing on top. You did both at once.'
+          },
+          recap: {
+            summary: 'Today Lightly Row played with both hands — the tune on top, a deep note beneath.',
             seed: 'Next time the black keys finally join in.'
           }
         }
