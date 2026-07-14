@@ -160,7 +160,7 @@ more than two more units of content would.
 ### Phase 6 — Polyphony, MIDI, Course 2 (wave 2) — sized at Phase 5 exit
 - Scope: polyphonic detection stages a→c (SR-AUD-10, SR-EVT-03) unlocking lesson 21 and
   Units 9/11; native-shell decision + MIDI adapter (SR-MID-01/02); Course 2 content
-  (Units 7–12, lessons 22–43) authored by BO across the whole phase.
+  (Units 7–12, lessons 22–49) authored by BO across the whole phase.
 - Polyphony gets its own mini-spike gate, like Phase 0 — same fail-fast discipline.
 - **Build status (2026-07-11): complete; piano-hardware checks open.** The
   polyphony mini-spike ran first and passed synthetically (winner: FFT
@@ -175,7 +175,7 @@ more than two more units of content would.
   and browser-verified. The Web MIDI adapter prefers a connected piano over
   the mic (SR-MID-01); the native shell is decided (Capacitor when needed,
   not built — `docs/decisions/2026-07-10-native-shell.md`). Course 2 is
-  complete as pure data: Units 7–12, lessons 22–43, with bass-clef staff,
+  complete as pure data: Units 7–12, lessons 22–49, with bass-clef staff,
   accidentals + black-target hints, label-fade reading, dynamics (words
   only), and setlist/recital mode saving "My first recital" to the profile.
   Full 43-lesson tap E2E green in four scenarios plus a NoteSetEvent run;
